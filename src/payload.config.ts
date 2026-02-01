@@ -17,6 +17,8 @@ import { Header } from './Header/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
+import { clearSeedEndpoint } from './endpoints/seed/clear'
+import { seedEndpoint, seedStatusEndpoint } from './endpoints/seed'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -74,6 +76,7 @@ export default buildConfig({
   }),
   collections: [Pages, Posts, Categories, LawFirms, PracticeAreas, Locations, Media, Users],
   cors: [getServerSideURL()].filter(Boolean),
+  endpoints: [seedStatusEndpoint, seedEndpoint, clearSeedEndpoint],
   globals: [Header, Footer],
   plugins,
   secret: process.env.PAYLOAD_SECRET,

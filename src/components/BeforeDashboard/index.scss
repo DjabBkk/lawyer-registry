@@ -22,3 +22,18 @@
     opacity: 0.85;
   }
 }
+
+.seed-panel {
+  margin-top: base(1);
+  padding: base(1);
+  border: 1px solid var(--theme-elevation-200);
+  border-radius: var(--border-radius-m);
+  background: var(--theme-elevation-0);
+
+  &__actions {
+    display: flex;
+    gap: base(0.5);
+    flex-wrap: wrap;
+    margin-bottom: base(0.5);
+  }
+}

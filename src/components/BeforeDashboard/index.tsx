@@ -1,6 +1,7 @@
 import { Banner } from '@payloadcms/ui/elements/Banner'
 import React from 'react'
 
+import SeedButton from './SeedButton'
 import './index.scss'
 
 const baseClass = 'before-dashboard'
@@ -47,6 +48,7 @@ const BeforeDashboard: React.FC = () => {
           Commit and push your changes to the repository to trigger a redeployment of your project.
         </li>
       </ul>
+      <SeedButton />
       {'Pro Tip: This block is a '}
       <a
         href="https://payloadcms.com/docs/custom-components/overview"
