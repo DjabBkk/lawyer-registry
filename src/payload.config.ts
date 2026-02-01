@@ -18,6 +18,13 @@ import { getServerSideURL } from './utilities/getURL'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+// Validate DATABASE_URL
+if (!process.env.DATABASE_URL) {
+  console.warn(
+    '⚠️  DATABASE_URL is not set. Please set it in your .env file or environment variables.',
+  )
+}
+
 export default buildConfig({
   admin: {
     components: {
