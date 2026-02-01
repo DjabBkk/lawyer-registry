@@ -4,8 +4,8 @@ import { toKebabCase } from '@/utilities/toKebabCase'
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 
-export const PracticeAreas: CollectionConfig = {
-  slug: 'practice-areas',
+export const Categories: CollectionConfig = {
+  slug: 'categories',
   access: {
     create: authenticated,
     delete: authenticated,
@@ -13,9 +13,8 @@ export const PracticeAreas: CollectionConfig = {
     update: authenticated,
   },
   admin: {
-    group: 'Law Firm Registry',
     useAsTitle: 'name',
-    defaultColumns: ['name', 'slug', 'featured', 'updatedAt'],
+    defaultColumns: ['name', 'slug', 'updatedAt'],
   },
   fields: [
     {
@@ -48,37 +47,6 @@ export const PracticeAreas: CollectionConfig = {
       index: true,
       required: true,
       unique: true,
-    },
-    {
-      name: 'description',
-      type: 'richText',
-    },
-    {
-      name: 'shortDescription',
-      type: 'textarea',
-      maxLength: 200,
-    },
-    {
-      name: 'icon',
-      type: 'text',
-    },
-    {
-      name: 'featured',
-      type: 'checkbox',
-      defaultValue: false,
-    },
-    {
-      name: 'featuredOrder',
-      type: 'number',
-      min: 0,
-    },
-    {
-      name: 'seoTitle',
-      type: 'text',
-    },
-    {
-      name: 'seoDescription',
-      type: 'textarea',
     },
   ],
   timestamps: true,

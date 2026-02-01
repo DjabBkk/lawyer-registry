@@ -7,7 +7,7 @@ import {
   OverviewField,
   PreviewField,
 } from '@payloadcms/plugin-seo/fields'
-import { slugField } from 'payload'
+import { toKebabCase } from '@/utilities/toKebabCase'
 
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
@@ -33,6 +33,7 @@ export const LawFirms: CollectionConfig = {
     update: authenticated,
   },
   admin: {
+    group: 'Law Firm Registry',
     useAsTitle: 'name',
     defaultColumns: ['name', 'slug', 'featured', 'updatedAt'],
   },
@@ -48,9 +49,32 @@ export const LawFirms: CollectionConfig = {
               type: 'text',
               required: true,
             },
-            slugField({
-              fieldToUse: 'name',
-            }),
+            {
+              name: 'slug',
+              type: 'text',
+              admin: {
+                position: 'sidebar',
+              },
+              hooks: {
+                beforeValidate: [
+                  ({ value, data, originalDoc }) => {
+                    if (value) {
+                      return value
+                    }
+
+                    const name = data?.name ?? originalDoc?.name
+                    if (!name) {
+                      return value
+                    }
+
+                    return toKebabCase(name)
+                  },
+                ],
+              },
+              index: true,
+              required: true,
+              unique: true,
+            },
             {
               name: 'logo',
               type: 'upload',
@@ -165,6 +189,268 @@ export const LawFirms: CollectionConfig = {
               name: 'primaryLocation',
               type: 'relationship',
               relationTo: 'locations',
+            },
+          ],
+        },
+        {
+          label: 'Office Locations',
+          fields: [
+            {
+              name: 'officeLocations',
+              type: 'array',
+              label: 'Office Locations',
+              admin: {
+                description: 'Add multiple office locations with their specific details and opening hours',
+              },
+              fields: [
+                {
+                  name: 'location',
+                  type: 'relationship',
+                  relationTo: 'locations',
+                  required: true,
+                  admin: {
+                    description: 'Select the location for this office',
+                  },
+                },
+                {
+                  name: 'address',
+                  type: 'textarea',
+                  admin: {
+                    description: 'Specific address for this office location',
+                  },
+                },
+                {
+                  name: 'phone',
+                  type: 'text',
+                  admin: {
+                    description: 'Location-specific phone number (optional)',
+                  },
+                },
+                {
+                  name: 'email',
+                  type: 'email',
+                  admin: {
+                    description: 'Location-specific email (optional)',
+                  },
+                },
+                {
+                  name: 'googleMapsUrl',
+                  type: 'text',
+                  admin: {
+                    description: 'Google Maps URL for this specific office',
+                  },
+                },
+                {
+                  name: 'openingHours',
+                  type: 'group',
+                  label: 'Opening Hours',
+                  fields: [
+                    {
+                      name: 'monday',
+                      type: 'group',
+                      fields: [
+                        {
+                          name: 'closed',
+                          type: 'checkbox',
+                          defaultValue: false,
+                        },
+                        {
+                          name: 'openTime',
+                          type: 'text',
+                          admin: {
+                            condition: (data) => !data?.closed,
+                            description: 'Format: HH:MM (e.g., 09:00)',
+                            placeholder: '09:00',
+                          },
+                        },
+                        {
+                          name: 'closeTime',
+                          type: 'text',
+                          admin: {
+                            condition: (data) => !data?.closed,
+                            description: 'Format: HH:MM (e.g., 17:00)',
+                            placeholder: '17:00',
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      name: 'tuesday',
+                      type: 'group',
+                      fields: [
+                        {
+                          name: 'closed',
+                          type: 'checkbox',
+                          defaultValue: false,
+                        },
+                        {
+                          name: 'openTime',
+                          type: 'text',
+                          admin: {
+                            condition: (data) => !data?.closed,
+                            description: 'Format: HH:MM (e.g., 09:00)',
+                            placeholder: '09:00',
+                          },
+                        },
+                        {
+                          name: 'closeTime',
+                          type: 'text',
+                          admin: {
+                            condition: (data) => !data?.closed,
+                            description: 'Format: HH:MM (e.g., 17:00)',
+                            placeholder: '17:00',
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      name: 'wednesday',
+                      type: 'group',
+                      fields: [
+                        {
+                          name: 'closed',
+                          type: 'checkbox',
+                          defaultValue: false,
+                        },
+                        {
+                          name: 'openTime',
+                          type: 'text',
+                          admin: {
+                            condition: (data) => !data?.closed,
+                            description: 'Format: HH:MM (e.g., 09:00)',
+                            placeholder: '09:00',
+                          },
+                        },
+                        {
+                          name: 'closeTime',
+                          type: 'text',
+                          admin: {
+                            condition: (data) => !data?.closed,
+                            description: 'Format: HH:MM (e.g., 17:00)',
+                            placeholder: '17:00',
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      name: 'thursday',
+                      type: 'group',
+                      fields: [
+                        {
+                          name: 'closed',
+                          type: 'checkbox',
+                          defaultValue: false,
+                        },
+                        {
+                          name: 'openTime',
+                          type: 'text',
+                          admin: {
+                            condition: (data) => !data?.closed,
+                            description: 'Format: HH:MM (e.g., 09:00)',
+                            placeholder: '09:00',
+                          },
+                        },
+                        {
+                          name: 'closeTime',
+                          type: 'text',
+                          admin: {
+                            condition: (data) => !data?.closed,
+                            description: 'Format: HH:MM (e.g., 17:00)',
+                            placeholder: '17:00',
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      name: 'friday',
+                      type: 'group',
+                      fields: [
+                        {
+                          name: 'closed',
+                          type: 'checkbox',
+                          defaultValue: false,
+                        },
+                        {
+                          name: 'openTime',
+                          type: 'text',
+                          admin: {
+                            condition: (data) => !data?.closed,
+                            description: 'Format: HH:MM (e.g., 09:00)',
+                            placeholder: '09:00',
+                          },
+                        },
+                        {
+                          name: 'closeTime',
+                          type: 'text',
+                          admin: {
+                            condition: (data) => !data?.closed,
+                            description: 'Format: HH:MM (e.g., 17:00)',
+                            placeholder: '17:00',
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      name: 'saturday',
+                      type: 'group',
+                      fields: [
+                        {
+                          name: 'closed',
+                          type: 'checkbox',
+                          defaultValue: false,
+                        },
+                        {
+                          name: 'openTime',
+                          type: 'text',
+                          admin: {
+                            condition: (data) => !data?.closed,
+                            description: 'Format: HH:MM (e.g., 09:00)',
+                            placeholder: '09:00',
+                          },
+                        },
+                        {
+                          name: 'closeTime',
+                          type: 'text',
+                          admin: {
+                            condition: (data) => !data?.closed,
+                            description: 'Format: HH:MM (e.g., 17:00)',
+                            placeholder: '17:00',
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      name: 'sunday',
+                      type: 'group',
+                      fields: [
+                        {
+                          name: 'closed',
+                          type: 'checkbox',
+                          defaultValue: false,
+                        },
+                        {
+                          name: 'openTime',
+                          type: 'text',
+                          admin: {
+                            condition: (data) => !data?.closed,
+                            description: 'Format: HH:MM (e.g., 09:00)',
+                            placeholder: '09:00',
+                          },
+                        },
+                        {
+                          name: 'closeTime',
+                          type: 'text',
+                          admin: {
+                            condition: (data) => !data?.closed,
+                            description: 'Format: HH:MM (e.g., 17:00)',
+                            placeholder: '17:00',
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
             },
           ],
         },

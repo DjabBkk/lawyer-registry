@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { slugField } from 'payload'
+import { toKebabCase } from '@/utilities/toKebabCase'
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 
@@ -13,6 +13,7 @@ export const Locations: CollectionConfig = {
     update: authenticated,
   },
   admin: {
+    group: 'Law Firm Registry',
     useAsTitle: 'name',
     defaultColumns: ['name', 'region', 'featured', 'updatedAt'],
   },
@@ -22,9 +23,32 @@ export const Locations: CollectionConfig = {
       type: 'text',
       required: true,
     },
-    slugField({
-      fieldToUse: 'name',
-    }),
+    {
+      name: 'slug',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+      },
+      hooks: {
+        beforeValidate: [
+          ({ value, data, originalDoc }) => {
+            if (value) {
+              return value
+            }
+
+            const name = data?.name ?? originalDoc?.name
+            if (!name) {
+              return value
+            }
+
+            return toKebabCase(name)
+          },
+        ],
+      },
+      index: true,
+      required: true,
+      unique: true,
+    },
     {
       name: 'region',
       type: 'select',

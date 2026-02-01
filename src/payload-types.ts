@@ -67,6 +67,9 @@ export interface Config {
   };
   blocks: {};
   collections: {
+    pages: Page;
+    posts: Post;
+    categories: Category;
     'law-firms': LawFirm;
     'practice-areas': PracticeArea;
     locations: Location;
@@ -89,6 +92,9 @@ export interface Config {
     };
   };
   collectionsSelect: {
+    pages: PagesSelect<false> | PagesSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
     'law-firms': LawFirmsSelect<false> | LawFirmsSelect<true>;
     'practice-areas': PracticeAreasSelect<false> | PracticeAreasSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
@@ -152,19 +158,13 @@ export interface UserAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "law-firms".
+ * via the `definition` "pages".
  */
-export interface LawFirm {
+export interface Page {
   id: number;
-  name: string;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
+  title: string;
   slug: string;
-  logo?: (number | null) | Media;
-  coverImage?: (number | null) | Media;
-  description?: {
+  content?: {
     root: {
       type: string;
       children: {
@@ -179,53 +179,8 @@ export interface LawFirm {
     };
     [k: string]: unknown;
   } | null;
-  shortDescription?: string | null;
-  featured?: boolean | null;
-  featuredOrder?: number | null;
-  email: string;
-  phone?: string | null;
-  website?: string | null;
-  address?: string | null;
-  googleMapsUrl?: string | null;
-  foundingYear?: number | null;
-  companySize?: ('1-5' | '6-10' | '11-25' | '26-50' | '51-100' | '100+') | null;
-  languages?:
-    | ('English' | 'Thai' | 'Chinese' | 'Japanese' | 'German' | 'French' | 'Spanish' | 'Russian' | 'Arabic')[]
-    | null;
-  feeRangeMin?: number | null;
-  feeRangeMax?: number | null;
-  feeCurrency?: ('THB' | 'USD' | 'EUR') | null;
-  practiceAreas?: (number | PracticeArea)[] | null;
-  locations?: (number | Location)[] | null;
-  primaryLocation?: (number | null) | Location;
-  teamMembers?:
-    | {
-        name: string;
-        role?:
-          | (
-              | 'Founding Partner'
-              | 'Managing Partner'
-              | 'Senior Partner'
-              | 'Partner'
-              | 'Senior Associate'
-              | 'Associate'
-              | 'Of Counsel'
-              | 'Legal Consultant'
-            )
-          | null;
-        photo?: (number | null) | Media;
-        bio?: string | null;
-        email?: string | null;
-        linkedIn?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  services?:
-    | {
-        service?: string | null;
-        id?: string | null;
-      }[]
-    | null;
+  featuredImage?: (number | null) | Media;
+  publishedAt?: string | null;
   meta?: {
     title?: string | null;
     /**
@@ -359,15 +314,288 @@ export interface FolderInterface {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt?: string | null;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  featuredImage?: (number | null) | Media;
+  categories?: (number | Category)[] | null;
+  authors?: (number | User)[] | null;
+  publishedAt?: string | null;
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  parent?: (number | null) | Category;
+  breadcrumbs?:
+    | {
+        doc?: (number | null) | Category;
+        url?: string | null;
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name?: string | null;
+  role: 'admin' | 'editor';
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "law-firms".
+ */
+export interface LawFirm {
+  id: number;
+  name: string;
+  slug: string;
+  logo?: (number | null) | Media;
+  coverImage?: (number | null) | Media;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  shortDescription?: string | null;
+  featured?: boolean | null;
+  featuredOrder?: number | null;
+  email: string;
+  phone?: string | null;
+  website?: string | null;
+  address?: string | null;
+  googleMapsUrl?: string | null;
+  foundingYear?: number | null;
+  companySize?: ('1-5' | '6-10' | '11-25' | '26-50' | '51-100' | '100+') | null;
+  languages?:
+    | ('English' | 'Thai' | 'Chinese' | 'Japanese' | 'German' | 'French' | 'Spanish' | 'Russian' | 'Arabic')[]
+    | null;
+  feeRangeMin?: number | null;
+  feeRangeMax?: number | null;
+  feeCurrency?: ('THB' | 'USD' | 'EUR') | null;
+  practiceAreas?: (number | PracticeArea)[] | null;
+  locations?: (number | Location)[] | null;
+  primaryLocation?: (number | null) | Location;
+  /**
+   * Add multiple office locations with their specific details and opening hours
+   */
+  officeLocations?:
+    | {
+        /**
+         * Select the location for this office
+         */
+        location: number | Location;
+        /**
+         * Specific address for this office location
+         */
+        address?: string | null;
+        /**
+         * Location-specific phone number (optional)
+         */
+        phone?: string | null;
+        /**
+         * Location-specific email (optional)
+         */
+        email?: string | null;
+        /**
+         * Google Maps URL for this specific office
+         */
+        googleMapsUrl?: string | null;
+        openingHours?: {
+          monday?: {
+            closed?: boolean | null;
+            /**
+             * Format: HH:MM (e.g., 09:00)
+             */
+            openTime?: string | null;
+            /**
+             * Format: HH:MM (e.g., 17:00)
+             */
+            closeTime?: string | null;
+          };
+          tuesday?: {
+            closed?: boolean | null;
+            /**
+             * Format: HH:MM (e.g., 09:00)
+             */
+            openTime?: string | null;
+            /**
+             * Format: HH:MM (e.g., 17:00)
+             */
+            closeTime?: string | null;
+          };
+          wednesday?: {
+            closed?: boolean | null;
+            /**
+             * Format: HH:MM (e.g., 09:00)
+             */
+            openTime?: string | null;
+            /**
+             * Format: HH:MM (e.g., 17:00)
+             */
+            closeTime?: string | null;
+          };
+          thursday?: {
+            closed?: boolean | null;
+            /**
+             * Format: HH:MM (e.g., 09:00)
+             */
+            openTime?: string | null;
+            /**
+             * Format: HH:MM (e.g., 17:00)
+             */
+            closeTime?: string | null;
+          };
+          friday?: {
+            closed?: boolean | null;
+            /**
+             * Format: HH:MM (e.g., 09:00)
+             */
+            openTime?: string | null;
+            /**
+             * Format: HH:MM (e.g., 17:00)
+             */
+            closeTime?: string | null;
+          };
+          saturday?: {
+            closed?: boolean | null;
+            /**
+             * Format: HH:MM (e.g., 09:00)
+             */
+            openTime?: string | null;
+            /**
+             * Format: HH:MM (e.g., 17:00)
+             */
+            closeTime?: string | null;
+          };
+          sunday?: {
+            closed?: boolean | null;
+            /**
+             * Format: HH:MM (e.g., 09:00)
+             */
+            openTime?: string | null;
+            /**
+             * Format: HH:MM (e.g., 17:00)
+             */
+            closeTime?: string | null;
+          };
+        };
+        id?: string | null;
+      }[]
+    | null;
+  teamMembers?:
+    | {
+        name: string;
+        role?:
+          | (
+              | 'Founding Partner'
+              | 'Managing Partner'
+              | 'Senior Partner'
+              | 'Partner'
+              | 'Senior Associate'
+              | 'Associate'
+              | 'Of Counsel'
+              | 'Legal Consultant'
+            )
+          | null;
+        photo?: (number | null) | Media;
+        bio?: string | null;
+        email?: string | null;
+        linkedIn?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  services?:
+    | {
+        service?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "practice-areas".
  */
 export interface PracticeArea {
   id: number;
   name: string;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
   slug: string;
   description?: {
     root: {
@@ -400,10 +628,6 @@ export interface PracticeArea {
 export interface Location {
   id: number;
   name: string;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
   slug: string;
   region: 'Central' | 'North' | 'Northeast' | 'East' | 'South';
   description?: {
@@ -421,9 +645,6 @@ export interface Location {
     };
     [k: string]: unknown;
   } | null;
-  /**
-   * Max 200 characters.
-   */
   shortDescription?: string | null;
   featured?: boolean | null;
   featuredOrder?: number | null;
@@ -431,32 +652,6 @@ export interface Location {
   seoDescription?: string | null;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  name?: string | null;
-  role: 'admin' | 'editor';
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -690,11 +885,11 @@ export interface Search {
     description?: string | null;
     image?: (number | null) | Media;
   };
-  practiceAreas?:
+  categories?:
     | {
         relationTo?: string | null;
-        practiceAreaID?: string | null;
-        name?: string | null;
+        categoryID?: string | null;
+        title?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -818,6 +1013,18 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
+        relationTo: 'pages';
+        value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'posts';
+        value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: number | Category;
+      } | null)
+    | ({
         relationTo: 'law-firms';
         value: number | LawFirm;
       } | null)
@@ -901,11 +1108,74 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  content?: T;
+  featuredImage?: T;
+  publishedAt?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  excerpt?: T;
+  content?: T;
+  featuredImage?: T;
+  categories?: T;
+  authors?: T;
+  publishedAt?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  parent?: T;
+  breadcrumbs?:
+    | T
+    | {
+        doc?: T;
+        url?: T;
+        label?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "law-firms_select".
  */
 export interface LawFirmsSelect<T extends boolean = true> {
   name?: T;
-  generateSlug?: T;
   slug?: T;
   logo?: T;
   coverImage?: T;
@@ -927,6 +1197,69 @@ export interface LawFirmsSelect<T extends boolean = true> {
   practiceAreas?: T;
   locations?: T;
   primaryLocation?: T;
+  officeLocations?:
+    | T
+    | {
+        location?: T;
+        address?: T;
+        phone?: T;
+        email?: T;
+        googleMapsUrl?: T;
+        openingHours?:
+          | T
+          | {
+              monday?:
+                | T
+                | {
+                    closed?: T;
+                    openTime?: T;
+                    closeTime?: T;
+                  };
+              tuesday?:
+                | T
+                | {
+                    closed?: T;
+                    openTime?: T;
+                    closeTime?: T;
+                  };
+              wednesday?:
+                | T
+                | {
+                    closed?: T;
+                    openTime?: T;
+                    closeTime?: T;
+                  };
+              thursday?:
+                | T
+                | {
+                    closed?: T;
+                    openTime?: T;
+                    closeTime?: T;
+                  };
+              friday?:
+                | T
+                | {
+                    closed?: T;
+                    openTime?: T;
+                    closeTime?: T;
+                  };
+              saturday?:
+                | T
+                | {
+                    closed?: T;
+                    openTime?: T;
+                    closeTime?: T;
+                  };
+              sunday?:
+                | T
+                | {
+                    closed?: T;
+                    openTime?: T;
+                    closeTime?: T;
+                  };
+            };
+        id?: T;
+      };
   teamMembers?:
     | T
     | {
@@ -961,7 +1294,6 @@ export interface LawFirmsSelect<T extends boolean = true> {
  */
 export interface PracticeAreasSelect<T extends boolean = true> {
   name?: T;
-  generateSlug?: T;
   slug?: T;
   description?: T;
   shortDescription?: T;
@@ -979,7 +1311,6 @@ export interface PracticeAreasSelect<T extends boolean = true> {
  */
 export interface LocationsSelect<T extends boolean = true> {
   name?: T;
-  generateSlug?: T;
   slug?: T;
   region?: T;
   description?: T;
@@ -1290,12 +1621,12 @@ export interface SearchSelect<T extends boolean = true> {
         description?: T;
         image?: T;
       };
-  practiceAreas?:
+  categories?:
     | T
     | {
         relationTo?: T;
-        practiceAreaID?: T;
-        name?: T;
+        categoryID?: T;
+        title?: T;
         id?: T;
       };
   updatedAt?: T;
@@ -1504,10 +1835,19 @@ export interface TaskSchedulePublish {
   input: {
     type?: ('publish' | 'unpublish') | null;
     locale?: string | null;
-    doc?: {
-      relationTo: 'law-firms';
-      value: number | LawFirm;
-    } | null;
+    doc?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'posts';
+          value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'law-firms';
+          value: number | LawFirm;
+        } | null);
     global?: string | null;
     user?: (number | null) | User;
   };
