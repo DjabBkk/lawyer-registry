@@ -5,15 +5,20 @@ import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
 import { Categories } from './collections/Categories'
+import { LawFirms } from './collections/LawFirms'
+import { Locations } from './collections/Locations'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
+import { PracticeAreas } from './collections/PracticeAreas'
 import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
+import { clearSeedEndpoint } from './endpoints/seed/clear'
+import { seedEndpoint, seedStatusEndpoint } from './endpoints/seed'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -69,8 +74,9 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URL || '',
     },
   }),
-  collections: [Pages, Posts, Media, Categories, Users],
+  collections: [Pages, Posts, Categories, LawFirms, PracticeAreas, Locations, Media, Users],
   cors: [getServerSideURL()].filter(Boolean),
+  endpoints: [seedStatusEndpoint, seedEndpoint, clearSeedEndpoint],
   globals: [Header, Footer],
   plugins,
   secret: process.env.PAYLOAD_SECRET,

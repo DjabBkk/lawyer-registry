@@ -16,7 +16,7 @@ export const defaultLexical = lexicalEditor({
     BoldFeature(),
     ItalicFeature(),
     LinkFeature({
-      enabledCollections: ['pages', 'posts'],
+      enabledCollections: ['law-firms', 'practice-areas', 'locations'],
       fields: ({ defaultFields }) => {
         const defaultFieldsWithoutUrl = defaultFields.filter((field) => {
           if ('name' in field && field.name === 'url') return false

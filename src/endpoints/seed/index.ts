@@ -1,298 +1,187 @@
-import type { CollectionSlug, GlobalSlug, Payload, PayloadRequest, File } from 'payload'
+import { APIError } from 'payload'
+import type { Endpoint } from 'payload'
 
-import { contactForm as contactFormData } from './contact-form'
-import { contact as contactPageData } from './contact-page'
-import { home } from './home'
-import { image1 } from './image-1'
-import { image2 } from './image-2'
-import { imageHero1 } from './image-hero-1'
-import { post1 } from './post-1'
-import { post2 } from './post-2'
-import { post3 } from './post-3'
+import { lawFirms } from './data/lawFirms'
+import { locations } from './data/locations'
+import { practiceAreas } from './data/practiceAreas'
 
-const collections: CollectionSlug[] = [
-  'categories',
-  'media',
-  'pages',
-  'posts',
-  'forms',
-  'form-submissions',
-  'search',
-]
-
-const globals: GlobalSlug[] = ['header', 'footer']
-
-const categories = ['Technology', 'News', 'Finance', 'Design', 'Software', 'Engineering']
-
-// Next.js revalidation errors are normal when seeding the database without a server running
-// i.e. running `yarn seed` locally instead of using the admin UI within an active app
-// The app is not running to revalidate the pages and so the API routes are not available
-// These error messages can be ignored: `Error hitting revalidate route for...`
-export const seed = async ({
-  payload,
-  req,
-}: {
-  payload: Payload
-  req: PayloadRequest
-}): Promise<void> => {
-  payload.logger.info('Seeding database...')
-
-  // we need to clear the media directory before seeding
-  // as well as the collections and globals
-  // this is because while `yarn seed` drops the database
-  // the custom `/api/seed` endpoint does not
-  payload.logger.info(`— Clearing collections and globals...`)
-
-  // clear the database
-  await Promise.all(
-    globals.map((global) =>
-      payload.updateGlobal({
-        slug: global,
-        data: {
-          navItems: [],
-        },
-        depth: 0,
-        context: {
-          disableRevalidate: true,
-        },
-      }),
-    ),
-  )
-
-  await Promise.all(
-    collections.map((collection) => payload.db.deleteMany({ collection, req, where: {} })),
-  )
-
-  await Promise.all(
-    collections
-      .filter((collection) => Boolean(payload.collections[collection].config.versions))
-      .map((collection) => payload.db.deleteVersions({ collection, req, where: {} })),
-  )
-
-  payload.logger.info(`— Seeding demo author and user...`)
-
-  await payload.delete({
-    collection: 'users',
-    depth: 0,
-    where: {
-      email: {
-        equals: 'demo-author@example.com',
-      },
-    },
-  })
-
-  payload.logger.info(`— Seeding media...`)
-
-  const [image1Buffer, image2Buffer, image3Buffer, hero1Buffer] = await Promise.all([
-    fetchFileByURL(
-      'https://raw.githubusercontent.com/payloadcms/payload/refs/heads/main/templates/website/src/endpoints/seed/image-post1.webp',
-    ),
-    fetchFileByURL(
-      'https://raw.githubusercontent.com/payloadcms/payload/refs/heads/main/templates/website/src/endpoints/seed/image-post2.webp',
-    ),
-    fetchFileByURL(
-      'https://raw.githubusercontent.com/payloadcms/payload/refs/heads/main/templates/website/src/endpoints/seed/image-post3.webp',
-    ),
-    fetchFileByURL(
-      'https://raw.githubusercontent.com/payloadcms/payload/refs/heads/main/templates/website/src/endpoints/seed/image-hero1.webp',
-    ),
-  ])
-
-  const [demoAuthor, image1Doc, image2Doc, image3Doc, imageHomeDoc] = await Promise.all([
-    payload.create({
-      collection: 'users',
-      data: {
-        name: 'Demo Author',
-        email: 'demo-author@example.com',
-        password: 'password',
-      },
-    }),
-    payload.create({
-      collection: 'media',
-      data: image1,
-      file: image1Buffer,
-    }),
-    payload.create({
-      collection: 'media',
-      data: image2,
-      file: image2Buffer,
-    }),
-    payload.create({
-      collection: 'media',
-      data: image2,
-      file: image3Buffer,
-    }),
-    payload.create({
-      collection: 'media',
-      data: imageHero1,
-      file: hero1Buffer,
-    }),
-    categories.map((category) =>
-      payload.create({
-        collection: 'categories',
-        data: {
-          title: category,
-          slug: category,
-        },
-      }),
-    ),
-  ])
-
-  payload.logger.info(`— Seeding posts...`)
-
-  // Do not create posts with `Promise.all` because we want the posts to be created in order
-  // This way we can sort them by `createdAt` or `publishedAt` and they will be in the expected order
-  const post1Doc = await payload.create({
-    collection: 'posts',
-    depth: 0,
-    context: {
-      disableRevalidate: true,
-    },
-    data: post1({ heroImage: image1Doc, blockImage: image2Doc, author: demoAuthor }),
-  })
-
-  const post2Doc = await payload.create({
-    collection: 'posts',
-    depth: 0,
-    context: {
-      disableRevalidate: true,
-    },
-    data: post2({ heroImage: image2Doc, blockImage: image3Doc, author: demoAuthor }),
-  })
-
-  const post3Doc = await payload.create({
-    collection: 'posts',
-    depth: 0,
-    context: {
-      disableRevalidate: true,
-    },
-    data: post3({ heroImage: image3Doc, blockImage: image1Doc, author: demoAuthor }),
-  })
-
-  // update each post with related posts
-  await payload.update({
-    id: post1Doc.id,
-    collection: 'posts',
-    data: {
-      relatedPosts: [post2Doc.id, post3Doc.id],
-    },
-  })
-  await payload.update({
-    id: post2Doc.id,
-    collection: 'posts',
-    data: {
-      relatedPosts: [post1Doc.id, post3Doc.id],
-    },
-  })
-  await payload.update({
-    id: post3Doc.id,
-    collection: 'posts',
-    data: {
-      relatedPosts: [post1Doc.id, post2Doc.id],
-    },
-  })
-
-  payload.logger.info(`— Seeding contact form...`)
-
-  const contactForm = await payload.create({
-    collection: 'forms',
-    depth: 0,
-    data: contactFormData,
-  })
-
-  payload.logger.info(`— Seeding pages...`)
-
-  const [_, contactPage] = await Promise.all([
-    payload.create({
-      collection: 'pages',
-      depth: 0,
-      data: home({ heroImage: imageHomeDoc, metaImage: image2Doc }),
-    }),
-    payload.create({
-      collection: 'pages',
-      depth: 0,
-      data: contactPageData({ contactForm: contactForm }),
-    }),
-  ])
-
-  payload.logger.info(`— Seeding globals...`)
-
-  await Promise.all([
-    payload.updateGlobal({
-      slug: 'header',
-      data: {
-        navItems: [
-          {
-            link: {
-              type: 'custom',
-              label: 'Posts',
-              url: '/posts',
-            },
-          },
-          {
-            link: {
-              type: 'reference',
-              label: 'Contact',
-              reference: {
-                relationTo: 'pages',
-                value: contactPage.id,
-              },
-            },
-          },
-        ],
-      },
-    }),
-    payload.updateGlobal({
-      slug: 'footer',
-      data: {
-        navItems: [
-          {
-            link: {
-              type: 'custom',
-              label: 'Admin',
-              url: '/admin',
-            },
-          },
-          {
-            link: {
-              type: 'custom',
-              label: 'Source Code',
-              newTab: true,
-              url: 'https://github.com/payloadcms/payload/tree/main/templates/website',
-            },
-          },
-          {
-            link: {
-              type: 'custom',
-              label: 'Payload',
-              newTab: true,
-              url: 'https://payloadcms.com/',
-            },
-          },
-        ],
-      },
-    }),
-  ])
-
-  payload.logger.info('Seeded database successfully!')
+const ensureAuthenticated = (user: unknown) => {
+  if (!user) {
+    throw new APIError('Authentication required', 401)
+  }
 }
 
-async function fetchFileByURL(url: string): Promise<File> {
-  const res = await fetch(url, {
-    credentials: 'include',
-    method: 'GET',
-  })
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch file from ${url}, status: ${res.status}`)
-  }
-
-  const data = await res.arrayBuffer()
+const getCounts = async (req: Parameters<Endpoint['handler']>[0]) => {
+  const [practiceAreasResult, locationsResult, lawFirmsResult] = await Promise.all([
+    req.payload.find({
+      collection: 'practice-areas',
+      depth: 0,
+      limit: 0,
+    }),
+    req.payload.find({
+      collection: 'locations',
+      depth: 0,
+      limit: 0,
+    }),
+    req.payload.find({
+      collection: 'law-firms',
+      depth: 0,
+      limit: 0,
+    }),
+  ])
 
   return {
-    name: url.split('/').pop() || `file-${Date.now()}`,
-    data: Buffer.from(data),
-    mimetype: `image/${url.split('.').pop()}`,
-    size: data.byteLength,
+    practiceAreas: practiceAreasResult.totalDocs,
+    locations: locationsResult.totalDocs,
+    lawFirms: lawFirmsResult.totalDocs,
   }
+}
+
+export const seedStatusEndpoint: Endpoint = {
+  path: '/seed',
+  method: 'get',
+  handler: async (req) => {
+    ensureAuthenticated(req.user)
+    const counts = await getCounts(req)
+
+    return Response.json({
+      seeded: counts.practiceAreas > 0 || counts.locations > 0 || counts.lawFirms > 0,
+      counts,
+    })
+  },
+}
+
+export const seedEndpoint: Endpoint = {
+  path: '/seed',
+  method: 'post',
+  handler: async (req) => {
+    ensureAuthenticated(req.user)
+
+    const counts = await getCounts(req)
+    if (counts.practiceAreas > 0 || counts.locations > 0 || counts.lawFirms > 0) {
+      return Response.json(
+        {
+          error: 'Seed data already exists. Clear the database before seeding again.',
+          counts,
+        },
+        { status: 409 },
+      )
+    }
+
+    const createdPracticeAreas = []
+    for (const item of practiceAreas) {
+      const created = await req.payload.create({
+        collection: 'practice-areas',
+        data: {
+          name: item.name,
+          shortDescription: item.shortDescription,
+          icon: item.icon,
+          featured: item.featured,
+          featuredOrder: item.featuredOrder,
+          seoTitle: item.seoTitle,
+          seoDescription: item.seoDescription,
+        },
+        req,
+      })
+      createdPracticeAreas.push(created)
+    }
+
+    const createdLocations = []
+    for (const item of locations) {
+      const created = await req.payload.create({
+        collection: 'locations',
+        data: {
+          name: item.name,
+          region: item.region,
+          shortDescription: item.shortDescription,
+          featured: item.featured,
+          featuredOrder: item.featuredOrder,
+          seoTitle: item.seoTitle,
+          seoDescription: item.seoDescription,
+        },
+        req,
+      })
+      createdLocations.push(created)
+    }
+
+    const practiceAreaIdByName = new Map(
+      createdPracticeAreas.map((doc) => [doc.name, doc.id]),
+    )
+    const locationIdByName = new Map(createdLocations.map((doc) => [doc.name, doc.id]))
+
+    const getPracticeAreaIds = (names: string[]) =>
+      names.map((name) => {
+        const id = practiceAreaIdByName.get(name)
+        if (!id) {
+          throw new APIError(`Practice area not found: ${name}`, 400)
+        }
+        return id
+      })
+
+    const getLocationId = (name: string) => {
+      const id = locationIdByName.get(name)
+      if (!id) {
+        throw new APIError(`Location not found: ${name}`, 400)
+      }
+      return id
+    }
+
+    const createdLawFirms = []
+    for (const firm of lawFirms) {
+      const locationIds = firm.locations.map(getLocationId)
+      const primaryLocationId = getLocationId(firm.primaryLocation)
+
+      const officeLocations = firm.officeLocations?.map((office) => ({
+        location: getLocationId(office.location),
+        address: office.address,
+        phone: office.phone,
+        email: office.email,
+        googleMapsUrl: office.googleMapsUrl,
+        openingHours: office.openingHours,
+      }))
+
+      const created = await req.payload.create({
+        collection: 'law-firms',
+        data: {
+          name: firm.name,
+          email: firm.email,
+          phone: firm.phone,
+          website: firm.website,
+          address: firm.address,
+          googleMapsUrl: firm.googleMapsUrl,
+          shortDescription: firm.shortDescription,
+          featured: firm.featured,
+          featuredOrder: firm.featuredOrder,
+          foundingYear: firm.foundingYear,
+          companySize: firm.companySize,
+          languages: firm.languages,
+          feeRangeMin: firm.feeRangeMin,
+          feeRangeMax: firm.feeRangeMax,
+          feeCurrency: firm.feeCurrency,
+          practiceAreas: getPracticeAreaIds(firm.practiceAreas),
+          locations: locationIds,
+          primaryLocation: primaryLocationId,
+          officeLocations,
+          teamMembers: firm.teamMembers,
+          services: firm.services,
+          _status: 'published',
+        },
+        req,
+      })
+
+      createdLawFirms.push(created)
+    }
+
+    const updatedCounts = await getCounts(req)
+
+    return Response.json({
+      message: 'Seed data created',
+      counts: updatedCounts,
+      created: {
+        practiceAreas: createdPracticeAreas.length,
+        locations: createdLocations.length,
+        lawFirms: createdLawFirms.length,
+      },
+    })
+  },
 }

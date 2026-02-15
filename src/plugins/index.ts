@@ -10,22 +10,25 @@ import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/
 import { searchFields } from '@/search/fieldOverrides'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
 
-import { Page, Post } from '@/payload-types'
+import { LawFirm } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
 
-const generateTitle: GenerateTitle<Post | Page> = ({ doc }) => {
-  return doc?.title ? `${doc.title} | Payload Website Template` : 'Payload Website Template'
+const generateTitle: GenerateTitle<LawFirm> = ({ doc }) => {
+  return doc?.name ? `${doc.name} | Thailand Law Firm Directory` : 'Thailand Law Firm Directory'
 }
 
-const generateURL: GenerateURL<Post | Page> = ({ doc }) => {
+const generateURL: GenerateURL<LawFirm> = ({ doc }) => {
   const url = getServerSideURL()
 
-  return doc?.slug ? `${url}/${doc.slug}` : url
+  return doc?.slug ? `${url}/thailand/lawyers/${doc.slug}` : url
 }
 
 export const plugins: Plugin[] = [
+  nestedDocsPlugin({
+    collections: ['categories'],
+  }),
   redirectsPlugin({
-    collections: ['pages', 'posts'],
+    collections: ['law-firms'],
     overrides: {
       // @ts-expect-error - This is a valid override, mapped fields don't resolve to the same type
       fields: ({ defaultFields }) => {
@@ -45,10 +48,6 @@ export const plugins: Plugin[] = [
         afterChange: [revalidateRedirects],
       },
     },
-  }),
-  nestedDocsPlugin({
-    collections: ['categories'],
-    generateURL: (docs) => docs.reduce((url, doc) => `${url}/${doc.slug}`, ''),
   }),
   seoPlugin({
     generateTitle,
@@ -81,7 +80,7 @@ export const plugins: Plugin[] = [
     },
   }),
   searchPlugin({
-    collections: ['posts'],
+    collections: ['law-firms'],
     beforeSync: beforeSyncWithSearch,
     searchOverrides: {
       fields: ({ defaultFields }) => {

@@ -1,53 +1,48 @@
 import type { Metadata } from 'next'
-
-import { cn } from '@/utilities/ui'
-import { GeistMono } from 'geist/font/mono'
-import { GeistSans } from 'geist/font/sans'
-import React from 'react'
-
-import { AdminBar } from '@/components/AdminBar'
-import { Footer } from '@/Footer/Component'
-import { Header } from '@/Header/Component'
-import { Providers } from '@/providers'
-import { InitTheme } from '@/providers/Theme/InitTheme'
-import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
-import { draftMode } from 'next/headers'
+import { Inter, Playfair_Display } from 'next/font/google'
 
 import './globals.css'
-import { getServerSideURL } from '@/utilities/getURL'
+import { SiteHeader } from '@/components/layout/SiteHeader'
+import { SiteFooter } from '@/components/layout/SiteFooter'
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const { isEnabled } = await draftMode()
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+})
 
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-playfair',
+  weight: ['400', '500', '600', '700'],
+})
+
+export const metadata: Metadata = {
+  title: {
+    default: 'Top Lawyers Thailand | Find Your Legal Expert',
+    template: '%s | Top Lawyers Thailand',
+  },
+  description:
+    'Find the best lawyers and law firms in Thailand. Search by practice area, location, and expertise. Criminal law, immigration, real estate, corporate law and more.',
+  keywords: [
+    'lawyer Thailand',
+    'attorney Thailand',
+    'law firm Bangkok',
+    'legal services Thailand',
+    'criminal lawyer Thailand',
+    'immigration lawyer Thailand',
+  ],
+}
+
+export default function FrontendLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html className={cn(GeistSans.variable, GeistMono.variable)} lang="en" suppressHydrationWarning>
-      <head>
-        <InitTheme />
-        <link href="/favicon.ico" rel="icon" sizes="32x32" />
-        <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
-      </head>
-      <body>
-        <Providers>
-          <AdminBar
-            adminBarProps={{
-              preview: isEnabled,
-            }}
-          />
-
-          <Header />
-          {children}
-          <Footer />
-        </Providers>
+    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+      <body className="flex min-h-screen flex-col bg-cream-100 font-body antialiased">
+        <SiteHeader />
+        <main className="flex-1">{children}</main>
+        <SiteFooter />
       </body>
     </html>
   )
-}
-
-export const metadata: Metadata = {
-  metadataBase: new URL(getServerSideURL()),
-  openGraph: mergeOpenGraph(),
-  twitter: {
-    card: 'summary_large_image',
-    creator: '@payloadcms',
-  },
 }

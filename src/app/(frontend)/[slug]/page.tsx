@@ -1,131 +1,38 @@
-import type { Metadata } from 'next'
+import { notFound, permanentRedirect } from 'next/navigation'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 
-import { PayloadRedirects } from '@/components/PayloadRedirects'
-import configPromise from '@payload-config'
-import { getPayload, type RequiredDataFromCollectionSlug } from 'payload'
-import { draftMode } from 'next/headers'
-import React, { cache } from 'react'
-import { homeStatic } from '@/endpoints/seed/home-static'
-
-import { RenderBlocks } from '@/blocks/RenderBlocks'
-import { RenderHero } from '@/heros/RenderHero'
-import { generateMeta } from '@/utilities/generateMeta'
-import PageClient from './page.client'
-import { LivePreviewListener } from '@/components/LivePreviewListener'
-
-export async function generateStaticParams() {
-  try {
-    const payload = await getPayload({ config: configPromise })
-    const pages = await payload.find({
-      collection: 'pages',
-      draft: false,
-      limit: 1000,
-      overrideAccess: false,
-      pagination: false,
-      select: {
-        slug: true,
-      },
-    })
-
-    const params = pages.docs
-      ?.filter((doc) => {
-        return doc.slug !== 'home'
-      })
-      .map(({ slug }) => {
-        return { slug }
-      })
-
-    return params || []
-  } catch (error) {
-    console.error('Failed to generate static params:', error)
-    return []
-  }
+interface PageProps {
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-type Args = {
-  params: Promise<{
-    slug?: string
-  }>
-}
-
-export default async function Page({ params: paramsPromise }: Args) {
-  const { isEnabled: draft } = await draftMode()
-  const { slug = 'home' } = await paramsPromise
-  // Decode to support slugs with special characters
-  const decodedSlug = decodeURIComponent(slug)
-  const url = '/' + decodedSlug
-  let page: RequiredDataFromCollectionSlug<'pages'> | null
-
-  page = await queryPageBySlug({
-    slug: decodedSlug,
+async function getPracticeArea(slug: string) {
+  const payload = await getPayload({ config })
+  const { docs } = await payload.find({
+    collection: 'practice-areas',
+    where: { slug: { equals: slug } },
+    limit: 1,
   })
-
-  // Remove this code once your website is seeded
-  if (!page && slug === 'home') {
-    page = homeStatic
-  }
-
-  if (!page) {
-    return <PayloadRedirects url={url} />
-  }
-
-  const { hero, layout } = page
-
-  return (
-    <article className="pt-16 pb-24">
-      <PageClient />
-      {/* Allows redirects for valid pages too */}
-      <PayloadRedirects disableNotFound url={url} />
-
-      {draft && <LivePreviewListener />}
-
-      <RenderHero {...hero} />
-      <RenderBlocks blocks={layout} />
-    </article>
-  )
+  return docs[0] || null
 }
 
-export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
-  try {
-    const { slug = 'home' } = await paramsPromise
-    // Decode to support slugs with special characters
-    const decodedSlug = decodeURIComponent(slug)
-    const page = await queryPageBySlug({
-      slug: decodedSlug,
-    })
+export default async function RootSlugPage({ params, searchParams }: PageProps) {
+  const { slug } = await params
+  const resolvedSearchParams = await searchParams
 
-    return generateMeta({ doc: page })
-  } catch (error) {
-    console.error('Failed to generate metadata:', error)
-    return {
-      title: 'Page',
-    }
+  // Legacy support: /{practiceArea} -> /thailand/lawyers/{practiceArea}
+  const practiceArea = await getPracticeArea(slug)
+  if (!practiceArea) {
+    notFound()
   }
+
+  const qs = new URLSearchParams()
+  for (const [k, v] of Object.entries(resolvedSearchParams)) {
+    if (v === undefined) continue
+    qs.set(k, Array.isArray(v) ? v.join(',') : String(v))
+  }
+  const suffix = qs.toString() ? `?${qs.toString()}` : ''
+  permanentRedirect(`/thailand/lawyers/${slug}${suffix}`)
 }
 
-const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
-  try {
-    const { isEnabled: draft } = await draftMode()
-
-    const payload = await getPayload({ config: configPromise })
-
-    const result = await payload.find({
-      collection: 'pages',
-      draft,
-      limit: 1,
-      pagination: false,
-      overrideAccess: draft,
-      where: {
-        slug: {
-          equals: slug,
-        },
-      },
-    })
-
-    return result.docs?.[0] || null
-  } catch (error) {
-    console.error('Failed to query page by slug:', error)
-    // Return null to allow fallback to homeStatic or redirect handling
-    return null
-  }
-})

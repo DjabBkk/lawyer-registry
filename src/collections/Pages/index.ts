@@ -1,18 +1,5 @@
 import type { CollectionConfig } from 'payload'
 
-import { authenticated } from '../../access/authenticated'
-import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
-import { Archive } from '../../blocks/ArchiveBlock/config'
-import { CallToAction } from '../../blocks/CallToAction/config'
-import { Content } from '../../blocks/Content/config'
-import { FormBlock } from '../../blocks/Form/config'
-import { MediaBlock } from '../../blocks/MediaBlock/config'
-import { hero } from '@/heros/config'
-import { slugField } from 'payload'
-import { populatePublishedAt } from '../../hooks/populatePublishedAt'
-import { generatePreviewPath } from '../../utilities/generatePreviewPath'
-import { revalidateDelete, revalidatePage } from './hooks/revalidatePage'
-
 import {
   MetaDescriptionField,
   MetaImageField,
@@ -20,8 +7,12 @@ import {
   OverviewField,
   PreviewField,
 } from '@payloadcms/plugin-seo/fields'
+import { toKebabCase } from '@/utilities/toKebabCase'
+import { authenticated } from '../../access/authenticated'
+import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
+import { populatePublishedAt } from '../../hooks/populatePublishedAt'
 
-export const Pages: CollectionConfig<'pages'> = {
+export const Pages: CollectionConfig = {
   slug: 'pages',
   access: {
     create: authenticated,
@@ -29,30 +20,9 @@ export const Pages: CollectionConfig<'pages'> = {
     read: authenticatedOrPublished,
     update: authenticated,
   },
-  // This config controls what's populated by default when a page is referenced
-  // https://payloadcms.com/docs/queries/select#defaultpopulate-collection-config-property
-  // Type safe if the collection slug generic is passed to `CollectionConfig` - `CollectionConfig<'pages'>
-  defaultPopulate: {
-    title: true,
-    slug: true,
-  },
   admin: {
-    defaultColumns: ['title', 'slug', 'updatedAt'],
-    livePreview: {
-      url: ({ data, req }) =>
-        generatePreviewPath({
-          slug: data?.slug,
-          collection: 'pages',
-          req,
-        }),
-    },
-    preview: (data, { req }) =>
-      generatePreviewPath({
-        slug: data?.slug as string,
-        collection: 'pages',
-        req,
-      }),
     useAsTitle: 'title',
+    defaultColumns: ['title', 'slug', 'updatedAt'],
   },
   fields: [
     {
@@ -61,54 +31,39 @@ export const Pages: CollectionConfig<'pages'> = {
       required: true,
     },
     {
-      type: 'tabs',
-      tabs: [
-        {
-          fields: [hero],
-          label: 'Hero',
-        },
-        {
-          fields: [
-            {
-              name: 'layout',
-              type: 'blocks',
-              blocks: [CallToAction, Content, MediaBlock, Archive, FormBlock],
-              required: true,
-              admin: {
-                initCollapsed: true,
-              },
-            },
-          ],
-          label: 'Content',
-        },
-        {
-          name: 'meta',
-          label: 'SEO',
-          fields: [
-            OverviewField({
-              titlePath: 'meta.title',
-              descriptionPath: 'meta.description',
-              imagePath: 'meta.image',
-            }),
-            MetaTitleField({
-              hasGenerateFn: true,
-            }),
-            MetaImageField({
-              relationTo: 'media',
-            }),
+      name: 'slug',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+      },
+      hooks: {
+        beforeValidate: [
+          ({ value, data, originalDoc }) => {
+            if (value) {
+              return value
+            }
 
-            MetaDescriptionField({}),
-            PreviewField({
-              // if the `generateUrl` function is configured
-              hasGenerateFn: true,
+            const title = data?.title ?? originalDoc?.title
+            if (!title) {
+              return value
+            }
 
-              // field paths to match the target field for data
-              titlePath: 'meta.title',
-              descriptionPath: 'meta.description',
-            }),
-          ],
-        },
-      ],
+            return toKebabCase(title)
+          },
+        ],
+      },
+      index: true,
+      required: true,
+      unique: true,
+    },
+    {
+      name: 'content',
+      type: 'richText',
+    },
+    {
+      name: 'featuredImage',
+      type: 'upload',
+      relationTo: 'media',
     },
     {
       name: 'publishedAt',
@@ -117,20 +72,42 @@ export const Pages: CollectionConfig<'pages'> = {
         position: 'sidebar',
       },
     },
-    slugField(),
+    {
+      name: 'meta',
+      type: 'group',
+      label: 'SEO',
+      fields: [
+        OverviewField({
+          titlePath: 'meta.title',
+          descriptionPath: 'meta.description',
+          imagePath: 'meta.image',
+        }),
+        MetaTitleField({
+          hasGenerateFn: true,
+        }),
+        MetaImageField({
+          relationTo: 'media',
+        }),
+        MetaDescriptionField({}),
+        PreviewField({
+          hasGenerateFn: true,
+          titlePath: 'meta.title',
+          descriptionPath: 'meta.description',
+        }),
+      ],
+    },
   ],
   hooks: {
-    afterChange: [revalidatePage],
     beforeChange: [populatePublishedAt],
-    afterDelete: [revalidateDelete],
   },
   versions: {
     drafts: {
       autosave: {
-        interval: 100, // We set this interval for optimal live preview
+        interval: 100,
       },
       schedulePublish: true,
     },
     maxPerDoc: 50,
   },
+  timestamps: true,
 }

@@ -1,8 +1,8 @@
 import type { CollectionConfig } from 'payload'
 
+import { toKebabCase } from '@/utilities/toKebabCase'
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
-import { slugField } from 'payload'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
@@ -13,16 +13,41 @@ export const Categories: CollectionConfig = {
     update: authenticated,
   },
   admin: {
-    useAsTitle: 'title',
+    useAsTitle: 'name',
+    defaultColumns: ['name', 'slug', 'updatedAt'],
   },
   fields: [
     {
-      name: 'title',
+      name: 'name',
       type: 'text',
       required: true,
     },
-    slugField({
-      position: undefined,
-    }),
+    {
+      name: 'slug',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+      },
+      hooks: {
+        beforeValidate: [
+          ({ value, data, originalDoc }) => {
+            if (value) {
+              return value
+            }
+
+            const name = data?.name ?? originalDoc?.name
+            if (!name) {
+              return value
+            }
+
+            return toKebabCase(name)
+          },
+        ],
+      },
+      index: true,
+      required: true,
+      unique: true,
+    },
   ],
+  timestamps: true,
 }
