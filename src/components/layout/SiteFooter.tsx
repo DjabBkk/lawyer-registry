@@ -74,7 +74,7 @@ export async function SiteFooter() {
               {practiceAreas.map((area) => (
                 <li key={area.id}>
                   <Link
-                    href={`/${area.slug}`}
+                    href={`/thailand/lawyers/${area.slug}`}
                     className="text-[15px] text-cream-200/70 transition-colors hover:text-gold-400"
                   >
                     {area.name}
@@ -100,7 +100,7 @@ export async function SiteFooter() {
               {locations.map((location) => (
                 <li key={location.id}>
                   <Link
-                    href={`/locations/${location.slug}`}
+                    href={`/thailand/lawyers/${location.slug}`}
                     className="text-[15px] text-cream-200/70 transition-colors hover:text-gold-400"
                   >
                     {location.name}

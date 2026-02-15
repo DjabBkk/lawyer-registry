@@ -20,7 +20,7 @@ const generateTitle: GenerateTitle<LawFirm> = ({ doc }) => {
 const generateURL: GenerateURL<LawFirm> = ({ doc }) => {
   const url = getServerSideURL()
 
-  return doc?.slug ? `${url}/law-firms/${doc.slug}` : url
+  return doc?.slug ? `${url}/thailand/lawyers/${doc.slug}` : url
 }
 
 export const plugins: Plugin[] = [

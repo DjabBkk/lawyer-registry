@@ -32,7 +32,7 @@ export function LawFirmCard({ firm, variant = 'default' }: LawFirmCardProps) {
   if (variant === 'compact') {
     return (
       <Link
-        href={`/law-firms/${firm.slug}`}
+        href={`/thailand/lawyers/${firm.slug}`}
         className="group flex items-center gap-4 rounded-xl border border-warm-200 bg-cream-50 p-4 transition-all duration-300 hover:border-royal-300 hover:bg-white hover:shadow-md"
       >
         {/* Logo */}
@@ -51,7 +51,7 @@ export function LawFirmCard({ firm, variant = 'default' }: LawFirmCardProps) {
         </div>
 
         {/* Content */}
-        <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1">
           <h3 className="truncate font-heading text-lg font-semibold text-royal-900 group-hover:text-royal-700">
             {firm.name}
           </h3>
@@ -140,7 +140,7 @@ export function LawFirmCard({ firm, variant = 'default' }: LawFirmCardProps) {
           {/* Header */}
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
-              <Link href={`/law-firms/${firm.slug}`}>
+              <Link href={`/thailand/lawyers/${firm.slug}`}>
                 <h3 className="font-heading text-xl font-bold text-royal-900 transition-colors group-hover:text-royal-700 sm:text-2xl">
                   {firm.name}
                 </h3>
@@ -189,7 +189,7 @@ export function LawFirmCard({ firm, variant = 'default' }: LawFirmCardProps) {
               {displayedPracticeAreas.map((area) => (
                 <Link
                   key={area.id}
-                  href={`/${area.slug}`}
+                  href={`/thailand/lawyers/${area.slug}`}
                   className="practice-badge"
                 >
                   {area.name}
@@ -217,7 +217,7 @@ export function LawFirmCard({ firm, variant = 'default' }: LawFirmCardProps) {
               variant="outline"
               className="flex-1 border-royal-300 bg-royal-50/50 font-semibold text-royal-700 hover:border-royal-400 hover:bg-royal-100"
             >
-              <Link href={`/law-firms/${firm.slug}`}>
+              <Link href={`/thailand/lawyers/${firm.slug}`}>
                 View Profile
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

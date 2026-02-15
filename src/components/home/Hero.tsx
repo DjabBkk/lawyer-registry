@@ -26,13 +26,13 @@ export function Hero({ practiceAreas, locations }: HeroProps) {
 
   const handleSearch = () => {
     if (selectedPracticeArea && selectedLocation) {
-      router.push(`/${selectedPracticeArea}/${selectedLocation}`)
+      router.push(`/thailand/lawyers/${selectedLocation}/${selectedPracticeArea}`)
     } else if (selectedPracticeArea) {
-      router.push(`/${selectedPracticeArea}`)
+      router.push(`/thailand/lawyers/${selectedPracticeArea}`)
     } else if (selectedLocation) {
-      router.push(`/locations/${selectedLocation}`)
+      router.push(`/thailand/lawyers/${selectedLocation}`)
     } else {
-      router.push('/law-firms')
+      router.push('/thailand/lawyers')
     }
   }
 

@@ -32,7 +32,7 @@ export function LocationsGrid({ locations }: LocationsGridProps) {
           {locations.map((location, index) => (
             <Link
               key={location.id}
-              href={`/locations/${location.slug}`}
+              href={`/thailand/lawyers/${location.slug}`}
               className={`group relative overflow-hidden rounded-2xl border border-warm-200 bg-white p-6 shadow-sm transition-all duration-300 hover:border-royal-300 hover:shadow-lg ${
                 index === 0 ? 'sm:col-span-2 lg:col-span-2 lg:row-span-2' : ''
               }`}

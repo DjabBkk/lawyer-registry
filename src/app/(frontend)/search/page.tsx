@@ -206,7 +206,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
                     </p>
                     <div className="mt-6 flex flex-wrap justify-center gap-3">
                       <Button asChild variant="outline">
-                        <Link href="/law-firms">Browse All Firms</Link>
+                        <Link href="/thailand/lawyers">Browse All Firms</Link>
                       </Button>
                       <Button asChild variant="outline">
                         <Link href="/#practice-areas">View Practice Areas</Link>
@@ -233,7 +233,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
                 <p className="mb-4 text-sm text-gray-500">Or browse by:</p>
                 <div className="flex flex-wrap justify-center gap-3">
                   <Button asChild variant="outline">
-                    <Link href="/law-firms">All Law Firms</Link>
+                    <Link href="/thailand/lawyers">All Law Firms</Link>
                   </Button>
                   <Button asChild variant="outline">
                     <Link href="/#practice-areas">Practice Areas</Link>

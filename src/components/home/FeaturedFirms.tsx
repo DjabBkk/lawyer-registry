@@ -32,7 +32,7 @@ export function FeaturedFirms({ firms }: FeaturedFirmsProps) {
             </p>
           </div>
           <Link
-            href="/law-firms"
+            href="/thailand/lawyers"
             className="group inline-flex items-center gap-2 rounded-lg border border-royal-200 bg-white px-5 py-2.5 font-semibold text-royal-700 transition-all hover:border-royal-300 hover:bg-royal-50 hover:shadow-sm"
           >
             View All Firms

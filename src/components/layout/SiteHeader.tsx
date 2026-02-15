@@ -9,7 +9,7 @@ import { cn } from '@/utilities/ui'
 import { Button } from '@/components/ui/button'
 
 const navigation = [
-  { name: 'Find Lawyers', href: '/law-firms' },
+  { name: 'Find Lawyers', href: '/thailand/lawyers' },
   { name: 'Practice Areas', href: '/#practice-areas' },
   { name: 'Locations', href: '/#locations' },
   { name: 'About', href: '/about' },
@@ -56,7 +56,7 @@ export function SiteHeader() {
               asChild
               className="bg-royal-700 px-6 text-white shadow-sm transition-all hover:bg-royal-600 hover:shadow-md"
             >
-              <Link href="/law-firms">Find a Lawyer</Link>
+              <Link href="/thailand/lawyers">Find a Lawyer</Link>
             </Button>
           </div>
 
@@ -98,7 +98,7 @@ export function SiteHeader() {
                 asChild
                 className="w-full bg-royal-700 text-white hover:bg-royal-600"
               >
-                <Link href="/law-firms">Find a Lawyer</Link>
+                <Link href="/thailand/lawyers">Find a Lawyer</Link>
               </Button>
             </div>
           </div>

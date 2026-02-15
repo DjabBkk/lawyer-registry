@@ -47,7 +47,7 @@ export function PracticeAreasGrid({ practiceAreas }: PracticeAreasGridProps) {
             return (
               <Link
                 key={area.id}
-                href={`/${area.slug}`}
+                href={`/thailand/lawyers/${area.slug}`}
                 className="group rounded-2xl border border-warm-200 bg-white p-7 shadow-sm transition-all duration-300 hover:border-royal-300 hover:shadow-lg"
               >
                 <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-royal-700 to-royal-800 text-cream-100 shadow-sm transition-all group-hover:from-royal-600 group-hover:to-royal-700 group-hover:shadow-md">
@@ -73,7 +73,7 @@ export function PracticeAreasGrid({ practiceAreas }: PracticeAreasGridProps) {
         {/* View All Link */}
         <div className="mt-14 text-center">
           <Link
-            href="/law-firms"
+            href="/thailand/lawyers"
             className="inline-flex items-center gap-2 rounded-xl border-2 border-royal-300 bg-white px-7 py-3.5 font-semibold text-royal-700 shadow-sm transition-all hover:border-royal-400 hover:bg-royal-50 hover:shadow-md"
           >
             View All Practice Areas
