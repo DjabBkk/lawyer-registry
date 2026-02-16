@@ -15,11 +15,14 @@ interface FeaturedFirmsProps {
 export function FeaturedFirms({ firms }: FeaturedFirmsProps) {
   if (!firms.length) return null
 
+  // Show max 6 firms in a 3-column grid (2 rows)
+  const displayedFirms = firms.slice(0, 6)
+
   return (
-    <section className="bg-[#F8F4EE] py-20 lg:py-28" id="featured-firms">
+    <section className="bg-cream-100 py-20 lg:py-28" id="featured-firms">
       <Container>
         {/* Section Header */}
-        <div className="mb-14 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
+        <div className="mb-12 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-gold-600">
               Top Rated
@@ -27,7 +30,7 @@ export function FeaturedFirms({ firms }: FeaturedFirmsProps) {
             <h2 className="font-heading text-3xl font-bold text-royal-900 lg:text-4xl">
               Featured Law Firms
             </h2>
-            <p className="mt-3 max-w-xl text-warm-500">
+            <p className="mt-3 max-w-xl text-royal-900">
               Discover Thailand&apos;s most trusted legal practices, handpicked for their expertise and reputation.
             </p>
           </div>
@@ -40,13 +43,14 @@ export function FeaturedFirms({ firms }: FeaturedFirmsProps) {
           </Link>
         </div>
 
-        {/* Firms Grid - single column for horizontal cards */}
-        <div className="space-y-6">
-          {firms.map((firm) => (
-            <LawFirmCard key={firm.id} firm={firm} variant="featured" />
+        {/* Firms Grid - 3 columns */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {displayedFirms.map((firm) => (
+            <LawFirmCard key={firm.id} firm={firm} variant="grid" />
           ))}
         </div>
       </Container>
     </section>
   )
 }
+

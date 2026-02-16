@@ -6,7 +6,8 @@ import { ChevronRight } from 'lucide-react'
 import type { Metadata } from 'next'
 
 import { Container } from '@/components/layout/Container'
-import { LawFirmGrid, FilterSidebar, Pagination, SortSelect } from '@/components/law-firms'
+import { DarkHero } from '@/components/layout/DarkHero'
+import { LawFirmGrid, FilterSidebar, Pagination, ResultsToolbar } from '@/components/law-firms'
 import { ProfileHero, TeamSection, ContactSection } from '@/components/profile'
 import { LawFirmCard } from '@/components/law-firms/LawFirmCard'
 import { getSupportedCountry } from '@/utilities/countries'
@@ -268,32 +269,17 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
 
     return (
       <>
-        <section className="relative overflow-hidden bg-gradient-to-br from-royal-900 via-royal-700 to-royal-600">
-          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-gold-500/5 to-gold-400/10" />
-          <Container className="relative py-16 lg:py-20">
-            <nav className="mb-8 flex items-center gap-2 text-sm text-cream-200/70">
-              <Link href="/" className="transition-colors hover:text-white">
-                Home
-              </Link>
-              <ChevronRight className="h-4 w-4" />
-              <Link href="/lawyers" className="transition-colors hover:text-white">
-                Lawyers
-              </Link>
-              <ChevronRight className="h-4 w-4" />
-              <span className="text-white">{country.name}</span>
-            </nav>
-
-            <h1 className="font-heading text-4xl font-bold text-white lg:text-5xl">
-              Lawyers in {country.name}
-            </h1>
-            <p className="mt-4 max-w-2xl text-lg text-cream-200/80">
-              Browse our directory of law firms. Filter by practice area, location, and more.
-            </p>
-            <p className="mt-6 text-sm font-medium text-cream-200/60">
-              {totalDocs} law firm{totalDocs !== 1 ? 's' : ''} found
-            </p>
-          </Container>
-        </section>
+        <DarkHero
+          title={`Lawyers in ${country.name}`}
+          description="Browse our directory of law firms. Filter by practice area, location, and more."
+          meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
+          breadcrumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Lawyers', href: '/lawyers' },
+            { label: country.name },
+          ]}
+          className="py-16 lg:py-20"
+        />
 
         <section className="bg-cream-100 py-12">
           <Container>
@@ -308,15 +294,11 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
               </div>
 
               <div className="flex-1">
-                <div className="mb-6 flex items-center justify-between">
-                  <p className="text-sm text-gray-600">
-                    Showing {firms.length} of {totalDocs} firms
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">Sort by:</span>
-                    <SortSelect defaultValue={String(resolvedSearchParams.sort || '-featured')} />
-                  </div>
-                </div>
+                <ResultsToolbar
+                  shown={firms.length}
+                  total={totalDocs}
+                  sortValue={String(resolvedSearchParams.sort || '-featured')}
+                />
 
                 <LawFirmGrid firms={firms as any} emptyMessage="No law firms found matching your criteria." />
 
@@ -348,29 +330,17 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
 
       return (
         <>
-          <section className="bg-gradient-to-br from-royal-900 via-royal-700 to-royal-600 py-12 lg:py-16">
-            <Container>
-              <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-silver-400">
-                <Link href="/" className="hover:text-white">Home</Link>
-                <ChevronRight className="h-4 w-4" />
-                <Link href="/lawyers" className="hover:text-white">Lawyers</Link>
-                <ChevronRight className="h-4 w-4" />
-                <Link href={`/${country.slug}/lawyers`} className="hover:text-white">{country.name}</Link>
-                <ChevronRight className="h-4 w-4" />
-                <span className="text-white">{location.name}</span>
-              </nav>
-
-              <h1 className="font-heading text-3xl font-bold text-white lg:text-4xl">
-                Lawyers in {location.name}
-              </h1>
-              <p className="mt-3 max-w-2xl text-silver-300">
-                Browse law firms in {location.name}, {country.name}. Filter by practice area and more.
-              </p>
-              <p className="mt-4 text-sm text-silver-400">
-                {totalDocs} law firm{totalDocs !== 1 ? 's' : ''} found
-              </p>
-            </Container>
-          </section>
+          <DarkHero
+            title={`Lawyers in ${location.name}`}
+            description={`Browse law firms in ${location.name}, ${country.name}. Filter by practice area and more.`}
+            meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
+            breadcrumbs={[
+              { label: 'Home', href: '/' },
+              { label: 'Lawyers', href: '/lawyers' },
+              { label: country.name, href: `/${country.slug}/lawyers` },
+              { label: location.name },
+            ]}
+          />
 
           <section className="py-12">
             <Container>
@@ -385,15 +355,11 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                 </div>
 
                 <div className="flex-1">
-                  <div className="mb-6 flex items-center justify-between">
-                    <p className="text-sm text-gray-600">
-                      Showing {firms.length} of {totalDocs} firms
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">Sort by:</span>
-                      <SortSelect defaultValue={String(resolvedSearchParams.sort || '-featured')} />
-                    </div>
-                  </div>
+                  <ResultsToolbar
+                    shown={firms.length}
+                    total={totalDocs}
+                    sortValue={String(resolvedSearchParams.sort || '-featured')}
+                  />
 
                   <LawFirmGrid firms={firms as any} emptyMessage={`No law firms found in ${location.name} matching your criteria.`} />
 
@@ -418,30 +384,20 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
 
       return (
         <>
-          <section className="bg-gradient-to-br from-royal-900 via-royal-700 to-royal-600 py-12 lg:py-16">
-            <Container>
-              <nav className="mb-6 flex items-center gap-2 text-sm text-silver-400">
-                <Link href="/" className="hover:text-white">Home</Link>
-                <ChevronRight className="h-4 w-4" />
-                <Link href="/lawyers" className="hover:text-white">Lawyers</Link>
-                <ChevronRight className="h-4 w-4" />
-                <Link href={`/${country.slug}/lawyers`} className="hover:text-white">{country.name}</Link>
-                <ChevronRight className="h-4 w-4" />
-                <span className="text-white">{practiceArea.name}</span>
-              </nav>
-
-              <h1 className="font-heading text-3xl font-bold text-white lg:text-4xl">
-                {practiceArea.name} Lawyers in {country.name}
-              </h1>
-              <p className="mt-3 max-w-2xl text-silver-300">
-                {practiceArea.shortDescription ||
-                  `Find qualified ${practiceArea.name.toLowerCase()} lawyers across ${country.name}.`}
-              </p>
-              <p className="mt-4 text-sm text-silver-400">
-                {totalDocs} law firm{totalDocs !== 1 ? 's' : ''} found
-              </p>
-            </Container>
-          </section>
+          <DarkHero
+            title={`${practiceArea.name} Lawyers in ${country.name}`}
+            description={
+              practiceArea.shortDescription ||
+              `Find qualified ${practiceArea.name.toLowerCase()} lawyers across ${country.name}.`
+            }
+            meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
+            breadcrumbs={[
+              { label: 'Home', href: '/' },
+              { label: 'Lawyers', href: '/lawyers' },
+              { label: country.name, href: `/${country.slug}/lawyers` },
+              { label: practiceArea.name },
+            ]}
+          />
 
           <section className="py-12">
             <Container>
@@ -456,15 +412,11 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                 </div>
 
                 <div className="flex-1">
-                  <div className="mb-6 flex items-center justify-between">
-                    <p className="text-sm text-gray-600">
-                      Showing {firms.length} of {totalDocs} firms
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">Sort by:</span>
-                      <SortSelect defaultValue={String(resolvedSearchParams.sort || '-featured')} />
-                    </div>
-                  </div>
+                  <ResultsToolbar
+                    shown={firms.length}
+                    total={totalDocs}
+                    sortValue={String(resolvedSearchParams.sort || '-featured')}
+                  />
 
                   <LawFirmGrid firms={firms as any} emptyMessage={`No ${practiceArea.name.toLowerCase()} lawyers found matching your criteria.`} />
 
@@ -488,31 +440,18 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
         (firm.practiceAreas as PracticeArea[])?.filter((pa): pa is PracticeArea => typeof pa === 'object') || []
       const location = typeof firm.primaryLocation === 'object' ? firm.primaryLocation : null
 
+      // Build breadcrumbs
+      const breadcrumbs = [
+        { label: 'Home', href: '/' },
+        { label: 'Lawyers', href: '/lawyers' },
+        { label: country.name, href: `/${country.slug}/lawyers` },
+        ...(location ? [{ label: location.name, href: `/${country.slug}/lawyers/${location.slug}` }] : []),
+        { label: firm.name },
+      ]
+
       return (
         <>
-          <div className="bg-cream-200/50 py-4">
-            <Container>
-              <nav className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
-                <Link href="/" className="hover:text-royal-700">Home</Link>
-                <ChevronRight className="h-4 w-4" />
-                <Link href="/lawyers" className="hover:text-royal-700">Lawyers</Link>
-                <ChevronRight className="h-4 w-4" />
-                <Link href={`/${country.slug}/lawyers`} className="hover:text-royal-700">{country.name}</Link>
-                {location && (
-                  <>
-                    <ChevronRight className="h-4 w-4" />
-                    <Link href={`/${country.slug}/lawyers/${location.slug}`} className="hover:text-royal-700">
-                      {location.name}
-                    </Link>
-                  </>
-                )}
-                <ChevronRight className="h-4 w-4" />
-                <span className="text-gray-900">{firm.name}</span>
-              </nav>
-            </Container>
-          </div>
-
-          <ProfileHero firm={firm as any} />
+          <ProfileHero firm={firm as any} breadcrumbs={breadcrumbs} />
 
           <div className="py-12">
             <Container>
@@ -520,7 +459,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                 <div className="lg:col-span-2 space-y-12">
                   {firm.description && (
                     <section>
-                      <h2 className="font-heading text-2xl font-bold text-gray-900">About {firm.name}</h2>
+                      <h2 className="font-heading text-2xl font-bold text-royal-900">About {firm.name}</h2>
                       <div className="prose prose-gray mt-4 max-w-none">
                         <div
                           dangerouslySetInnerHTML={{
@@ -533,12 +472,12 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
 
                   {firm.services && firm.services.length > 0 && (
                     <section>
-                      <h2 className="font-heading text-2xl font-bold text-gray-900">Services Offered</h2>
+                      <h2 className="font-heading text-2xl font-bold text-royal-900">Services Offered</h2>
                       <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                         {firm.services.map((service, index) => (
                           <li key={index} className="flex items-start gap-3 rounded-lg border border-border/50 bg-white p-4">
                             <div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-royal-600" />
-                            <span className="text-gray-700">{service.service}</span>
+                            <span className="text-royal-800">{service.service}</span>
                           </li>
                         ))}
                       </ul>
@@ -549,7 +488,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                 <div className="space-y-8">
                   {practiceAreas.length > 0 && (
                     <div className="rounded-xl border border-border/50 bg-white p-6">
-                      <h3 className="font-heading text-lg font-semibold text-gray-900">Practice Areas</h3>
+                      <h3 className="font-heading text-lg font-semibold text-royal-900">Practice Areas</h3>
                       <div className="mt-4 flex flex-wrap gap-2">
                         {practiceAreas.map((area) => (
                           <Link
@@ -565,30 +504,30 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                   )}
 
                   <div className="rounded-xl border border-border/50 bg-white p-6">
-                    <h3 className="font-heading text-lg font-semibold text-gray-900">Quick Facts</h3>
+                    <h3 className="font-heading text-lg font-semibold text-royal-900">Quick Facts</h3>
                     <dl className="mt-4 space-y-3">
                       {firm.foundingYear && (
                         <div className="flex justify-between">
-                          <dt className="text-gray-500">Founded</dt>
-                          <dd className="font-medium text-gray-900">{firm.foundingYear}</dd>
+                          <dt className="text-royal-700/70">Founded</dt>
+                          <dd className="font-medium text-royal-900">{firm.foundingYear}</dd>
                         </div>
                       )}
                       {firm.companySize && (
                         <div className="flex justify-between">
-                          <dt className="text-gray-500">Team Size</dt>
-                          <dd className="font-medium text-gray-900">{firm.companySize}</dd>
+                          <dt className="text-royal-700/70">Team Size</dt>
+                          <dd className="font-medium text-royal-900">{firm.companySize}</dd>
                         </div>
                       )}
                       {firm.languages && firm.languages.length > 0 && (
                         <div className="flex justify-between">
-                          <dt className="text-gray-500">Languages</dt>
-                          <dd className="font-medium text-gray-900 text-right">{firm.languages.join(', ')}</dd>
+                          <dt className="text-royal-700/70">Languages</dt>
+                          <dd className="font-medium text-royal-900 text-right">{firm.languages.join(', ')}</dd>
                         </div>
                       )}
                       {location && (
                         <div className="flex justify-between">
-                          <dt className="text-gray-500">Location</dt>
-                          <dd className="font-medium text-gray-900">{location.name}</dd>
+                          <dt className="text-royal-700/70">Location</dt>
+                          <dd className="font-medium text-royal-900">{location.name}</dd>
                         </div>
                       )}
                     </dl>
@@ -606,8 +545,8 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
               <Container>
                 <div className="mb-8 flex items-end justify-between">
                   <div>
-                    <h2 className="font-heading text-2xl font-bold text-gray-900 lg:text-3xl">Related Law Firms</h2>
-                    <p className="mt-2 text-gray-600">Other firms you might be interested in</p>
+                    <h2 className="font-heading text-2xl font-bold text-royal-900 lg:text-3xl">Related Law Firms</h2>
+                    <p className="mt-2 text-royal-700/80">Other firms you might be interested in</p>
                   </div>
                   <Link href={`/${country.slug}/lawyers`} className="hidden items-center gap-2 font-medium text-royal-700 hover:text-royal-600 sm:flex">
                     View All
@@ -641,31 +580,18 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
 
       return (
         <>
-          <section className="bg-gradient-to-br from-royal-900 via-royal-700 to-royal-600 py-12 lg:py-16">
-            <Container>
-              <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-silver-400">
-                <Link href="/" className="hover:text-white">Home</Link>
-                <ChevronRight className="h-4 w-4" />
-                <Link href="/lawyers" className="hover:text-white">Lawyers</Link>
-                <ChevronRight className="h-4 w-4" />
-                <Link href={`/${country.slug}/lawyers`} className="hover:text-white">{country.name}</Link>
-                <ChevronRight className="h-4 w-4" />
-                <Link href={`/${country.slug}/lawyers/${location.slug}`} className="hover:text-white">{location.name}</Link>
-                <ChevronRight className="h-4 w-4" />
-                <span className="text-white">{practiceArea.name}</span>
-              </nav>
-
-              <h1 className="font-heading text-3xl font-bold text-white lg:text-4xl">
-                {practiceArea.name} Lawyers in {location.name}
-              </h1>
-              <p className="mt-3 max-w-2xl text-silver-300">
-                Find qualified {practiceArea.name.toLowerCase()} lawyers in {location.name}, {country.name}.
-              </p>
-              <p className="mt-4 text-sm text-silver-400">
-                {totalDocs} law firm{totalDocs !== 1 ? 's' : ''} found
-              </p>
-            </Container>
-          </section>
+          <DarkHero
+            title={`${practiceArea.name} Lawyers in ${location.name}`}
+            description={`Find qualified ${practiceArea.name.toLowerCase()} lawyers in ${location.name}, ${country.name}.`}
+            meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
+            breadcrumbs={[
+              { label: 'Home', href: '/' },
+              { label: 'Lawyers', href: '/lawyers' },
+              { label: country.name, href: `/${country.slug}/lawyers` },
+              { label: location.name, href: `/${country.slug}/lawyers/${location.slug}` },
+              { label: practiceArea.name },
+            ]}
+          />
 
           <section className="py-12">
             <Container>
@@ -674,13 +600,11 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                   <FilterSidebar showPracticeAreas={false} showLocations={false} />
                 </div>
                 <div className="flex-1">
-                  <div className="mb-6 flex items-center justify-between">
-                    <p className="text-sm text-gray-600">Showing {firms.length} of {totalDocs} firms</p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">Sort by:</span>
-                      <SortSelect defaultValue={String(resolvedSearchParams.sort || '-featured')} />
-                    </div>
-                  </div>
+                  <ResultsToolbar
+                    shown={firms.length}
+                    total={totalDocs}
+                    sortValue={String(resolvedSearchParams.sort || '-featured')}
+                  />
 
                   <LawFirmGrid firms={firms as any} emptyMessage={`No ${practiceArea.name.toLowerCase()} lawyers found in ${location.name} matching your criteria.`} />
 
@@ -714,31 +638,18 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
 
     return (
       <>
-        <section className="bg-gradient-to-br from-royal-900 via-royal-700 to-royal-600 py-12 lg:py-16">
-          <Container>
-            <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-silver-400">
-              <Link href="/" className="hover:text-white">Home</Link>
-              <ChevronRight className="h-4 w-4" />
-              <Link href="/lawyers" className="hover:text-white">Lawyers</Link>
-              <ChevronRight className="h-4 w-4" />
-              <Link href={`/${country.slug}/lawyers`} className="hover:text-white">{country.name}</Link>
-              <ChevronRight className="h-4 w-4" />
-              <Link href={`/${country.slug}/lawyers/${practiceArea.slug}`} className="hover:text-white">{practiceArea.name}</Link>
-              <ChevronRight className="h-4 w-4" />
-              <span className="text-white">{q}</span>
-            </nav>
-
-            <h1 className="font-heading text-3xl font-bold text-white lg:text-4xl">
-              {q} {practiceArea.name} Lawyers in {country.name}
-            </h1>
-            <p className="mt-3 max-w-2xl text-silver-300">
-              Browse {practiceArea.name.toLowerCase()} firms focused on {q}.
-            </p>
-            <p className="mt-4 text-sm text-silver-400">
-              {result.totalDocs} law firm{result.totalDocs !== 1 ? 's' : ''} found
-            </p>
-          </Container>
-        </section>
+        <DarkHero
+          title={`${q} ${practiceArea.name} Lawyers in ${country.name}`}
+          description={`Browse ${practiceArea.name.toLowerCase()} firms focused on ${q}.`}
+          meta={`${result.totalDocs} law firm${result.totalDocs !== 1 ? 's' : ''} found`}
+          breadcrumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Lawyers', href: '/lawyers' },
+            { label: country.name, href: `/${country.slug}/lawyers` },
+            { label: practiceArea.name, href: `/${country.slug}/lawyers/${practiceArea.slug}` },
+            { label: q },
+          ]}
+        />
 
         <section className="py-12">
           <Container>
@@ -793,33 +704,19 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
 
     return (
       <>
-        <section className="bg-gradient-to-br from-royal-900 via-royal-700 to-royal-600 py-12 lg:py-16">
-          <Container>
-            <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-silver-400">
-              <Link href="/" className="hover:text-white">Home</Link>
-              <ChevronRight className="h-4 w-4" />
-              <Link href="/lawyers" className="hover:text-white">Lawyers</Link>
-              <ChevronRight className="h-4 w-4" />
-              <Link href={`/${country.slug}/lawyers`} className="hover:text-white">{country.name}</Link>
-              <ChevronRight className="h-4 w-4" />
-              <Link href={`/${country.slug}/lawyers/${location.slug}`} className="hover:text-white">{location.name}</Link>
-              <ChevronRight className="h-4 w-4" />
-              <Link href={`/${country.slug}/lawyers/${location.slug}/${practiceArea.slug}`} className="hover:text-white">{practiceArea.name}</Link>
-              <ChevronRight className="h-4 w-4" />
-              <span className="text-white">{q}</span>
-            </nav>
-
-            <h1 className="font-heading text-3xl font-bold text-white lg:text-4xl">
-              {q} {practiceArea.name} Lawyers in {location.name}
-            </h1>
-            <p className="mt-3 max-w-2xl text-silver-300">
-              Browse {practiceArea.name.toLowerCase()} firms in {location.name} focused on {q}.
-            </p>
-            <p className="mt-4 text-sm text-silver-400">
-              {result.totalDocs} law firm{result.totalDocs !== 1 ? 's' : ''} found
-            </p>
-          </Container>
-        </section>
+        <DarkHero
+          title={`${q} ${practiceArea.name} Lawyers in ${location.name}`}
+          description={`Browse ${practiceArea.name.toLowerCase()} firms in ${location.name} focused on ${q}.`}
+          meta={`${result.totalDocs} law firm${result.totalDocs !== 1 ? 's' : ''} found`}
+          breadcrumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Lawyers', href: '/lawyers' },
+            { label: country.name, href: `/${country.slug}/lawyers` },
+            { label: location.name, href: `/${country.slug}/lawyers/${location.slug}` },
+            { label: practiceArea.name, href: `/${country.slug}/lawyers/${location.slug}/${practiceArea.slug}` },
+            { label: q },
+          ]}
+        />
 
         <section className="py-12">
           <Container>
@@ -844,4 +741,3 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
 
   notFound()
 }
-

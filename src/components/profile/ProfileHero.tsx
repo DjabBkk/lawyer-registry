@@ -1,10 +1,15 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { MapPin, Calendar, Users, Globe, Mail, Phone, ExternalLink } from 'lucide-react'
+import { MapPin, Calendar, Users, Globe, Mail, Phone, ExternalLink, ChevronRight } from 'lucide-react'
 
 import { Container } from '@/components/layout/Container'
 import { Button } from '@/components/ui/button'
 import type { LawFirm, Location, Media } from '@/payload-types'
+
+interface BreadcrumbItem {
+  label: string
+  href?: string
+}
 
 interface ProfileHeroProps {
   firm: LawFirm & {
@@ -12,17 +17,18 @@ interface ProfileHeroProps {
     logo?: Media | number | null
     coverImage?: Media | number | null
   }
+  breadcrumbs?: BreadcrumbItem[]
 }
 
-export function ProfileHero({ firm }: ProfileHeroProps) {
+export function ProfileHero({ firm, breadcrumbs }: ProfileHeroProps) {
   const location = typeof firm.primaryLocation === 'object' ? firm.primaryLocation : null
   const logo = typeof firm.logo === 'object' ? firm.logo : null
   const coverImage = typeof firm.coverImage === 'object' ? firm.coverImage : null
 
   return (
-    <section className="relative">
+    <section className="relative bg-royal-900">
       {/* Cover Image */}
-      <div className="relative h-48 bg-gradient-to-br from-royal-900 via-royal-700 to-royal-600 lg:h-64">
+      <div className="relative h-48 bg-royal-900 lg:h-64">
         {coverImage?.url && (
           <Image
             src={coverImage.url}
@@ -34,8 +40,29 @@ export function ProfileHero({ firm }: ProfileHeroProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-royal-900/80 to-transparent" />
       </div>
 
-      {/* Content */}
+      {/* Content Container */}
       <Container className="relative -mt-16 pb-8 lg:-mt-20">
+        {/* Breadcrumbs on blue background - above white container */}
+        {breadcrumbs && breadcrumbs.length > 0 && (
+          <div className="mb-6">
+            <nav className="flex flex-wrap items-center gap-2 text-sm text-white">
+              {breadcrumbs.map((crumb, index) => (
+                <span key={index} className="flex items-center gap-2">
+                  {crumb.href ? (
+                    <Link href={crumb.href} className="transition-colors hover:text-white/80 text-white/90">
+                      {crumb.label}
+                    </Link>
+                  ) : (
+                    <span className="text-white font-medium">{crumb.label}</span>
+                  )}
+                  {index < breadcrumbs.length - 1 && (
+                    <ChevronRight className="h-4 w-4 text-white/60" />
+                  )}
+                </span>
+              ))}
+            </nav>
+          </div>
+        )}
         <div className="rounded-xl border border-border/50 bg-white p-6 shadow-lg lg:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
             {/* Logo */}
@@ -57,16 +84,16 @@ export function ProfileHero({ firm }: ProfileHeroProps) {
 
             {/* Info */}
             <div className="flex-1">
-              <h1 className="font-heading text-2xl font-bold text-gray-900 lg:text-3xl">
+              <h1 className="font-heading text-2xl font-bold text-royal-900 lg:text-3xl">
                 {firm.name}
               </h1>
 
               {firm.shortDescription && (
-                <p className="mt-2 text-gray-600">{firm.shortDescription}</p>
+                <p className="mt-2 text-royal-700/80">{firm.shortDescription}</p>
               )}
 
               {/* Quick Stats */}
-              <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600">
+              <div className="mt-4 flex flex-wrap gap-4 text-sm text-royal-700/80">
                 {location && (
                   <div className="flex items-center gap-1.5">
                     <MapPin className="h-4 w-4 text-royal-600" />
@@ -105,25 +132,25 @@ export function ProfileHero({ firm }: ProfileHeroProps) {
             {/* Contact Buttons */}
             <div className="flex flex-col gap-3 lg:shrink-0">
               {firm.phone && (
-                <Button asChild className="bg-royal-700 hover:bg-royal-600">
+                <Button asChild variant="outline" className="border-royal-200 bg-white hover:bg-royal-50">
                   <a href={`tel:${firm.phone}`}>
-                    <Phone className="mr-2 h-4 w-4" />
-                    Call Now
+                    <Phone className="h-4 w-4 text-royal-700" />
+                    <span className="text-royal-700">Call Now</span>
                   </a>
                 </Button>
               )}
               {firm.email && (
                 <Button asChild variant="outline" className="border-royal-200">
                   <a href={`mailto:${firm.email}`}>
-                    <Mail className="mr-2 h-4 w-4" />
+                    <Mail className="h-4 w-4" />
                     Email
                   </a>
                 </Button>
               )}
               {firm.website && (
-                <Button asChild variant="ghost" className="text-gray-600">
+                <Button asChild variant="ghost" className="text-royal-700/80">
                   <a href={firm.website} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="mr-2 h-4 w-4" />
+                    <ExternalLink className="h-4 w-4" />
                     Website
                   </a>
                 </Button>

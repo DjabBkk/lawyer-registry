@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 import { Container } from '@/components/layout/Container'
+import { DarkHero } from '@/components/layout/DarkHero'
 import { getSupportedCountry, SUPPORTED_COUNTRIES } from '@/utilities/countries'
 
 export const metadata: Metadata = {
@@ -15,17 +16,10 @@ export default async function LawyersDirectoryPage() {
 
   return (
     <>
-      <section className="relative overflow-hidden bg-gradient-to-br from-royal-900 via-royal-700 to-royal-600">
-        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-gold-500/5 to-gold-400/10" />
-        <Container className="relative py-16 lg:py-20">
-          <h1 className="font-heading text-4xl font-bold text-white lg:text-5xl">
-            Lawyers Directory
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg text-cream-200/80">
-            Browse law firms by country. More locations coming soon.
-          </p>
-        </Container>
-      </section>
+      <DarkHero
+        title="Lawyers Directory"
+        description="Browse law firms by country. More locations coming soon."
+      />
 
       <section className="bg-cream-100 py-12">
         <Container>
@@ -39,7 +33,7 @@ export default async function LawyersDirectoryPage() {
                 <div className="font-heading text-xl font-bold text-royal-900 group-hover:text-royal-700">
                   {country.name}
                 </div>
-                <div className="mt-2 text-sm text-warm-600">
+                <div className="mt-2 text-sm text-royal-700/80">
                   View law firms in {country.name}
                 </div>
               </Link>
@@ -47,7 +41,7 @@ export default async function LawyersDirectoryPage() {
           </div>
 
           {!thailand && (
-            <p className="mt-8 text-sm text-warm-600">
+            <p className="mt-8 text-sm text-royal-700/80">
               No countries configured yet.
             </p>
           )}
@@ -56,4 +50,3 @@ export default async function LawyersDirectoryPage() {
     </>
   )
 }
-

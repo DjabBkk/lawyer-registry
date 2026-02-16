@@ -34,7 +34,7 @@ export function PracticeAreasGrid({ practiceAreas }: PracticeAreasGridProps) {
           <h2 className="font-heading text-3xl font-bold text-royal-900 lg:text-4xl">
             Browse by Practice Area
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-warm-600">
+          <p className="mx-auto mt-4 max-w-2xl text-royal-800/70">
             Find specialized legal expertise across all major practice areas in Thailand
           </p>
         </div>
@@ -57,7 +57,7 @@ export function PracticeAreasGrid({ practiceAreas }: PracticeAreasGridProps) {
                   {area.name}
                 </h3>
                 {area.shortDescription && (
-                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-warm-500">
+                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-royal-800/70">
                     {area.shortDescription}
                   </p>
                 )}

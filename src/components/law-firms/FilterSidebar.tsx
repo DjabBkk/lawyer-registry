@@ -121,11 +121,11 @@ export function FilterSidebar({
         onClick={() => toggleSection(sectionKey)}
         className="flex w-full items-center justify-between text-left"
       >
-        <span className="font-semibold text-gray-900">{title}</span>
+        <span className="font-semibold text-royal-900">{title}</span>
         {expandedSections[sectionKey] ? (
-          <ChevronUp className="h-4 w-4 text-warm-400" />
+          <ChevronUp className="h-4 w-4 text-royal-400" />
         ) : (
-          <ChevronDown className="h-4 w-4 text-warm-400" />
+          <ChevronDown className="h-4 w-4 text-royal-400" />
         )}
       </button>
       {expandedSections[sectionKey] && (
@@ -140,7 +140,7 @@ export function FilterSidebar({
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Filter className="h-5 w-5 text-royal-700" />
-          <h3 className="font-heading text-lg font-semibold text-gray-900">Filters</h3>
+          <h3 className="font-heading text-lg font-semibold text-royal-900">Filters</h3>
           {activeFilterCount > 0 && (
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-royal-700 text-xs font-medium text-white">
               {activeFilterCount}
@@ -152,7 +152,7 @@ export function FilterSidebar({
             variant="ghost"
             size="sm"
             onClick={clearAllFilters}
-            className="h-auto p-0 text-sm text-gray-500 hover:text-gray-700"
+            className="h-auto p-0 text-sm text-royal-700/70 hover:text-royal-900"
           >
             Clear all
           </Button>
@@ -174,7 +174,7 @@ export function FilterSidebar({
                 />
                 <Label
                   htmlFor={`pa-${area.slug}`}
-                  className="cursor-pointer text-sm text-gray-700"
+                  className="cursor-pointer text-sm text-royal-800"
                 >
                   {area.name}
                 </Label>
@@ -199,7 +199,7 @@ export function FilterSidebar({
                 />
                 <Label
                   htmlFor={`loc-${location.slug}`}
-                  className="cursor-pointer text-sm text-gray-700"
+                  className="cursor-pointer text-sm text-royal-800"
                 >
                   {location.name}
                 </Label>
@@ -221,7 +221,7 @@ export function FilterSidebar({
               />
               <Label
                 htmlFor={`size-${size.value}`}
-                className="cursor-pointer text-sm text-gray-700"
+                className="cursor-pointer text-sm text-royal-800"
               >
                 {size.label}
               </Label>
@@ -242,7 +242,7 @@ export function FilterSidebar({
               />
               <Label
                 htmlFor={`lang-${lang.value}`}
-                className="cursor-pointer text-sm text-gray-700"
+                className="cursor-pointer text-sm text-royal-800"
               >
                 {lang.label}
               </Label>

@@ -16,10 +16,10 @@ export function TeamSection({ teamMembers }: TeamSectionProps) {
   return (
     <section className="py-12">
       <Container>
-        <h2 className="font-heading text-2xl font-bold text-gray-900 lg:text-3xl">
+        <h2 className="font-heading text-2xl font-bold text-royal-900 lg:text-3xl">
           Our Team
         </h2>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-royal-700/80">
           Meet the legal professionals dedicated to serving your needs
         </p>
 
@@ -50,7 +50,7 @@ export function TeamSection({ teamMembers }: TeamSectionProps) {
 
                 {/* Info */}
                 <div className="p-5">
-                  <h3 className="font-heading text-lg font-semibold text-gray-900">
+                  <h3 className="font-heading text-lg font-semibold text-royal-900">
                     {member.name}
                   </h3>
                   {member.role && (
@@ -59,7 +59,7 @@ export function TeamSection({ teamMembers }: TeamSectionProps) {
                     </p>
                   )}
                   {member.bio && (
-                    <p className="mt-3 line-clamp-3 text-sm text-gray-600">
+                    <p className="mt-3 line-clamp-3 text-sm text-royal-700/80">
                       {member.bio}
                     </p>
                   )}

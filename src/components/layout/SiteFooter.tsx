@@ -43,7 +43,7 @@ export async function SiteFooter() {
   ])
 
   return (
-    <footer className="border-t border-royal-800 bg-gradient-to-b from-royal-900 to-royal-950 text-white">
+    <footer className="dark-surface border-t border-royal-800">
       <Container className="py-14 lg:py-20">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
           {/* Brand Column */}
@@ -56,12 +56,12 @@ export async function SiteFooter() {
                 <span className="font-heading text-xl font-bold text-white">
                   Top Lawyers
                 </span>
-                <span className="font-heading text-xl font-medium text-cream-300">
+                <span className="font-heading text-xl font-medium text-white">
                   {' '}Thailand
                 </span>
               </div>
             </Link>
-            <p className="mt-5 max-w-xs text-[15px] leading-relaxed text-cream-200/70">
+            <p className="mt-5 max-w-xs text-[15px] leading-relaxed text-white/80">
               Thailand&apos;s premier directory for finding qualified legal professionals.
               Connect with experienced lawyers across all practice areas.
             </p>
@@ -75,7 +75,7 @@ export async function SiteFooter() {
                 <li key={area.id}>
                   <Link
                     href={`/thailand/lawyers/${area.slug}`}
-                    className="text-[15px] text-cream-200/70 transition-colors hover:text-gold-400"
+                    className="text-[15px] text-white transition-colors hover:text-white"
                   >
                     {area.name}
                   </Link>
@@ -84,7 +84,7 @@ export async function SiteFooter() {
               <li>
                 <Link
                   href="/#practice-areas"
-                  className="inline-flex items-center gap-1 text-[15px] font-medium text-gold-400 hover:text-gold-300"
+                  className="inline-flex items-center gap-1 text-[15px] font-medium text-white hover:text-white"
                 >
                   View All
                   <span className="text-lg">→</span>
@@ -101,7 +101,7 @@ export async function SiteFooter() {
                 <li key={location.id}>
                   <Link
                     href={`/thailand/lawyers/${location.slug}`}
-                    className="text-[15px] text-cream-200/70 transition-colors hover:text-gold-400"
+                    className="text-[15px] text-white transition-colors hover:text-white"
                   >
                     {location.name}
                   </Link>
@@ -110,7 +110,7 @@ export async function SiteFooter() {
               <li>
                 <Link
                   href="/#locations"
-                  className="inline-flex items-center gap-1 text-[15px] font-medium text-gold-400 hover:text-gold-300"
+                  className="inline-flex items-center gap-1 text-[15px] font-medium text-white hover:text-white"
                 >
                   View All
                   <span className="text-lg">→</span>
@@ -127,7 +127,7 @@ export async function SiteFooter() {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-[15px] text-cream-200/70 transition-colors hover:text-gold-400"
+                    className="text-[15px] text-white transition-colors hover:text-white"
                   >
                     {link.name}
                   </Link>
@@ -140,19 +140,19 @@ export async function SiteFooter() {
         {/* Bottom Bar */}
         <div className="mt-14 border-t border-royal-800/50 pt-8">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <p className="text-sm text-cream-200/50">
+            <p className="text-sm text-white/80">
               © {new Date().getFullYear()} Top Lawyers Thailand. All rights reserved.
             </p>
             <div className="flex gap-8">
               <Link
                 href="/privacy"
-                className="text-sm text-cream-200/50 transition-colors hover:text-cream-200"
+                className="text-sm text-white transition-colors hover:text-white"
               >
                 Privacy
               </Link>
               <Link
                 href="/terms"
-                className="text-sm text-cream-200/50 transition-colors hover:text-cream-200"
+                className="text-sm text-white transition-colors hover:text-white"
               >
                 Terms
               </Link>

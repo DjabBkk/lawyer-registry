@@ -22,7 +22,7 @@ export function SortSelect({ defaultValue }: SortSelectProps) {
     <select
       defaultValue={defaultValue}
       onChange={handleChange}
-      className="rounded-lg border border-border bg-white px-3 py-1.5 text-sm"
+      className="rounded-lg border border-warm-200 bg-white px-3 py-1.5 text-sm text-royal-900"
     >
       <option value="-featured">Featured</option>
       <option value="name">Name (A-Z)</option>

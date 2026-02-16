@@ -1,9 +1,13 @@
 /** @type {import('tailwindcss').Config} */
-const config = {
+export default {
+  content: [
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
   theme: {
     extend: {
       colors: {
-        // Warm beige backgrounds - deeper, sandier tones
         cream: {
           50: '#FEFDFB',
           100: '#FBF8F3',
@@ -11,7 +15,6 @@ const config = {
           300: '#E8DFD0',
           400: '#DDD4C3',
         },
-        // Königsblau / Royal Blue - warm, deep, distinguished
         royal: {
           50: '#E8EEF5',
           100: '#CCDAEA',
@@ -25,7 +28,6 @@ const config = {
           900: '#0F2137',
           950: '#091626',
         },
-        // Warm neutral accents - earthier tones
         warm: {
           100: '#F5F1EB',
           200: '#E6DFD3',
@@ -34,7 +36,6 @@ const config = {
           500: '#8A7C68',
           600: '#6B5F4E',
         },
-        // Warm gold accent - richer, more luxurious
         gold: {
           300: '#E9D5A3',
           400: '#D9C07A',
@@ -47,47 +48,9 @@ const config = {
         heading: ['var(--font-playfair)', 'Georgia', 'serif'],
         body: ['var(--font-inter)', 'system-ui', 'sans-serif'],
       },
-      typography: () => ({
-        DEFAULT: {
-          css: [
-            {
-              '--tw-prose-body': 'var(--text)',
-              '--tw-prose-headings': 'var(--text)',
-              h1: {
-                fontWeight: 'normal',
-                marginBottom: '0.25em',
-              },
-            },
-          ],
-        },
-        base: {
-          css: [
-            {
-              h1: {
-                fontSize: '2.5rem',
-              },
-              h2: {
-                fontSize: '1.25rem',
-                fontWeight: 600,
-              },
-            },
-          ],
-        },
-        md: {
-          css: [
-            {
-              h1: {
-                fontSize: '3.5rem',
-              },
-              h2: {
-                fontSize: '1.5rem',
-              },
-            },
-          ],
-        },
-      }),
     },
   },
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 }
-
-export default config
