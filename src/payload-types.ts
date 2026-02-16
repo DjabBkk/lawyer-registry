@@ -424,6 +424,24 @@ export interface LawFirm {
     [k: string]: unknown;
   } | null;
   shortDescription?: string | null;
+  /**
+   * A one-sentence pitch that appears below the firm name in the hero. E.g. 'Bangkok's leading immigration law specialists since 2005'
+   */
+  tagline?: string | null;
+  /**
+   * How quickly this firm typically responds to new inquiries
+   */
+  responseTime?: ('within-1-hour' | 'within-24-hours' | 'within-48-hours' | 'within-1-week') | null;
+  /**
+   * Key statistics or proof points displayed in the 'At a Glance' section
+   */
+  highlights?:
+    | {
+        label: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
   featured?: boolean | null;
   featuredOrder?: number | null;
   email: string;
@@ -431,6 +449,10 @@ export interface LawFirm {
   website?: string | null;
   address?: string | null;
   googleMapsUrl?: string | null;
+  /**
+   * Nearest BTS/MRT station or landmark. E.g. 'BTS Asok / MRT Sukhumvit (5 min walk)'
+   */
+  nearestTransit?: string | null;
   foundingYear?: number | null;
   companySize?: ('1-5' | '6-10' | '11-25' | '26-50' | '51-100' | '100+') | null;
   languages?:
@@ -439,6 +461,83 @@ export interface LawFirm {
   feeRangeMin?: number | null;
   feeRangeMax?: number | null;
   feeCurrency?: ('THB' | 'USD' | 'EUR') | null;
+  /**
+   * Define what your firm offers in each practice area, including specific services and pricing. This powers the main Services & Fees section on your profile.
+   */
+  practiceAreaDetails?:
+    | {
+        /**
+         * Select the practice area
+         */
+        practiceArea: number | PracticeArea;
+        /**
+         * Brief description of what your firm does in this area. 1-2 sentences.
+         */
+        description?: string | null;
+        priceMin?: number | null;
+        priceMax?: number | null;
+        priceCurrency?: ('THB' | 'USD' | 'EUR') | null;
+        /**
+         * E.g. 'per hour', 'fixed fee', 'starting from', 'free initial consultation'
+         */
+        priceNote?: string | null;
+        services?:
+          | {
+              name: string;
+              price?: string | null;
+              description?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  servicePricing?:
+    | {
+        serviceName: string;
+        priceMin?: number | null;
+        priceMax?: number | null;
+        priceNote?: string | null;
+        currency?: ('THB' | 'USD' | 'EUR') | null;
+        id?: string | null;
+      }[]
+    | null;
+  services?:
+    | {
+        service?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  caseHighlights?:
+    | {
+        title: string;
+        description: string;
+        metric?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Client testimonials submitted by the firm. These will be marked as 'Provided by the firm' on the profile.
+   */
+  testimonials?:
+    | {
+        quote: string;
+        authorName: string;
+        authorTitle?: string | null;
+        rating?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Frequently asked questions displayed on the profile. Great for SEO and user engagement.
+   */
+  faq?:
+    | {
+        question: string;
+        answer: string;
+        id?: string | null;
+      }[]
+    | null;
   practiceAreas?: (number | PracticeArea)[] | null;
   locations?: (number | Location)[] | null;
   primaryLocation?: (number | null) | Location;
@@ -467,6 +566,10 @@ export interface LawFirm {
          * Google Maps URL for this specific office
          */
         googleMapsUrl?: string | null;
+        /**
+         * Nearest BTS/MRT station or landmark for this office
+         */
+        nearestTransit?: string | null;
         openingHours?: {
           monday?: {
             closed?: boolean | null;
@@ -571,12 +674,6 @@ export interface LawFirm {
         id?: string | null;
       }[]
     | null;
-  services?:
-    | {
-        service?: string | null;
-        id?: string | null;
-      }[]
-    | null;
   meta?: {
     title?: string | null;
     /**
@@ -585,6 +682,11 @@ export interface LawFirm {
     image?: (number | null) | Media;
     description?: string | null;
   };
+  /**
+   * Free = basic auto-listed. Claimed = firm has verified their profile. Premium = paid featured listing.
+   */
+  listingTier?: ('free' | 'claimed' | 'premium') | null;
+  verified?: boolean | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1181,6 +1283,15 @@ export interface LawFirmsSelect<T extends boolean = true> {
   coverImage?: T;
   description?: T;
   shortDescription?: T;
+  tagline?: T;
+  responseTime?: T;
+  highlights?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
   featured?: T;
   featuredOrder?: T;
   email?: T;
@@ -1188,12 +1299,72 @@ export interface LawFirmsSelect<T extends boolean = true> {
   website?: T;
   address?: T;
   googleMapsUrl?: T;
+  nearestTransit?: T;
   foundingYear?: T;
   companySize?: T;
   languages?: T;
   feeRangeMin?: T;
   feeRangeMax?: T;
   feeCurrency?: T;
+  practiceAreaDetails?:
+    | T
+    | {
+        practiceArea?: T;
+        description?: T;
+        priceMin?: T;
+        priceMax?: T;
+        priceCurrency?: T;
+        priceNote?: T;
+        services?:
+          | T
+          | {
+              name?: T;
+              price?: T;
+              description?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  servicePricing?:
+    | T
+    | {
+        serviceName?: T;
+        priceMin?: T;
+        priceMax?: T;
+        priceNote?: T;
+        currency?: T;
+        id?: T;
+      };
+  services?:
+    | T
+    | {
+        service?: T;
+        id?: T;
+      };
+  caseHighlights?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        metric?: T;
+        id?: T;
+      };
+  testimonials?:
+    | T
+    | {
+        quote?: T;
+        authorName?: T;
+        authorTitle?: T;
+        rating?: T;
+        id?: T;
+      };
+  faq?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
   practiceAreas?: T;
   locations?: T;
   primaryLocation?: T;
@@ -1205,6 +1376,7 @@ export interface LawFirmsSelect<T extends boolean = true> {
         phone?: T;
         email?: T;
         googleMapsUrl?: T;
+        nearestTransit?: T;
         openingHours?:
           | T
           | {
@@ -1271,12 +1443,6 @@ export interface LawFirmsSelect<T extends boolean = true> {
         linkedIn?: T;
         id?: T;
       };
-  services?:
-    | T
-    | {
-        service?: T;
-        id?: T;
-      };
   meta?:
     | T
     | {
@@ -1284,6 +1450,8 @@ export interface LawFirmsSelect<T extends boolean = true> {
         image?: T;
         description?: T;
       };
+  listingTier?: T;
+  verified?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

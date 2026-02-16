@@ -14,57 +14,183 @@ interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
+const languageOptions = ['English', 'Thai', 'Chinese', 'Japanese', 'German'] as const
+
+const parseListParam = (value: string | string[] | undefined) =>
+  String(value || '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+
+const normalizeSort = (value: string) => {
+  switch (value) {
+    case 'fee-asc':
+      return 'feeRangeMin'
+    case 'newest':
+      return '-createdAt'
+    case 'name-asc':
+      return 'name'
+    default:
+      return '-featured'
+  }
+}
+
+const normalizeSortParamValue = (value: string) => {
+  if (value === '-createdAt') return 'newest'
+  if (value === 'name') return 'name-asc'
+  if (value === '-name') return 'name-asc'
+  if (value === 'rating-desc') return '-featured'
+  return value
+}
+
 async function searchLawFirms(searchParams: { [key: string]: string | string[] | undefined }) {
   const payload = await getPayload({ config })
   
   const query = String(searchParams.q || '')
   const page = Number(searchParams.page) || 1
   const limit = 12
-  const sort = String(searchParams.sort || '-featured')
+  const sortParam = normalizeSortParamValue(String(searchParams.sort || '-featured'))
+  const sort = normalizeSort(sortParam)
 
   if (!query.trim()) {
-    return { firms: [], totalPages: 0, currentPage: 1, totalDocs: 0 }
+    return { firms: [], totalPages: 0, currentPage: 1, totalDocs: 0, languageCounts: {}, sortParam }
   }
 
-  // Build where clause for search
-  const where: any = {
+  const selectedPracticeAreas = parseListParam(searchParams.practiceAreas)
+  const selectedLocations = parseListParam(searchParams.locations)
+  const selectedSizes = parseListParam(searchParams.size)
+  const selectedLanguages = parseListParam(searchParams.languages)
+  const selectedFeeRanges = parseListParam(searchParams.feeRange)
+  const verifiedOnly = String(searchParams.verified || '') === 'true'
+  const hasPricing = String(searchParams.hasPricing || '') === 'true'
+
+  const [practiceAreaDocs, locationDocs] = await Promise.all([
+    selectedPracticeAreas.length
+      ? payload.find({
+          collection: 'practice-areas',
+          where: { slug: { in: selectedPracticeAreas } },
+          limit: selectedPracticeAreas.length,
+          depth: 0,
+        })
+      : Promise.resolve({ docs: [] as Array<{ id: number }> }),
+    selectedLocations.length
+      ? payload.find({
+          collection: 'locations',
+          where: { slug: { in: selectedLocations } },
+          limit: selectedLocations.length,
+          depth: 0,
+        })
+      : Promise.resolve({ docs: [] as Array<{ id: number }> }),
+  ])
+
+  const whereBase: any = {
     _status: { equals: 'published' },
-    or: [
-      { name: { contains: query } },
-      { shortDescription: { contains: query } },
+    and: [
+      {
+        or: [{ name: { contains: query } }, { shortDescription: { contains: query } }],
+      },
     ],
   }
 
-  // Practice area filter
-  if (searchParams.practiceAreas) {
-    const paSlugs = String(searchParams.practiceAreas).split(',')
-    const { docs: paDocs } = await payload.find({
-      collection: 'practice-areas',
-      where: { slug: { in: paSlugs } },
+  if (practiceAreaDocs.docs.length) {
+    whereBase.and.push({
+      practiceAreas: { in: practiceAreaDocs.docs.map((doc) => doc.id) },
     })
-    if (paDocs.length > 0) {
-      where.practiceAreas = { in: paDocs.map((pa) => pa.id) }
+  }
+
+  if (locationDocs.docs.length) {
+    const locationIds = locationDocs.docs.map((doc) => doc.id)
+    whereBase.and.push({
+      or: [{ locations: { in: locationIds } }, { primaryLocation: { in: locationIds } }],
+    })
+  }
+
+  if (selectedSizes.length) {
+    whereBase.and.push({
+      companySize: { in: selectedSizes },
+    })
+  }
+
+  if (selectedFeeRanges.length) {
+    const feeConditions = selectedFeeRanges
+      .map((value) => {
+        if (value === 'under-2000') {
+          return {
+            or: [{ feeRangeMin: { less_than_equal: 2000 } }, { feeRangeMax: { less_than_equal: 2000 } }],
+          }
+        }
+        if (value === '2000-5000') {
+          return {
+            and: [{ feeRangeMin: { less_than_equal: 5000 } }, { feeRangeMax: { greater_than_equal: 2000 } }],
+          }
+        }
+        if (value === '5000-10000') {
+          return {
+            and: [{ feeRangeMin: { less_than_equal: 10000 } }, { feeRangeMax: { greater_than_equal: 5000 } }],
+          }
+        }
+        if (value === '10000-25000') {
+          return {
+            and: [{ feeRangeMin: { less_than_equal: 25000 } }, { feeRangeMax: { greater_than_equal: 10000 } }],
+          }
+        }
+        if (value === '25000-plus') {
+          return {
+            or: [{ feeRangeMin: { greater_than_equal: 25000 } }, { feeRangeMax: { greater_than_equal: 25000 } }],
+          }
+        }
+        return null
+      })
+      .filter(Boolean)
+
+    if (feeConditions.length) {
+      whereBase.and.push({ or: feeConditions })
     }
   }
 
-  // Location filter
-  if (searchParams.locations) {
-    const locationSlugs = String(searchParams.locations).split(',')
-    const { docs: locationDocs } = await payload.find({
-      collection: 'locations',
-      where: { slug: { in: locationSlugs } },
+  if (verifiedOnly) {
+    whereBase.and.push({ verified: { equals: true } })
+  }
+
+  if (hasPricing) {
+    whereBase.and.push({
+      or: [
+        { feeRangeMin: { exists: true } },
+        { feeRangeMax: { exists: true } },
+        { practiceAreaDetails: { exists: true } },
+      ],
     })
-    if (locationDocs.length > 0) {
-      where.and = [
-        ...(where.and || []),
-        {
-          or: [
-            { locations: { in: locationDocs.map((l) => l.id) } },
-            { primaryLocation: { in: locationDocs.map((l) => l.id) } },
-          ],
-        },
-      ]
-    }
+  }
+
+  const languageCountsResult = await payload.find({
+    collection: 'law-firms',
+    where: whereBase,
+    limit: 500,
+    page: 1,
+    depth: 0,
+    sort: '-featured',
+  })
+
+  const languageCounts = languageOptions.reduce(
+    (acc, language) => ({ ...acc, [language]: 0 }),
+    {} as Record<string, number>,
+  )
+
+  languageCountsResult.docs.forEach((doc: any) => {
+    const firmLanguages = Array.isArray(doc.languages) ? doc.languages : []
+    firmLanguages.forEach((language: string) => {
+      languageCounts[language] = (languageCounts[language] || 0) + 1
+    })
+  })
+
+  const where = { ...whereBase }
+  if (selectedLanguages.length) {
+    where.and = [
+      ...(where.and || []),
+      {
+        or: selectedLanguages.map((language) => ({ languages: { contains: language } })),
+      },
+    ]
   }
 
   const result = await payload.find({
@@ -81,6 +207,8 @@ async function searchLawFirms(searchParams: { [key: string]: string | string[] |
     totalPages: result.totalPages,
     currentPage: result.page || 1,
     totalDocs: result.totalDocs,
+    languageCounts,
+    sortParam,
   }
 }
 
@@ -114,7 +242,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
   const resolvedSearchParams = await searchParams
   const query = String(resolvedSearchParams.q || '')
   
-  const [{ firms, totalPages, currentPage, totalDocs }, filterOptions] = await Promise.all([
+  const [{ firms, totalPages, currentPage, totalDocs, languageCounts, sortParam }, filterOptions] = await Promise.all([
     searchLawFirms(resolvedSearchParams),
     getFilterOptions(),
   ])
@@ -158,6 +286,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
                 <FilterSidebar
                   practiceAreas={filterOptions.practiceAreas}
                   locations={filterOptions.locations}
+                  languageCounts={languageCounts}
                   showPracticeAreas={true}
                   showLocations={true}
                 />
@@ -168,7 +297,9 @@ export default async function SearchPage({ searchParams }: PageProps) {
                 <ResultsToolbar
                   shown={firms.length}
                   total={totalDocs}
-                  sortValue={String(resolvedSearchParams.sort || '-featured')}
+                  sortValue={sortParam}
+                  practiceAreas={filterOptions.practiceAreas}
+                  locations={filterOptions.locations}
                 />
                 <LawFirmGrid
                   firms={firms as any}

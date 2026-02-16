@@ -95,6 +95,61 @@ export const LawFirms: CollectionConfig = {
               maxLength: 200,
             },
             {
+              name: 'tagline',
+              type: 'text',
+              maxLength: 150,
+              admin: {
+                description:
+                  "A one-sentence pitch that appears below the firm name in the hero. E.g. 'Bangkok's leading immigration law specialists since 2005'",
+              },
+            },
+            {
+              name: 'responseTime',
+              type: 'select',
+              admin: {
+                description: 'How quickly this firm typically responds to new inquiries',
+              },
+              options: [
+                {
+                  label: 'Within 1 hour',
+                  value: 'within-1-hour',
+                },
+                {
+                  label: 'Within 24 hours',
+                  value: 'within-24-hours',
+                },
+                {
+                  label: 'Within 48 hours',
+                  value: 'within-48-hours',
+                },
+                {
+                  label: 'Within 1 week',
+                  value: 'within-1-week',
+                },
+              ],
+            },
+            {
+              name: 'highlights',
+              type: 'array',
+              maxRows: 6,
+              admin: {
+                description:
+                  "Key statistics or proof points displayed in the 'At a Glance' section",
+              },
+              fields: [
+                {
+                  name: 'label',
+                  type: 'text',
+                  required: true,
+                },
+                {
+                  name: 'value',
+                  type: 'text',
+                  required: true,
+                },
+              ],
+            },
+            {
               name: 'featured',
               type: 'checkbox',
               defaultValue: false,
@@ -129,6 +184,14 @@ export const LawFirms: CollectionConfig = {
             {
               name: 'googleMapsUrl',
               type: 'text',
+            },
+            {
+              name: 'nearestTransit',
+              type: 'text',
+              admin: {
+                description:
+                  "Nearest BTS/MRT station or landmark. E.g. 'BTS Asok / MRT Sukhumvit (5 min walk)'",
+              },
             },
           ],
         },
@@ -167,6 +230,219 @@ export const LawFirms: CollectionConfig = {
               type: 'select',
               defaultValue: 'THB',
               options: ['THB', 'USD', 'EUR'],
+            },
+          ],
+        },
+        {
+          label: 'Services & Fees',
+          fields: [
+            {
+              name: 'practiceAreaDetails',
+              type: 'array',
+              maxRows: 15,
+              admin: {
+                description:
+                  'Define what your firm offers in each practice area, including specific services and pricing. This powers the main Services & Fees section on your profile.',
+              },
+              fields: [
+                {
+                  name: 'practiceArea',
+                  type: 'relationship',
+                  relationTo: 'practice-areas',
+                  required: true,
+                  admin: {
+                    description: 'Select the practice area',
+                  },
+                },
+                {
+                  name: 'description',
+                  type: 'textarea',
+                  maxLength: 500,
+                  admin: {
+                    description:
+                      'Brief description of what your firm does in this area. 1-2 sentences.',
+                  },
+                },
+                {
+                  name: 'priceMin',
+                  label: 'Starting price',
+                  type: 'number',
+                  min: 0,
+                },
+                {
+                  name: 'priceMax',
+                  label: 'Up to',
+                  type: 'number',
+                  min: 0,
+                },
+                {
+                  name: 'priceCurrency',
+                  type: 'select',
+                  defaultValue: 'THB',
+                  options: ['THB', 'USD', 'EUR'],
+                },
+                {
+                  name: 'priceNote',
+                  type: 'text',
+                  admin: {
+                    description:
+                      "E.g. 'per hour', 'fixed fee', 'starting from', 'free initial consultation'",
+                  },
+                },
+                {
+                  name: 'services',
+                  type: 'array',
+                  fields: [
+                    {
+                      name: 'name',
+                      type: 'text',
+                      required: true,
+                    },
+                    {
+                      name: 'price',
+                      type: 'text',
+                    },
+                    {
+                      name: 'description',
+                      type: 'textarea',
+                      maxLength: 300,
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              name: 'servicePricing',
+              type: 'array',
+              maxRows: 15,
+              admin: {
+                hidden: true,
+              },
+              fields: [
+                {
+                  name: 'serviceName',
+                  type: 'text',
+                  required: true,
+                },
+                {
+                  name: 'priceMin',
+                  type: 'number',
+                  min: 0,
+                },
+                {
+                  name: 'priceMax',
+                  type: 'number',
+                  min: 0,
+                },
+                {
+                  name: 'priceNote',
+                  type: 'text',
+                },
+                {
+                  name: 'currency',
+                  type: 'select',
+                  defaultValue: 'THB',
+                  options: ['THB', 'USD', 'EUR'],
+                },
+              ],
+            },
+            {
+              name: 'services',
+              type: 'array',
+              admin: {
+                hidden: true,
+              },
+              fields: [
+                {
+                  name: 'service',
+                  type: 'text',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Social Proof',
+          fields: [
+            {
+              name: 'caseHighlights',
+              type: 'array',
+              maxRows: 6,
+              fields: [
+                {
+                  name: 'title',
+                  type: 'text',
+                  required: true,
+                },
+                {
+                  name: 'description',
+                  type: 'textarea',
+                  required: true,
+                  maxLength: 300,
+                },
+                {
+                  name: 'metric',
+                  type: 'text',
+                },
+              ],
+            },
+            {
+              name: 'testimonials',
+              type: 'array',
+              maxRows: 10,
+              admin: {
+                description:
+                  "Client testimonials submitted by the firm. These will be marked as 'Provided by the firm' on the profile.",
+              },
+              fields: [
+                {
+                  name: 'quote',
+                  type: 'textarea',
+                  required: true,
+                  maxLength: 500,
+                },
+                {
+                  name: 'authorName',
+                  type: 'text',
+                  required: true,
+                },
+                {
+                  name: 'authorTitle',
+                  type: 'text',
+                },
+                {
+                  name: 'rating',
+                  type: 'number',
+                  min: 1,
+                  max: 5,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'FAQ',
+          fields: [
+            {
+              name: 'faq',
+              type: 'array',
+              maxRows: 10,
+              admin: {
+                description:
+                  'Frequently asked questions displayed on the profile. Great for SEO and user engagement.',
+              },
+              fields: [
+                {
+                  name: 'question',
+                  type: 'text',
+                  required: true,
+                },
+                {
+                  name: 'answer',
+                  type: 'textarea',
+                  required: true,
+                },
+              ],
             },
           ],
         },
@@ -238,6 +514,13 @@ export const LawFirms: CollectionConfig = {
                   type: 'text',
                   admin: {
                     description: 'Google Maps URL for this specific office',
+                  },
+                },
+                {
+                  name: 'nearestTransit',
+                  type: 'text',
+                  admin: {
+                    description: "Nearest BTS/MRT station or landmark for this office",
                   },
                 },
                 {
@@ -502,21 +785,6 @@ export const LawFirms: CollectionConfig = {
           ],
         },
         {
-          label: 'Services',
-          fields: [
-            {
-              name: 'services',
-              type: 'array',
-              fields: [
-                {
-                  name: 'service',
-                  type: 'text',
-                },
-              ],
-            },
-          ],
-        },
-        {
           name: 'meta',
           label: 'SEO',
           fields: [
@@ -540,6 +808,38 @@ export const LawFirms: CollectionConfig = {
           ],
         },
       ],
+    },
+    {
+      name: 'listingTier',
+      type: 'select',
+      defaultValue: 'free',
+      admin: {
+        position: 'sidebar',
+        description:
+          'Free = basic auto-listed. Claimed = firm has verified their profile. Premium = paid featured listing.',
+      },
+      options: [
+        {
+          label: 'Free',
+          value: 'free',
+        },
+        {
+          label: 'Claimed',
+          value: 'claimed',
+        },
+        {
+          label: 'Premium',
+          value: 'premium',
+        },
+      ],
+    },
+    {
+      name: 'verified',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+      },
     },
   ],
   versions: {

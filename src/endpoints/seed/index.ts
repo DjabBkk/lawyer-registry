@@ -4,6 +4,7 @@ import type { Endpoint } from 'payload'
 import { lawFirms } from './data/lawFirms'
 import { locations } from './data/locations'
 import { practiceAreas } from './data/practiceAreas'
+import { toKebabCase } from '@/utilities/toKebabCase'
 
 const ensureAuthenticated = (user: unknown) => {
   if (!user) {
@@ -35,6 +36,391 @@ const getCounts = async (req: Parameters<Endpoint['handler']>[0]) => {
     locations: locationsResult.totalDocs,
     lawFirms: lawFirmsResult.totalDocs,
   }
+}
+
+const responseTimeOptions = [
+  'within-1-hour',
+  'within-24-hours',
+  'within-48-hours',
+  'within-1-week',
+] as const
+
+const bangkokTransitHints = [
+  'BTS Asok / MRT Sukhumvit (5 min walk)',
+  'BTS Sala Daeng / MRT Silom (4 min walk)',
+  'BTS Phrom Phong (6 min walk)',
+  'BTS Chong Nonsi (3 min walk)',
+  'MRT Lumphini (7 min walk)',
+] as const
+
+const practiceAreaServiceTemplates: Record<string, string[]> = {
+  'Criminal Law': [
+    'Criminal defense strategy',
+    'Police interview support',
+    'Bail applications',
+    'Courtroom representation',
+  ],
+  'Family Law': [
+    'Divorce and separation agreements',
+    'Child custody planning',
+    'Child support advisory',
+    'Prenuptial and postnuptial agreements',
+  ],
+  'Immigration Law': [
+    'Work permit applications',
+    'Long-term visa support',
+    'Business visa strategy',
+    'Immigration compliance checks',
+    'Visa overstay resolution',
+  ],
+  'Real Estate Law': [
+    'Property due diligence',
+    'Sale and purchase agreements',
+    'Lease drafting and review',
+    'Title and encumbrance checks',
+  ],
+  'Corporate Law': [
+    'Company incorporation',
+    'Shareholder agreements',
+    'Regulatory compliance',
+    'Board governance advisory',
+  ],
+  'Mergers & Acquisitions': [
+    'Transaction structuring',
+    'M&A due diligence',
+    'SPA drafting and negotiation',
+    'Post-merger integration support',
+  ],
+  'Tax Law': [
+    'Corporate tax planning',
+    'Cross-border tax advisory',
+    'Tax audit support',
+    'Tax dispute resolution',
+  ],
+  'Intellectual Property': [
+    'Trademark registration',
+    'IP portfolio strategy',
+    'Licensing agreements',
+    'Infringement enforcement',
+  ],
+  'Employment Law': [
+    'Employment contract drafting',
+    'Labor compliance audits',
+    'Termination and severance planning',
+    'Workplace dispute resolution',
+  ],
+  'Banking & Finance': [
+    'Loan and security documents',
+    'Project finance advisory',
+    'Regulatory banking compliance',
+    'Debt restructuring support',
+  ],
+  'Insurance Law': [
+    'Coverage analysis',
+    'Claims strategy',
+    'Policy wording reviews',
+    'Insurance dispute resolution',
+  ],
+  'Personal Injury': [
+    'Accident claim advisory',
+    'Damages quantification',
+    'Settlement negotiations',
+    'Court representation',
+  ],
+  'Medical Malpractice': [
+    'Clinical negligence review',
+    'Expert coordination',
+    'Compensation claim strategy',
+    'Mediation and litigation support',
+  ],
+  'Construction Law': [
+    'EPC and construction contract drafting',
+    'Variation and claims management',
+    'Delay and defect dispute resolution',
+    'Project risk allocation advisory',
+  ],
+  'Environmental Law': [
+    'Environmental compliance advisory',
+    'Permit and licensing support',
+    'EIA-related legal strategy',
+    'Regulatory enforcement defense',
+  ],
+  'International Trade': [
+    'Import/export compliance',
+    'Customs dispute support',
+    'Trade contract structuring',
+    'Cross-border risk advisory',
+  ],
+  'Maritime Law': [
+    'Charterparty and shipping contracts',
+    'Marine insurance disputes',
+    'Port and cargo claims',
+    'Admiralty litigation support',
+  ],
+  'Aviation Law': [
+    'Aircraft lease and finance',
+    'Regulatory aviation compliance',
+    'Operational incident advisory',
+    'Aviation dispute management',
+  ],
+  'Entertainment Law': [
+    'Talent and production contracts',
+    'Music and media licensing',
+    'Brand and sponsorship advisory',
+    'Rights clearance support',
+  ],
+  'Sports Law': [
+    'Athlete contract negotiation',
+    'Sponsorship and endorsement deals',
+    'Club governance advisory',
+    'Disciplinary dispute representation',
+  ],
+  'Bankruptcy & Insolvency': [
+    'Debt restructuring support',
+    'Creditor rights strategy',
+    'Insolvency proceedings advisory',
+    'Turnaround planning',
+  ],
+  'Arbitration & Mediation': [
+    'Arbitration case management',
+    'Mediation strategy',
+    'Settlement framework drafting',
+    'Award enforcement support',
+  ],
+  'Cybersecurity & Data Privacy': [
+    'PDPA compliance programs',
+    'Data breach response support',
+    'Cross-border data transfer advisory',
+    'Cyber incident risk management',
+  ],
+  'Wills & Estate Planning': [
+    'Will drafting and updates',
+    'Trust structuring',
+    'Probate support',
+    'Cross-border estate planning',
+  ],
+  'Contract Law': [
+    'Commercial contract drafting',
+    'Contract risk reviews',
+    'Negotiation support',
+    'Breach and dispute strategy',
+  ],
+}
+
+const listingTierForIndex = (index: number): 'free' | 'claimed' | 'premium' => {
+  if (index < 5) return 'premium'
+  if (index < 15) return 'claimed'
+  return 'free'
+}
+
+const estimateTeamSizeFromBand = (band?: string) => {
+  switch (band) {
+    case '1-5':
+      return '5+'
+    case '6-10':
+      return '10+'
+    case '11-25':
+      return '25+'
+    case '26-50':
+      return '50+'
+    case '51-100':
+      return '100+'
+    case '100+':
+      return '150+'
+    default:
+      return '20+'
+  }
+}
+
+const toCurrencySymbol = (currency: 'THB' | 'USD' | 'EUR') => {
+  if (currency === 'USD') return '$'
+  if (currency === 'EUR') return '€'
+  return '฿'
+}
+
+const formatPrice = (value: number, currency: 'THB' | 'USD' | 'EUR') =>
+  `${toCurrencySymbol(currency)}${value.toLocaleString()}`
+
+const buildServiceRows = ({
+  practiceAreaName,
+  baseMin,
+  baseMax,
+  currency,
+}: {
+  practiceAreaName: string
+  baseMin: number
+  baseMax: number
+  currency: 'THB' | 'USD' | 'EUR'
+}) => {
+  const templateServices = practiceAreaServiceTemplates[practiceAreaName] || [
+    `${practiceAreaName} strategy and advisory`,
+    `${practiceAreaName} documentation support`,
+    `${practiceAreaName} dispute management`,
+  ]
+
+  const count = Math.max(3, Math.min(6, templateServices.length))
+
+  return templateServices.slice(0, count).map((service, serviceIndex) => {
+    const min = Math.round((baseMin * (1 + serviceIndex * 0.25)) / 100) * 100
+    const max = Math.round((Math.min(baseMax, min * (1.4 + serviceIndex * 0.1))) / 100) * 100
+    const price =
+      serviceIndex % 3 === 0
+        ? `${formatPrice(min, currency)} - ${formatPrice(max, currency)}`
+        : serviceIndex % 3 === 1
+          ? `From ${formatPrice(min, currency)}`
+          : 'On request'
+
+    return {
+      name: service,
+      price,
+      description: `Comprehensive support for ${service.toLowerCase()} with clear scope, timelines, and practical guidance.`,
+    }
+  })
+}
+
+const buildPracticeAreaDetails = ({
+  firm,
+  getPracticeAreaId,
+}: {
+  firm: (typeof lawFirms)[number]
+  getPracticeAreaId: (name: string) => number
+}) =>
+  firm.practiceAreas.slice(0, 5).map((practiceAreaName, practiceAreaIndex) => {
+    const currency = firm.feeCurrency || 'THB'
+    const baseMin = Math.round(((firm.feeRangeMin || 2500) * (1 + practiceAreaIndex * 0.15)) / 100) * 100
+    const baseMax = Math.round(((firm.feeRangeMax || baseMin * 3) * (1 + practiceAreaIndex * 0.1)) / 100) * 100
+    const services = buildServiceRows({
+      practiceAreaName,
+      baseMin,
+      baseMax,
+      currency,
+    })
+
+    return {
+      practiceArea: getPracticeAreaId(practiceAreaName),
+      description: `${firm.name} supports local and international clients with practical ${practiceAreaName.toLowerCase()} solutions tailored to matters in ${firm.primaryLocation} and across Thailand.`,
+      priceMin: baseMin,
+      priceMax: baseMax,
+      priceCurrency: currency,
+      priceNote: practiceAreaIndex % 2 === 0 ? 'fixed fee range' : 'starting from',
+      services,
+    }
+  })
+
+const buildServicePricing = (firm: (typeof lawFirms)[number]) => {
+  const currency = firm.feeCurrency || 'THB'
+  const baseMin = firm.feeRangeMin || 2500
+  const baseMax = firm.feeRangeMax || baseMin * 3
+
+  const entries: Array<{
+    serviceName: string
+    priceMin?: number
+    priceMax?: number
+    priceNote?: string
+    currency: 'THB' | 'USD' | 'EUR'
+  }> = [
+    {
+      serviceName: 'Initial Consultation',
+      priceMin: baseMin,
+      priceMax: Math.max(baseMin, Math.round((baseMin * 1.4) / 100) * 100),
+      priceNote: 'starting from',
+      currency,
+    },
+  ]
+
+  const pricedServices = (firm.services || []).slice(0, 4)
+  pricedServices.forEach((service, idx) => {
+    const min = Math.round((baseMin * (1 + idx * 0.25)) / 100) * 100
+    const max = Math.round((Math.min(baseMax, min * 2.2)) / 100) * 100
+
+    entries.push({
+      serviceName: service.service,
+      priceMin: min,
+      priceMax: max,
+      priceNote: idx % 2 === 0 ? 'fixed fee' : 'estimated range',
+      currency,
+    })
+  })
+
+  return entries.slice(0, 5)
+}
+
+const buildCaseHighlights = (firm: (typeof lawFirms)[number]) => {
+  const areas = firm.practiceAreas.slice(0, 3)
+
+  return areas.map((area, idx) => ({
+    title: `${area} outcomes for clients in ${firm.primaryLocation}`,
+    description: `Delivered consistent ${area.toLowerCase()} support for individuals and businesses in ${firm.primaryLocation}, with clear communication and practical timelines from intake to resolution.`,
+    metric: idx === 0 ? '95%+ positive outcomes' : idx === 1 ? '200+ matters advised' : '15+ years combined experience',
+  }))
+}
+
+const buildTestimonials = (firm: (typeof lawFirms)[number]) => [
+  {
+    quote: `The team at ${firm.name} was clear, responsive, and commercially practical from day one.`,
+    authorName: 'International Client',
+    authorTitle: `Business Owner, ${firm.primaryLocation}`,
+    rating: 5 as const,
+  },
+  {
+    quote: `We appreciated how they explained each legal step and delivered exactly on timeline.`,
+    authorName: 'Private Client',
+    authorTitle: `${firm.primaryLocation} Resident`,
+    rating: 5 as const,
+  },
+]
+
+const buildFaq = (firm: (typeof lawFirms)[number]) => {
+  const leadArea = firm.practiceAreas[0] || 'legal'
+
+  return [
+    {
+      question: `How quickly can ${firm.name} start on a new ${leadArea.toLowerCase()} matter?`,
+      answer:
+        'Most matters can begin after an initial consultation and document review. Urgent matters are prioritized and assigned immediately when capacity allows.',
+    },
+    {
+      question: 'Do you support foreign clients and bilingual communication?',
+      answer:
+        'Yes. We regularly support international clients and coordinate updates in clear business English and Thai.',
+    },
+    {
+      question: 'Can I get a clear quote before proceeding?',
+      answer:
+        'Yes. After scoping your matter, we provide an indicative fee range and recommend the most cost-effective engagement model.',
+    },
+  ]
+}
+
+const buildHighlights = (firm: (typeof lawFirms)[number]) => {
+  const highlightItems = []
+
+  if (firm.foundingYear) {
+    const years = Math.max(1, new Date().getFullYear() - firm.foundingYear)
+    highlightItems.push({
+      label: 'Years of Experience',
+      value: `${years}+`,
+    })
+  }
+
+  highlightItems.push({
+    label: 'Team Capacity',
+    value: estimateTeamSizeFromBand(firm.companySize),
+  })
+
+  if (firm.languages?.length) {
+    highlightItems.push({
+      label: 'Languages Supported',
+      value: `${firm.languages.length}`,
+    })
+  }
+
+  highlightItems.push({
+    label: 'Practice Areas',
+    value: `${firm.practiceAreas.length}+`,
+  })
+
+  return highlightItems.slice(0, 4)
 }
 
 export const seedStatusEndpoint: Endpoint = {
@@ -72,8 +458,10 @@ export const seedEndpoint: Endpoint = {
     for (const item of practiceAreas) {
       const created = await req.payload.create({
         collection: 'practice-areas',
+        draft: false,
         data: {
           name: item.name,
+          slug: toKebabCase(item.name),
           shortDescription: item.shortDescription,
           icon: item.icon,
           featured: item.featured,
@@ -90,8 +478,10 @@ export const seedEndpoint: Endpoint = {
     for (const item of locations) {
       const created = await req.payload.create({
         collection: 'locations',
+        draft: false,
         data: {
           name: item.name,
+          slug: toKebabCase(item.name),
           region: item.region,
           shortDescription: item.shortDescription,
           featured: item.featured,
@@ -118,6 +508,14 @@ export const seedEndpoint: Endpoint = {
         return id
       })
 
+    const getPracticeAreaId = (name: string) => {
+      const id = practiceAreaIdByName.get(name)
+      if (!id) {
+        throw new APIError(`Practice area not found: ${name}`, 400)
+      }
+      return id
+    }
+
     const getLocationId = (name: string) => {
       const id = locationIdByName.get(name)
       if (!id) {
@@ -127,9 +525,50 @@ export const seedEndpoint: Endpoint = {
     }
 
     const createdLawFirms = []
-    for (const firm of lawFirms) {
+    for (const [index, firm] of lawFirms.entries()) {
       const locationIds = firm.locations.map(getLocationId)
       const primaryLocationId = getLocationId(firm.primaryLocation)
+      const listingTier = firm.listingTier || listingTierForIndex(index)
+      const verified = firm.verified ?? listingTier === 'premium'
+      const responseTime = firm.responseTime || responseTimeOptions[index % responseTimeOptions.length]
+      const nearestTransit =
+        firm.nearestTransit ||
+        (firm.locations.includes('Bangkok')
+          ? bangkokTransitHints[index % bangkokTransitHints.length]
+          : undefined)
+
+      const tagline =
+        firm.tagline ||
+        `${firm.primaryLocation}-based ${firm.practiceAreas.slice(0, 2).join(' and ').toLowerCase()} team helping local and international clients.`
+
+      const highlights = firm.highlights || buildHighlights(firm)
+      const practiceAreaDetails =
+        firm.practiceAreaDetails?.map((item) => ({
+          practiceArea: getPracticeAreaId(item.practiceArea),
+          description: item.description,
+          priceMin: item.priceMin,
+          priceMax: item.priceMax,
+          priceCurrency: item.priceCurrency || firm.feeCurrency || 'THB',
+          priceNote: item.priceNote,
+          services: (item.services || []).map((service) => ({
+            name: service.name,
+            price: service.price,
+            description: service.description,
+          })),
+        })) || buildPracticeAreaDetails({ firm, getPracticeAreaId })
+
+      const servicePricing =
+        firm.servicePricing?.map((item) => ({
+          serviceName: item.serviceName,
+          priceMin: item.priceMin,
+          priceMax: item.priceMax,
+          priceNote: item.priceNote,
+          currency: item.currency || firm.feeCurrency || 'THB',
+        })) || buildServicePricing(firm)
+
+      const caseHighlights = firm.caseHighlights || buildCaseHighlights(firm).slice(0, 3)
+      const testimonials = firm.testimonials || buildTestimonials(firm).slice(0, 3)
+      const faq = firm.faq || buildFaq(firm).slice(0, 4)
 
       const officeLocations = firm.officeLocations?.map((office) => ({
         location: getLocationId(office.location),
@@ -137,27 +576,45 @@ export const seedEndpoint: Endpoint = {
         phone: office.phone,
         email: office.email,
         googleMapsUrl: office.googleMapsUrl,
+        nearestTransit:
+          office.nearestTransit ||
+          (office.location === 'Bangkok'
+            ? bangkokTransitHints[index % bangkokTransitHints.length]
+            : undefined),
         openingHours: office.openingHours,
       }))
 
       const created = await req.payload.create({
         collection: 'law-firms',
+        draft: false,
         data: {
           name: firm.name,
+          slug: toKebabCase(firm.name),
           email: firm.email,
           phone: firm.phone,
           website: firm.website,
           address: firm.address,
           googleMapsUrl: firm.googleMapsUrl,
           shortDescription: firm.shortDescription,
+          tagline,
           featured: firm.featured,
           featuredOrder: firm.featuredOrder,
+          listingTier,
+          verified,
           foundingYear: firm.foundingYear,
           companySize: firm.companySize,
           languages: firm.languages,
           feeRangeMin: firm.feeRangeMin,
           feeRangeMax: firm.feeRangeMax,
           feeCurrency: firm.feeCurrency,
+          responseTime,
+          nearestTransit,
+          highlights,
+          practiceAreaDetails,
+          servicePricing,
+          caseHighlights,
+          testimonials,
+          faq,
           practiceAreas: getPracticeAreaIds(firm.practiceAreas),
           locations: locationIds,
           primaryLocation: primaryLocationId,

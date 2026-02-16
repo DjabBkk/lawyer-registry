@@ -19,6 +19,11 @@ import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import { clearSeedEndpoint } from './endpoints/seed/clear'
 import { seedEndpoint, seedStatusEndpoint } from './endpoints/seed'
+import { createFirstUserEndpoint } from './endpoints/create-first-user'
+import { resetUserPasswordEndpoint } from './endpoints/reset-user-password'
+import { listUsersEndpoint } from './endpoints/list-users'
+import { updateUserEndpoint } from './endpoints/update-user'
+import { unlockUserEndpoint } from './endpoints/unlock-user'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -76,7 +81,7 @@ export default buildConfig({
   }),
   collections: [Pages, Posts, Categories, LawFirms, PracticeAreas, Locations, Media, Users],
   cors: [getServerSideURL()].filter(Boolean),
-  endpoints: [seedStatusEndpoint, seedEndpoint, clearSeedEndpoint],
+  endpoints: [seedStatusEndpoint, seedEndpoint, clearSeedEndpoint, createFirstUserEndpoint, resetUserPasswordEndpoint, listUsersEndpoint, updateUserEndpoint, unlockUserEndpoint],
   globals: [Header, Footer],
   plugins,
   secret: process.env.PAYLOAD_SECRET,

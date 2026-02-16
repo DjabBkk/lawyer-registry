@@ -8,7 +8,18 @@ import type { Metadata } from 'next'
 import { Container } from '@/components/layout/Container'
 import { DarkHero } from '@/components/layout/DarkHero'
 import { LawFirmGrid, FilterSidebar, Pagination, ResultsToolbar } from '@/components/law-firms'
-import { ProfileHero, TeamSection, ContactSection } from '@/components/profile'
+import {
+  ProfileHero,
+  AboutSection,
+  ServicesAndFeesSection,
+  CaseHighlightsSection,
+  TestimonialsSection,
+  FAQSection,
+  ProfileSidebar,
+  MobileContactBar,
+  TeamSection,
+  ContactMapSection,
+} from '@/components/profile'
 import { LawFirmCard } from '@/components/law-firms/LawFirmCard'
 import { getSupportedCountry } from '@/utilities/countries'
 import type { LawFirm, PracticeArea } from '@/payload-types'
@@ -20,103 +31,288 @@ interface PageProps {
   searchParams: Promise<SearchParams>
 }
 
+const languageOptions = ['English', 'Thai', 'Chinese', 'Japanese', 'German'] as const
+
+const normalizeSort = (value: string) => {
+  switch (value) {
+    case 'fee-asc':
+      return 'feeRangeMin'
+    case 'newest':
+    case '-createdAt':
+      return '-createdAt'
+    case 'name-asc':
+    case 'name':
+      return 'name'
+    case '-name':
+      return '-name'
+    default:
+      return '-featured'
+  }
+}
+
+const normalizeSortParamValue = (value: string) => {
+  if (value === '-createdAt') return 'newest'
+  if (value === 'name') return 'name-asc'
+  if (value === '-name') return 'name-asc'
+  if (value === 'rating-desc') return '-featured'
+  return value
+}
+
+const parseListParam = (value: string | string[] | undefined) =>
+  String(value || '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+
+const appendAndCondition = (where: Record<string, unknown>, condition: Record<string, unknown>) => {
+  const existing = (where.and as Record<string, unknown>[] | undefined) || []
+  where.and = [...existing, condition]
+}
+
 async function getPracticeAreaBySlug(slug: string) {
-  const payload = await getPayload({ config })
-  const { docs } = await payload.find({
-    collection: 'practice-areas',
-    where: { slug: { equals: slug } },
-    limit: 1,
-    depth: 0,
-  })
-  return docs[0] || null
+  try {
+    const payload = await getPayload({ config })
+    const { docs } = await payload.find({
+      collection: 'practice-areas',
+      where: { slug: { equals: slug } },
+      limit: 1,
+      depth: 0,
+    })
+    return docs[0] || null
+  } catch (error) {
+    console.error(`Error fetching practice area by slug "${slug}":`, error)
+    return null
+  }
 }
 
 async function getLocationBySlug(slug: string) {
-  const payload = await getPayload({ config })
-  const { docs } = await payload.find({
-    collection: 'locations',
-    where: { slug: { equals: slug } },
-    limit: 1,
-    depth: 0,
-  })
-  return docs[0] || null
+  try {
+    const payload = await getPayload({ config })
+    const { docs } = await payload.find({
+      collection: 'locations',
+      where: { slug: { equals: slug } },
+      limit: 1,
+      depth: 0,
+    })
+    return docs[0] || null
+  } catch (error) {
+    console.error(`Error fetching location by slug "${slug}":`, error)
+    return null
+  }
 }
 
 async function getLawFirmBySlug(slug: string) {
-  const payload = await getPayload({ config })
-  const { docs } = await payload.find({
-    collection: 'law-firms',
-    where: {
-      slug: { equals: slug },
-      _status: { equals: 'published' },
-    },
-    limit: 1,
-    depth: 3,
-  })
-  return docs[0] || null
+  try {
+    const payload = await getPayload({ config })
+    const { docs } = await payload.find({
+      collection: 'law-firms',
+      where: {
+        slug: { equals: slug },
+        _status: { equals: 'published' },
+      },
+      limit: 1,
+      depth: 2,
+    })
+    return docs[0] || null
+  } catch (error) {
+    console.error(`Error fetching law firm by slug "${slug}":`, error)
+    return null
+  }
 }
 
 async function getFilterOptions() {
-  const payload = await getPayload({ config })
+  try {
+    const payload = await getPayload({ config })
 
-  const [practiceAreas, locations] = await Promise.all([
-    payload.find({ collection: 'practice-areas', limit: 200, sort: 'name' }),
-    payload.find({ collection: 'locations', limit: 200, sort: 'name' }),
-  ])
+    const [practiceAreas, locations] = await Promise.all([
+      payload.find({ collection: 'practice-areas', limit: 200, sort: 'name' }),
+      payload.find({ collection: 'locations', limit: 200, sort: 'name' }),
+    ])
 
-  return {
-    practiceAreas: practiceAreas.docs.map((pa) => ({ id: pa.id, name: pa.name, slug: pa.slug })),
-    locations: locations.docs.map((l) => ({ id: l.id, name: l.name, slug: l.slug })),
+    return {
+      practiceAreas: practiceAreas.docs.map((pa) => ({ id: pa.id, name: pa.name, slug: pa.slug })),
+      locations: locations.docs.map((l) => ({ id: l.id, name: l.name, slug: l.slug })),
+    }
+  } catch (error) {
+    console.error('Error fetching filter options:', error)
+    return {
+      practiceAreas: [],
+      locations: [],
+    }
   }
 }
 
 async function getLawFirms({
   practiceAreaId,
   locationId,
+  keyword,
   searchParams,
 }: {
   practiceAreaId?: number
   locationId?: number
+  keyword?: string
   searchParams: SearchParams
 }) {
   const payload = await getPayload({ config })
 
   const page = Number(searchParams.page) || 1
   const limit = 12
-  const sort = String(searchParams.sort || '-featured')
+  const sortParam = normalizeSortParamValue(String(searchParams.sort || '-featured'))
+  const sort = normalizeSort(sortParam)
+  const selectedPracticeAreaSlugs = parseListParam(searchParams.practiceAreas)
+  const selectedLocationSlugs = parseListParam(searchParams.locations)
+  const selectedSizes = parseListParam(searchParams.size)
+  const selectedLanguages = parseListParam(searchParams.languages)
+  const selectedFeeRanges = parseListParam(searchParams.feeRange)
+  const verifiedOnly = String(searchParams.verified || '') === 'true'
+  const hasPricing = String(searchParams.hasPricing || '') === 'true'
 
-  const where: any = {
-    _status: { equals: 'published' },
-  }
+  const [practiceAreaDocs, locationDocs] = await Promise.all([
+    selectedPracticeAreaSlugs.length
+      ? payload.find({
+          collection: 'practice-areas',
+          where: { slug: { in: selectedPracticeAreaSlugs } },
+          limit: selectedPracticeAreaSlugs.length,
+          depth: 0,
+        })
+      : Promise.resolve({ docs: [] as Array<{ id: number }> }),
+    selectedLocationSlugs.length
+      ? payload.find({
+          collection: 'locations',
+          where: { slug: { in: selectedLocationSlugs } },
+          limit: selectedLocationSlugs.length,
+          depth: 0,
+        })
+      : Promise.resolve({ docs: [] as Array<{ id: number }> }),
+  ])
+
+  const whereBase: Record<string, unknown> = {}
+
+  // Always add _status condition first
+  appendAndCondition(whereBase, { _status: { equals: 'published' } })
 
   if (practiceAreaId) {
-    where.practiceAreas = { contains: practiceAreaId }
+    appendAndCondition(whereBase, { practiceAreas: { contains: practiceAreaId } })
   }
 
   if (locationId) {
-    where.and = [
-      ...(where.and || []),
-      {
-        or: [
-          { locations: { contains: locationId } },
-          { primaryLocation: { equals: locationId } },
-        ],
-      },
-    ]
+    appendAndCondition(whereBase, {
+      or: [{ locations: { contains: locationId } }, { primaryLocation: { equals: locationId } }],
+    })
   }
 
-  if (searchParams.size) {
-    const sizes = String(searchParams.size).split(',')
-    where.companySize = { in: sizes }
+  if (practiceAreaDocs.docs.length) {
+    appendAndCondition(whereBase, {
+      practiceAreas: { in: practiceAreaDocs.docs.map((doc) => doc.id) },
+    })
   }
-  if (searchParams.languages) {
-    const langs = String(searchParams.languages).split(',')
-    where.languages = { contains: langs[0] }
+
+  if (locationDocs.docs.length) {
+    const locationIds = locationDocs.docs.map((doc) => doc.id)
+    appendAndCondition(whereBase, {
+      or: [{ locations: { in: locationIds } }, { primaryLocation: { in: locationIds } }],
+    })
+  }
+
+  if (selectedSizes.length) {
+    appendAndCondition(whereBase, { companySize: { in: selectedSizes } })
+  }
+
+  if (selectedFeeRanges.length) {
+    const feeConditions = selectedFeeRanges
+      .map((value) => {
+        if (value === 'under-2000') {
+          return {
+            or: [{ feeRangeMin: { less_than_equal: 2000 } }, { feeRangeMax: { less_than_equal: 2000 } }],
+          }
+        }
+        if (value === '2000-5000') {
+          return {
+            and: [{ feeRangeMin: { less_than_equal: 5000 } }, { feeRangeMax: { greater_than_equal: 2000 } }],
+          }
+        }
+        if (value === '5000-10000') {
+          return {
+            and: [{ feeRangeMin: { less_than_equal: 10000 } }, { feeRangeMax: { greater_than_equal: 5000 } }],
+          }
+        }
+        if (value === '10000-25000') {
+          return {
+            and: [{ feeRangeMin: { less_than_equal: 25000 } }, { feeRangeMax: { greater_than_equal: 10000 } }],
+          }
+        }
+        if (value === '25000-plus') {
+          return {
+            or: [{ feeRangeMin: { greater_than_equal: 25000 } }, { feeRangeMax: { greater_than_equal: 25000 } }],
+          }
+        }
+        return null
+      })
+      .filter(Boolean) as Record<string, unknown>[]
+
+    if (feeConditions.length) {
+      // Flatten the conditions: if we have multiple fee ranges, we want OR between them
+      // Each condition is already a complete object with 'or' or 'and' keys
+      appendAndCondition(whereBase, { or: feeConditions })
+    }
+  }
+
+  if (verifiedOnly) {
+    appendAndCondition(whereBase, { verified: { equals: true } })
+  }
+
+  if (hasPricing) {
+    appendAndCondition(whereBase, {
+      or: [
+        { feeRangeMin: { exists: true } },
+        { feeRangeMax: { exists: true } },
+        { practiceAreaDetails: { exists: true } },
+      ],
+    })
+  }
+
+  if (keyword?.trim()) {
+    appendAndCondition(whereBase, {
+      or: [{ name: { contains: keyword } }, { shortDescription: { contains: keyword } }],
+    })
+  }
+
+  const languageCountsResult = await payload.find({
+    collection: 'law-firms',
+    where: whereBase as any,
+    limit: 500,
+    page: 1,
+    depth: 0,
+    sort: '-featured',
+  })
+
+  const languageCounts = languageOptions.reduce(
+    (acc, language) => ({ ...acc, [language]: 0 }),
+    {} as Record<string, number>,
+  )
+
+  languageCountsResult.docs.forEach((doc: any) => {
+    const firmLanguages = Array.isArray(doc.languages) ? doc.languages : []
+    firmLanguages.forEach((language: string) => {
+      languageCounts[language] = (languageCounts[language] || 0) + 1
+    })
+  })
+
+  const where: Record<string, unknown> = {
+    ...whereBase,
+  }
+
+  if (selectedLanguages.length) {
+    appendAndCondition(where, {
+      or: selectedLanguages.map((language) => ({
+        languages: { contains: language },
+      })),
+    })
   }
 
   const result = await payload.find({
     collection: 'law-firms',
-    where,
+    where: where as any,
     limit,
     page,
     depth: 2,
@@ -128,6 +324,8 @@ async function getLawFirms({
     totalPages: result.totalPages,
     currentPage: result.page || 1,
     totalDocs: result.totalDocs,
+    languageCounts,
+    sortParam,
   }
 }
 
@@ -197,12 +395,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
     if (firm) {
       const loc = typeof firm.primaryLocation === 'object' ? firm.primaryLocation : null
+      const areaNames = ((firm.practiceAreas as PracticeArea[]) || [])
+        .filter((area): area is PracticeArea => typeof area === 'object')
+        .slice(0, 3)
+        .map((area) => area.name)
+      const areaSummary = areaNames.length ? `Specialties include ${areaNames.join(', ')}.` : ''
       return {
         title: firm.meta?.title || `${firm.name} | Law Firm in ${loc?.name || country.name}`,
         description:
           firm.meta?.description ||
           firm.shortDescription ||
-          `${firm.name} is a law firm based in ${loc?.name || country.name}. Learn more about their services and team.`,
+          `${firm.name} is a law firm based in ${loc?.name || country.name}. ${areaSummary} Learn more about their services, team, fees, and client FAQs.`,
       }
     }
   }
@@ -262,7 +465,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
   const [s1, s2, s3] = segments
 
   if (segments.length === 0) {
-    const [{ firms, totalPages, currentPage, totalDocs }, filterOptions] = await Promise.all([
+    const [{ firms, totalPages, currentPage, totalDocs, languageCounts, sortParam }, filterOptions] = await Promise.all([
       getLawFirms({ searchParams: resolvedSearchParams }),
       getFilterOptions(),
     ])
@@ -288,6 +491,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                 <FilterSidebar
                   practiceAreas={filterOptions.practiceAreas}
                   locations={filterOptions.locations}
+                  languageCounts={languageCounts}
                   showPracticeAreas={true}
                   showLocations={true}
                 />
@@ -297,7 +501,9 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                 <ResultsToolbar
                   shown={firms.length}
                   total={totalDocs}
-                  sortValue={String(resolvedSearchParams.sort || '-featured')}
+                  sortValue={sortParam}
+                  practiceAreas={filterOptions.practiceAreas}
+                  locations={filterOptions.locations}
                 />
 
                 <LawFirmGrid firms={firms as any} emptyMessage="No law firms found matching your criteria." />
@@ -323,7 +529,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
     ])
 
     if (location) {
-      const [{ firms, totalPages, currentPage, totalDocs }, filterOptions] = await Promise.all([
+      const [{ firms, totalPages, currentPage, totalDocs, languageCounts, sortParam }, filterOptions] = await Promise.all([
         getLawFirms({ locationId: location.id, searchParams: resolvedSearchParams }),
         getFilterOptions(),
       ])
@@ -349,6 +555,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                   <FilterSidebar
                     practiceAreas={filterOptions.practiceAreas}
                     locations={filterOptions.locations}
+                    languageCounts={languageCounts}
                     showPracticeAreas={true}
                     showLocations={false}
                   />
@@ -358,7 +565,9 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                   <ResultsToolbar
                     shown={firms.length}
                     total={totalDocs}
-                    sortValue={String(resolvedSearchParams.sort || '-featured')}
+                    sortValue={sortParam}
+                    practiceAreas={filterOptions.practiceAreas}
+                    locations={filterOptions.locations}
                   />
 
                   <LawFirmGrid firms={firms as any} emptyMessage={`No law firms found in ${location.name} matching your criteria.`} />
@@ -377,7 +586,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
     }
 
     if (practiceArea) {
-      const [{ firms, totalPages, currentPage, totalDocs }, filterOptions] = await Promise.all([
+      const [{ firms, totalPages, currentPage, totalDocs, languageCounts, sortParam }, filterOptions] = await Promise.all([
         getLawFirms({ practiceAreaId: practiceArea.id, searchParams: resolvedSearchParams }),
         getFilterOptions(),
       ])
@@ -406,6 +615,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                   <FilterSidebar
                     practiceAreas={filterOptions.practiceAreas}
                     locations={filterOptions.locations}
+                    languageCounts={languageCounts}
                     showPracticeAreas={false}
                     showLocations={true}
                   />
@@ -415,7 +625,9 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                   <ResultsToolbar
                     shown={firms.length}
                     total={totalDocs}
-                    sortValue={String(resolvedSearchParams.sort || '-featured')}
+                    sortValue={sortParam}
+                    practiceAreas={filterOptions.practiceAreas}
+                    locations={filterOptions.locations}
                   />
 
                   <LawFirmGrid firms={firms as any} emptyMessage={`No ${practiceArea.name.toLowerCase()} lawyers found matching your criteria.`} />
@@ -449,96 +661,100 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
         { label: firm.name },
       ]
 
+      const testimonialRatings = (firm.testimonials || [])
+        .map((item: any) => item?.rating)
+        .filter((rating: unknown): rating is number => typeof rating === 'number' && rating >= 1 && rating <= 5)
+
+      const aggregateRating =
+        testimonialRatings.length > 0
+          ? {
+              '@type': 'AggregateRating',
+              ratingValue:
+                Math.round(
+                  (testimonialRatings.reduce((sum, rating) => sum + rating, 0) /
+                    testimonialRatings.length) *
+                    10,
+                ) / 10,
+              reviewCount: testimonialRatings.length,
+              bestRating: 5,
+              worstRating: 1,
+            }
+          : undefined
+
+      const currency = firm.feeCurrency || 'THB'
+      const priceRange =
+        typeof firm.feeRangeMin === 'number' && typeof firm.feeRangeMax === 'number'
+          ? `${currency} ${firm.feeRangeMin}-${firm.feeRangeMax}`
+          : typeof firm.feeRangeMin === 'number'
+            ? `${currency} ${firm.feeRangeMin}+`
+            : typeof firm.feeRangeMax === 'number'
+              ? `Up to ${currency} ${firm.feeRangeMax}`
+              : undefined
+
+      const legalServiceSchema: Record<string, unknown> = {
+        '@context': 'https://schema.org',
+        '@type': 'LegalService',
+        name: firm.name,
+        description: firm.shortDescription || '',
+        areaServed: country.name,
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: firm.address || undefined,
+          addressLocality: location?.name || undefined,
+          addressCountry: country.name,
+        },
+        telephone: firm.phone,
+        email: firm.email,
+        url: firm.website || `/${country.slug}/lawyers/${firm.slug}`,
+        knowsAbout: practiceAreas.map((area) => area.name),
+      }
+
+      if (aggregateRating) {
+        legalServiceSchema.aggregateRating = aggregateRating
+      }
+      if (priceRange) {
+        legalServiceSchema.priceRange = priceRange
+      }
+
+      const structuredData = [legalServiceSchema]
+
       return (
         <>
+          {structuredData.map((schema, index) => (
+            <script
+              key={`profile-schema-${index}`}
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+            />
+          ))}
+
           <ProfileHero firm={firm as any} breadcrumbs={breadcrumbs} />
 
           <div className="py-12">
             <Container>
-              <div className="grid gap-12 lg:grid-cols-3">
-                <div className="lg:col-span-2 space-y-12">
-                  {firm.description && (
-                    <section>
-                      <h2 className="font-heading text-2xl font-bold text-royal-900">About {firm.name}</h2>
-                      <div className="prose prose-gray mt-4 max-w-none">
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: ((firm.description as any)?.root?.children?.[0]?.children?.[0]?.text as string) || '',
-                          }}
-                        />
-                      </div>
-                    </section>
-                  )}
-
-                  {firm.services && firm.services.length > 0 && (
-                    <section>
-                      <h2 className="font-heading text-2xl font-bold text-royal-900">Services Offered</h2>
-                      <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                        {firm.services.map((service, index) => (
-                          <li key={index} className="flex items-start gap-3 rounded-lg border border-border/50 bg-white p-4">
-                            <div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-royal-600" />
-                            <span className="text-royal-800">{service.service}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </section>
-                  )}
+              <div className="flex flex-col gap-8 lg:flex-row">
+                <div className="flex-1 min-w-0 space-y-12">
+                  <AboutSection firmName={firm.name} description={firm.description} />
+                  <ServicesAndFeesSection
+                    practiceAreaDetails={firm.practiceAreaDetails}
+                    countrySlug={country.slug}
+                    practiceAreas={practiceAreas}
+                  />
+                  <CaseHighlightsSection caseHighlights={firm.caseHighlights} />
+                  <TestimonialsSection testimonials={firm.testimonials} />
+                  <TeamSection teamMembers={(firm.teamMembers || []) as any} />
+                  <FAQSection faq={firm.faq} />
+                  <ContactMapSection firm={firm as any} />
                 </div>
 
-                <div className="space-y-8">
-                  {practiceAreas.length > 0 && (
-                    <div className="rounded-xl border border-border/50 bg-white p-6">
-                      <h3 className="font-heading text-lg font-semibold text-royal-900">Practice Areas</h3>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {practiceAreas.map((area) => (
-                          <Link
-                            key={area.id}
-                            href={`/${country.slug}/lawyers/${area.slug}`}
-                            className="rounded-full bg-royal-50 px-3 py-1.5 text-sm font-medium text-royal-700 transition-colors hover:bg-royal-100"
-                          >
-                            {area.name}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="rounded-xl border border-border/50 bg-white p-6">
-                    <h3 className="font-heading text-lg font-semibold text-royal-900">Quick Facts</h3>
-                    <dl className="mt-4 space-y-3">
-                      {firm.foundingYear && (
-                        <div className="flex justify-between">
-                          <dt className="text-royal-700/70">Founded</dt>
-                          <dd className="font-medium text-royal-900">{firm.foundingYear}</dd>
-                        </div>
-                      )}
-                      {firm.companySize && (
-                        <div className="flex justify-between">
-                          <dt className="text-royal-700/70">Team Size</dt>
-                          <dd className="font-medium text-royal-900">{firm.companySize}</dd>
-                        </div>
-                      )}
-                      {firm.languages && firm.languages.length > 0 && (
-                        <div className="flex justify-between">
-                          <dt className="text-royal-700/70">Languages</dt>
-                          <dd className="font-medium text-royal-900 text-right">{firm.languages.join(', ')}</dd>
-                        </div>
-                      )}
-                      {location && (
-                        <div className="flex justify-between">
-                          <dt className="text-royal-700/70">Location</dt>
-                          <dd className="font-medium text-royal-900">{location.name}</dd>
-                        </div>
-                      )}
-                    </dl>
+                <div className="lg:w-[340px] lg:shrink-0">
+                  <div className="lg:sticky lg:top-24">
+                    <ProfileSidebar firm={firm as any} />
                   </div>
                 </div>
               </div>
             </Container>
           </div>
-
-          {firm.teamMembers && firm.teamMembers.length > 0 && <TeamSection teamMembers={firm.teamMembers as any} />}
-          <ContactSection firm={firm as any} />
 
           {relatedFirms.length > 0 && (
             <section className="py-12">
@@ -561,6 +777,8 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
               </Container>
             </section>
           )}
+
+          <MobileContactBar firm={firm as any} />
         </>
       )
     }
@@ -574,7 +792,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
       const practiceArea = await getPracticeAreaBySlug(s2)
       if (!practiceArea) notFound()
 
-      const [{ firms, totalPages, currentPage, totalDocs }] = await Promise.all([
+      const [{ firms, totalPages, currentPage, totalDocs, languageCounts, sortParam }] = await Promise.all([
         getLawFirms({ locationId: location.id, practiceAreaId: practiceArea.id, searchParams: resolvedSearchParams }),
       ])
 
@@ -597,13 +815,17 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
             <Container>
               <div className="flex flex-col gap-8 lg:flex-row">
                 <div className="lg:w-72 lg:shrink-0">
-                  <FilterSidebar showPracticeAreas={false} showLocations={false} />
+                  <FilterSidebar
+                    showPracticeAreas={false}
+                    showLocations={false}
+                    languageCounts={languageCounts}
+                  />
                 </div>
                 <div className="flex-1">
                   <ResultsToolbar
                     shown={firms.length}
                     total={totalDocs}
-                    sortValue={String(resolvedSearchParams.sort || '-featured')}
+                    sortValue={sortParam}
                   />
 
                   <LawFirmGrid firms={firms as any} emptyMessage={`No ${practiceArea.name.toLowerCase()} lawyers found in ${location.name} matching your criteria.`} />
@@ -625,23 +847,18 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
     if (!practiceArea) notFound()
 
     const q = slugToQuery(s2)
-    const payload = await getPayload({ config })
-    const page = Number(resolvedSearchParams.page) || 1
-    const limit = 12
-    const sort = String(resolvedSearchParams.sort || '-featured')
-    const where: any = {
-      _status: { equals: 'published' },
-      practiceAreas: { contains: practiceArea.id },
-      or: [{ name: { contains: q } }, { shortDescription: { contains: q } }],
-    }
-    const result = await payload.find({ collection: 'law-firms', where, limit, page, depth: 2, sort })
+    const { firms, totalPages, currentPage, totalDocs, languageCounts, sortParam } = await getLawFirms({
+      practiceAreaId: practiceArea.id,
+      keyword: q,
+      searchParams: resolvedSearchParams,
+    })
 
     return (
       <>
         <DarkHero
           title={`${q} ${practiceArea.name} Lawyers in ${country.name}`}
           description={`Browse ${practiceArea.name.toLowerCase()} firms focused on ${q}.`}
-          meta={`${result.totalDocs} law firm${result.totalDocs !== 1 ? 's' : ''} found`}
+          meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
           breadcrumbs={[
             { label: 'Home', href: '/' },
             { label: 'Lawyers', href: '/lawyers' },
@@ -655,13 +872,22 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
           <Container>
             <div className="flex flex-col gap-8 lg:flex-row">
               <div className="lg:w-72 lg:shrink-0">
-                <FilterSidebar showPracticeAreas={false} showLocations={false} />
+                <FilterSidebar
+                  showPracticeAreas={false}
+                  showLocations={false}
+                  languageCounts={languageCounts}
+                />
               </div>
               <div className="flex-1">
-                <LawFirmGrid firms={result.docs as any} emptyMessage={`No ${practiceArea.name.toLowerCase()} firms found for "${q}".`} />
-                {result.totalPages > 1 && (
+                <ResultsToolbar
+                  shown={firms.length}
+                  total={totalDocs}
+                  sortValue={sortParam}
+                />
+                <LawFirmGrid firms={firms as any} emptyMessage={`No ${practiceArea.name.toLowerCase()} firms found for "${q}".`} />
+                {totalPages > 1 && (
                   <div className="mt-8">
-                    <Pagination currentPage={result.page || 1} totalPages={result.totalPages} basePath={`/${country.slug}/lawyers/${practiceArea.slug}/${s2}`} />
+                    <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${country.slug}/lawyers/${practiceArea.slug}/${s2}`} />
                   </div>
                 )}
               </div>
@@ -680,34 +906,19 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
     if (!location || !practiceArea) notFound()
 
     const q = slugToQuery(s3)
-
-    const payload = await getPayload({ config })
-    const page = Number(resolvedSearchParams.page) || 1
-    const limit = 12
-    const sort = String(resolvedSearchParams.sort || '-featured')
-
-    const where: any = {
-      _status: { equals: 'published' },
-      practiceAreas: { contains: practiceArea.id },
-      and: [
-        {
-          or: [
-            { locations: { contains: location.id } },
-            { primaryLocation: { equals: location.id } },
-          ],
-        },
-      ],
-      or: [{ name: { contains: q } }, { shortDescription: { contains: q } }],
-    }
-
-    const result = await payload.find({ collection: 'law-firms', where, limit, page, depth: 2, sort })
+    const { firms, totalPages, currentPage, totalDocs, languageCounts, sortParam } = await getLawFirms({
+      locationId: location.id,
+      practiceAreaId: practiceArea.id,
+      keyword: q,
+      searchParams: resolvedSearchParams,
+    })
 
     return (
       <>
         <DarkHero
           title={`${q} ${practiceArea.name} Lawyers in ${location.name}`}
           description={`Browse ${practiceArea.name.toLowerCase()} firms in ${location.name} focused on ${q}.`}
-          meta={`${result.totalDocs} law firm${result.totalDocs !== 1 ? 's' : ''} found`}
+          meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
           breadcrumbs={[
             { label: 'Home', href: '/' },
             { label: 'Lawyers', href: '/lawyers' },
@@ -722,13 +933,22 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
           <Container>
             <div className="flex flex-col gap-8 lg:flex-row">
               <div className="lg:w-72 lg:shrink-0">
-                <FilterSidebar showPracticeAreas={false} showLocations={false} />
+                <FilterSidebar
+                  showPracticeAreas={false}
+                  showLocations={false}
+                  languageCounts={languageCounts}
+                />
               </div>
               <div className="flex-1">
-                <LawFirmGrid firms={result.docs as any} emptyMessage={`No firms found for "${q}" in ${location.name}.`} />
-                {result.totalPages > 1 && (
+                <ResultsToolbar
+                  shown={firms.length}
+                  total={totalDocs}
+                  sortValue={sortParam}
+                />
+                <LawFirmGrid firms={firms as any} emptyMessage={`No firms found for "${q}" in ${location.name}.`} />
+                {totalPages > 1 && (
                   <div className="mt-8">
-                    <Pagination currentPage={result.page || 1} totalPages={result.totalPages} basePath={`/${country.slug}/lawyers/${location.slug}/${practiceArea.slug}/${s3}`} />
+                    <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${country.slug}/lawyers/${location.slug}/${practiceArea.slug}/${s3}`} />
                   </div>
                 )}
               </div>

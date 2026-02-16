@@ -6,7 +6,18 @@ export const Users: CollectionConfig = {
   slug: 'users',
   access: {
     admin: authenticated,
-    create: authenticated,
+    // Allow first user creation without authentication
+    create: async ({ req }) => {
+      if (req.user) return true // Authenticated users can create
+      
+      // Check if any users exist
+      const userCount = await req.payload.count({
+        collection: 'users',
+      })
+      
+      // Allow creation if no users exist (first user)
+      return userCount === 0
+    },
     delete: authenticated,
     read: authenticated,
     update: authenticated,

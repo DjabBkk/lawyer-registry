@@ -1,10 +1,10 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { MapPin, Calendar, Users, Globe, Mail, Phone, ExternalLink, ChevronRight } from 'lucide-react'
+import { MapPin, Calendar, Users, Globe, ChevronRight, ShieldCheck, Star, Zap } from 'lucide-react'
 
 import { Container } from '@/components/layout/Container'
-import { Button } from '@/components/ui/button'
 import type { LawFirm, Location, Media } from '@/payload-types'
+import { formatFeeRange, responseTimeBadgeLabel } from './profile-helpers'
 
 interface BreadcrumbItem {
   label: string
@@ -24,9 +24,15 @@ export function ProfileHero({ firm, breadcrumbs }: ProfileHeroProps) {
   const location = typeof firm.primaryLocation === 'object' ? firm.primaryLocation : null
   const logo = typeof firm.logo === 'object' ? firm.logo : null
   const coverImage = typeof firm.coverImage === 'object' ? firm.coverImage : null
+  const responseTime = responseTimeBadgeLabel(firm.responseTime)
+  const feeRange = formatFeeRange({
+    min: firm.feeRangeMin,
+    max: firm.feeRangeMax,
+    currency: firm.feeCurrency,
+  })
 
   return (
-    <section className="relative bg-royal-900">
+    <section id="profile-hero-anchor" className="relative bg-royal-900">
       {/* Cover Image */}
       <div className="relative h-48 bg-royal-900 lg:h-64">
         {coverImage?.url && (
@@ -84,16 +90,34 @@ export function ProfileHero({ firm, breadcrumbs }: ProfileHeroProps) {
 
             {/* Info */}
             <div className="flex-1">
-              <h1 className="font-heading text-2xl font-bold text-royal-900 lg:text-3xl">
-                {firm.name}
-              </h1>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="font-heading text-2xl font-bold text-royal-900 lg:text-3xl">
+                  {firm.name}
+                </h1>
+                {firm.listingTier === 'premium' && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gold-50 px-2 py-0.5 text-xs font-medium text-gold-600">
+                    <Star className="h-3.5 w-3.5" />
+                    Featured
+                  </span>
+                )}
+                {firm.verified && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600">
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    Verified
+                  </span>
+                )}
+              </div>
+
+              {firm.tagline && (
+                <p className="mt-2 text-lg font-medium text-royal-700">{firm.tagline}</p>
+              )}
 
               {firm.shortDescription && (
                 <p className="mt-2 text-royal-700/80">{firm.shortDescription}</p>
               )}
 
               {/* Quick Stats */}
-              <div className="mt-4 flex flex-wrap gap-4 text-sm text-royal-700/80">
+              <div className="mt-4 flex flex-wrap gap-4 text-sm text-royal-600">
                 {location && (
                   <div className="flex items-center gap-1.5">
                     <MapPin className="h-4 w-4 text-royal-600" />
@@ -118,42 +142,19 @@ export function ProfileHero({ firm, breadcrumbs }: ProfileHeroProps) {
                     <span>{firm.languages.join(', ')}</span>
                   </div>
                 )}
+                {responseTime && (
+                  <div className="flex items-center gap-1.5">
+                    <Zap className="h-4 w-4 text-royal-600" />
+                    <span>{responseTime}</span>
+                  </div>
+                )}
               </div>
 
               {/* Fee Range */}
-              {firm.feeRangeMin && firm.feeRangeMax && (
+              {feeRange && (
                 <div className="mt-4 inline-flex items-center rounded-full bg-gold-500/10 px-4 py-1.5 text-sm font-medium text-gold-600">
-                  Consultation: {firm.feeRangeMin.toLocaleString()} -{' '}
-                  {firm.feeRangeMax.toLocaleString()} {firm.feeCurrency || 'THB'}
+                  Consultation: {feeRange}
                 </div>
-              )}
-            </div>
-
-            {/* Contact Buttons */}
-            <div className="flex flex-col gap-3 lg:shrink-0">
-              {firm.phone && (
-                <Button asChild variant="outline" className="border-royal-200 bg-white hover:bg-royal-50">
-                  <a href={`tel:${firm.phone}`}>
-                    <Phone className="h-4 w-4 text-royal-700" />
-                    <span className="text-royal-700">Call Now</span>
-                  </a>
-                </Button>
-              )}
-              {firm.email && (
-                <Button asChild variant="outline" className="border-royal-200">
-                  <a href={`mailto:${firm.email}`}>
-                    <Mail className="h-4 w-4" />
-                    Email
-                  </a>
-                </Button>
-              )}
-              {firm.website && (
-                <Button asChild variant="ghost" className="text-royal-700/80">
-                  <a href={firm.website} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4" />
-                    Website
-                  </a>
-                </Button>
               )}
             </div>
           </div>

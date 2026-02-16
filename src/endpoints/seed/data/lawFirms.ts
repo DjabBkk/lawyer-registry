@@ -4,6 +4,25 @@ type OpeningDay = {
   closeTime?: string
 }
 
+type SupportedLanguage =
+  | 'English'
+  | 'Thai'
+  | 'Chinese'
+  | 'Japanese'
+  | 'German'
+  | 'French'
+  | 'Spanish'
+  | 'Russian'
+  | 'Arabic'
+
+type ResponseTime =
+  | 'within-1-hour'
+  | 'within-24-hours'
+  | 'within-48-hours'
+  | 'within-1-week'
+
+type ListingTier = 'free' | 'claimed' | 'premium'
+
 type OpeningHours = {
   monday: OpeningDay
   tuesday: OpeningDay
@@ -25,12 +44,56 @@ export type LawFirmSeed = {
   description?: string
   featured?: boolean
   featuredOrder?: number
+  listingTier?: ListingTier
+  verified?: boolean
   foundingYear?: number
   companySize?: '1-5' | '6-10' | '11-25' | '26-50' | '51-100' | '100+'
-  languages?: string[]
+  languages?: SupportedLanguage[]
   feeRangeMin?: number
   feeRangeMax?: number
   feeCurrency?: 'THB' | 'USD' | 'EUR'
+  responseTime?: ResponseTime
+  nearestTransit?: string
+  tagline?: string
+  highlights?: Array<{
+    label: string
+    value: string
+  }>
+  practiceAreaDetails?: Array<{
+    practiceArea: string
+    description?: string
+    priceMin?: number
+    priceMax?: number
+    priceCurrency?: 'THB' | 'USD' | 'EUR'
+    priceNote?: string
+    services?: Array<{
+      name: string
+      price?: string
+      description?: string
+    }>
+  }>
+  servicePricing?: Array<{
+    serviceName: string
+    priceMin?: number
+    priceMax?: number
+    priceNote?: string
+    currency?: 'THB' | 'USD' | 'EUR'
+  }>
+  caseHighlights?: Array<{
+    title: string
+    description: string
+    metric?: string
+  }>
+  testimonials?: Array<{
+    quote: string
+    authorName: string
+    authorTitle?: string
+    rating?: 1 | 2 | 3 | 4 | 5
+  }>
+  faq?: Array<{
+    question: string
+    answer: string
+  }>
   practiceAreas: string[]
   locations: string[]
   primaryLocation: string
@@ -40,6 +103,7 @@ export type LawFirmSeed = {
     phone?: string
     email?: string
     googleMapsUrl?: string
+    nearestTransit?: string
     openingHours?: OpeningHours
   }>
   teamMembers?: Array<{

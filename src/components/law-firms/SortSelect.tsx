@@ -3,10 +3,10 @@
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 
 interface SortSelectProps {
-  defaultValue: string
+  value: string
 }
 
-export function SortSelect({ defaultValue }: SortSelectProps) {
+export function SortSelect({ value }: SortSelectProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -20,14 +20,17 @@ export function SortSelect({ defaultValue }: SortSelectProps) {
 
   return (
     <select
-      defaultValue={defaultValue}
+      value={value}
       onChange={handleChange}
       className="rounded-lg border border-warm-200 bg-white px-3 py-1.5 text-sm text-royal-900"
     >
-      <option value="-featured">Featured</option>
-      <option value="name">Name (A-Z)</option>
-      <option value="-name">Name (Z-A)</option>
-      <option value="-createdAt">Newest</option>
+      <option value="-featured">Most Relevant</option>
+      <option value="fee-asc">Lowest Consultation Fee</option>
+      <option value="rating-desc" disabled>
+        Highest Rated (Coming Soon)
+      </option>
+      <option value="newest">Newest Listed</option>
+      <option value="name-asc">A-Z</option>
     </select>
   )
 }
