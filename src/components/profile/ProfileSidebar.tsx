@@ -28,7 +28,7 @@ export function ProfileSidebar({ firm }: ProfileSidebarProps) {
   const [message, setMessage] = useState('')
   const [isPrepared, setIsPrepared] = useState(false)
 
-  const hasContactMethod = Boolean(firm.phone || firm.email)
+  const hasPhone = Boolean(firm.phone)
 
   const canSubmit = useMemo(
     () => Boolean(firm.email && name.trim() && isValidEmail(email.trim()) && message.trim()),
@@ -63,7 +63,7 @@ export function ProfileSidebar({ firm }: ProfileSidebarProps) {
     setMessage('')
   }
 
-  if (!firm.email && !hasContactMethod) return null
+  if (!firm.email && !hasPhone) return null
 
   return (
     <div id="profile-contact-form" className="space-y-4">
@@ -130,28 +130,15 @@ export function ProfileSidebar({ firm }: ProfileSidebarProps) {
         )}
       </div>
 
-      {hasContactMethod && (
+      {hasPhone && (
         <div className="rounded-xl bg-royal-900 p-5">
-          {firm.phone && (
-            <a
-              href={`tel:${firm.phone}`}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 font-semibold text-royal-900 transition-colors hover:bg-cream-50"
-            >
-              <Phone className="h-4 w-4" />
-              {firm.phone}
-            </a>
-          )}
-
-          {firm.email && (
-            <div className="mt-3 text-center">
-              <a
-                href={`mailto:${firm.email}`}
-                className="text-sm text-white/70 transition-colors hover:text-white"
-              >
-                Or email: {truncate(firm.email, 32)}
-              </a>
-            </div>
-          )}
+          <a
+            href={`tel:${firm.phone}`}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 font-semibold text-royal-900 transition-colors hover:bg-cream-50"
+          >
+            <Phone className="h-4 w-4" />
+            {firm.phone}
+          </a>
         </div>
       )}
     </div>

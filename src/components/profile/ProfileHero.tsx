@@ -1,10 +1,14 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
-import { MapPin, Calendar, Users, Globe, ChevronRight, ShieldCheck, Star, Zap } from 'lucide-react'
+import { useState } from 'react'
+import { MapPin, Calendar, Users, Globe, ChevronRight, ShieldCheck, Star, Zap, X } from 'lucide-react'
 
 import { Container } from '@/components/layout/Container'
-import type { LawFirm, Location, Media } from '@/payload-types'
+import type { LawFirm, Location, Media, PracticeArea } from '@/payload-types'
 import { formatFeeRange, responseTimeBadgeLabel } from './profile-helpers'
+import { AtAGlanceModal } from './AtAGlanceModal'
 
 interface BreadcrumbItem {
   label: string
@@ -18,12 +22,14 @@ interface ProfileHeroProps {
     coverImage?: Media | number | null
   }
   breadcrumbs?: BreadcrumbItem[]
+  practiceAreas?: PracticeArea[]
+  countrySlug?: string
 }
 
-export function ProfileHero({ firm, breadcrumbs }: ProfileHeroProps) {
+export function ProfileHero({ firm, breadcrumbs, practiceAreas = [], countrySlug = '' }: ProfileHeroProps) {
+  const [showModal, setShowModal] = useState(false)
   const location = typeof firm.primaryLocation === 'object' ? firm.primaryLocation : null
   const logo = typeof firm.logo === 'object' ? firm.logo : null
-  const coverImage = typeof firm.coverImage === 'object' ? firm.coverImage : null
   const responseTime = responseTimeBadgeLabel(firm.responseTime)
   const feeRange = formatFeeRange({
     min: firm.feeRangeMin,
@@ -33,21 +39,7 @@ export function ProfileHero({ firm, breadcrumbs }: ProfileHeroProps) {
 
   return (
     <section id="profile-hero-anchor" className="relative bg-royal-900">
-      {/* Cover Image */}
-      <div className="relative h-48 bg-royal-900 lg:h-64">
-        {coverImage?.url && (
-          <Image
-            src={coverImage.url}
-            alt={`${firm.name} cover`}
-            fill
-            className="object-cover opacity-30"
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-royal-900/80 to-transparent" />
-      </div>
-
-      {/* Content Container */}
-      <Container className="relative -mt-16 pb-8 lg:-mt-20">
+      <Container className="pb-12 pt-8 lg:pb-16 lg:pt-10">
         {/* Breadcrumbs on blue background - above white container */}
         {breadcrumbs && breadcrumbs.length > 0 && (
           <div className="mb-6">
@@ -91,9 +83,13 @@ export function ProfileHero({ firm, breadcrumbs }: ProfileHeroProps) {
             {/* Info */}
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="font-heading text-2xl font-bold text-royal-900 lg:text-3xl">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(true)}
+                  className="font-heading text-2xl font-bold text-royal-900 transition-colors hover:text-royal-700 lg:text-3xl text-left"
+                >
                   {firm.name}
-                </h1>
+                </button>
                 {firm.listingTier === 'premium' && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-gold-50 px-2 py-0.5 text-xs font-medium text-gold-600">
                     <Star className="h-3.5 w-3.5" />
@@ -160,6 +156,14 @@ export function ProfileHero({ firm, breadcrumbs }: ProfileHeroProps) {
           </div>
         </div>
       </Container>
+      {showModal && (
+        <AtAGlanceModal
+          firm={firm}
+          practiceAreas={practiceAreas}
+          countrySlug={countrySlug}
+          onClose={() => setShowModal(false)}
+        />
+      )}
     </section>
   )
 }

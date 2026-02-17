@@ -86,6 +86,16 @@ export const LawFirms: CollectionConfig = {
               relationTo: 'media',
             },
             {
+              name: 'profileImages',
+              type: 'upload',
+              relationTo: 'media',
+              hasMany: true,
+              admin: {
+                description:
+                  'Additional gallery images for the profile page. These are shown in the hero gallery/slider.',
+              },
+            },
+            {
               name: 'description',
               type: 'richText',
             },
@@ -135,6 +145,9 @@ export const LawFirms: CollectionConfig = {
               admin: {
                 description:
                   "Key statistics or proof points displayed in the 'At a Glance' section",
+                components: {
+                  RowLabel: '@/collections/LawFirms/RowLabels#HighlightRowLabel',
+                },
               },
               fields: [
                 {
@@ -237,12 +250,41 @@ export const LawFirms: CollectionConfig = {
           label: 'Services & Fees',
           fields: [
             {
+              name: 'hourlyFeeMin',
+              label: 'Hourly fee from',
+              type: 'number',
+              min: 0,
+            },
+            {
+              name: 'hourlyFeeMax',
+              label: 'Hourly fee up to',
+              type: 'number',
+              min: 0,
+            },
+            {
+              name: 'hourlyFeeCurrency',
+              type: 'select',
+              defaultValue: 'THB',
+              options: ['THB', 'USD', 'EUR'],
+            },
+            {
+              name: 'hourlyFeeNote',
+              type: 'text',
+              admin: {
+                description:
+                  "Optional note shown with hourly fees. E.g. 'partner rate', 'blended team rate', 'minimum 2 hours'",
+              },
+            },
+            {
               name: 'practiceAreaDetails',
               type: 'array',
               maxRows: 15,
               admin: {
                 description:
                   'Define what your firm offers in each practice area, including specific services and pricing. This powers the main Services & Fees section on your profile.',
+                components: {
+                  RowLabel: '@/collections/LawFirms/RowLabels#PracticeAreaDetailRowLabel',
+                },
               },
               fields: [
                 {
@@ -292,6 +334,11 @@ export const LawFirms: CollectionConfig = {
                 {
                   name: 'services',
                   type: 'array',
+                  admin: {
+                    components: {
+                      RowLabel: '@/collections/LawFirms/RowLabels#PracticeAreaServiceRowLabel',
+                    },
+                  },
                   fields: [
                     {
                       name: 'name',
@@ -368,6 +415,11 @@ export const LawFirms: CollectionConfig = {
               name: 'caseHighlights',
               type: 'array',
               maxRows: 6,
+              admin: {
+                components: {
+                  RowLabel: '@/collections/LawFirms/RowLabels#CaseHighlightRowLabel',
+                },
+              },
               fields: [
                 {
                   name: 'title',
@@ -393,6 +445,9 @@ export const LawFirms: CollectionConfig = {
               admin: {
                 description:
                   "Client testimonials submitted by the firm. These will be marked as 'Provided by the firm' on the profile.",
+                components: {
+                  RowLabel: '@/collections/LawFirms/RowLabels#TestimonialRowLabel',
+                },
               },
               fields: [
                 {
@@ -430,6 +485,9 @@ export const LawFirms: CollectionConfig = {
               admin: {
                 description:
                   'Frequently asked questions displayed on the profile. Great for SEO and user engagement.',
+                components: {
+                  RowLabel: '@/collections/LawFirms/RowLabels#FAQRowLabel',
+                },
               },
               fields: [
                 {
@@ -477,6 +535,9 @@ export const LawFirms: CollectionConfig = {
               label: 'Office Locations',
               admin: {
                 description: 'Add multiple office locations with their specific details and opening hours',
+                components: {
+                  RowLabel: '@/collections/LawFirms/RowLabels#OfficeLocationRowLabel',
+                },
               },
               fields: [
                 {
@@ -743,6 +804,11 @@ export const LawFirms: CollectionConfig = {
             {
               name: 'teamMembers',
               type: 'array',
+              admin: {
+                components: {
+                  RowLabel: '@/collections/LawFirms/RowLabels#TeamMemberRowLabel',
+                },
+              },
               fields: [
                 {
                   name: 'name',

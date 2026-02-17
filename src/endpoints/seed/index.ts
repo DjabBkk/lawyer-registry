@@ -536,6 +536,23 @@ export const seedEndpoint: Endpoint = {
         (firm.locations.includes('Bangkok')
           ? bangkokTransitHints[index % bangkokTransitHints.length]
           : undefined)
+      const hourlyFeeCurrency = firm.hourlyFeeCurrency || firm.feeCurrency || 'THB'
+      const derivedHourlyMin =
+        typeof firm.feeRangeMin === 'number'
+          ? Math.max(1000, Math.round((firm.feeRangeMin * 0.35) / 100) * 100)
+          : undefined
+      const derivedHourlyMax =
+        typeof firm.feeRangeMax === 'number'
+          ? Math.max(
+              derivedHourlyMin || 0,
+              Math.round((firm.feeRangeMax * 0.45) / 100) * 100,
+            )
+          : undefined
+      const hourlyFeeMin = firm.hourlyFeeMin ?? derivedHourlyMin
+      const hourlyFeeMax = firm.hourlyFeeMax ?? derivedHourlyMax
+      const hourlyFeeNote =
+        firm.hourlyFeeNote ||
+        (hourlyFeeMin || hourlyFeeMax ? 'indicative hourly rate' : undefined)
 
       const tagline =
         firm.tagline ||
@@ -607,6 +624,10 @@ export const seedEndpoint: Endpoint = {
           feeRangeMin: firm.feeRangeMin,
           feeRangeMax: firm.feeRangeMax,
           feeCurrency: firm.feeCurrency,
+          hourlyFeeMin,
+          hourlyFeeMax,
+          hourlyFeeCurrency,
+          hourlyFeeNote,
           responseTime,
           nearestTransit,
           highlights,

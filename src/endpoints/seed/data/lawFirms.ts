@@ -52,6 +52,10 @@ export type LawFirmSeed = {
   feeRangeMin?: number
   feeRangeMax?: number
   feeCurrency?: 'THB' | 'USD' | 'EUR'
+  hourlyFeeMin?: number
+  hourlyFeeMax?: number
+  hourlyFeeCurrency?: 'THB' | 'USD' | 'EUR'
+  hourlyFeeNote?: string
   responseTime?: ResponseTime
   nearestTransit?: string
   tagline?: string

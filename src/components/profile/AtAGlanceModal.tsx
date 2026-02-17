@@ -1,13 +1,18 @@
-import Link from 'next/link'
+'use client'
 
-import type { LawFirm, Location, PracticeArea } from '@/payload-types'
+import Link from 'next/link'
+import { useEffect } from 'react'
+import { X } from 'lucide-react'
+
+import type { LawFirm, PracticeArea } from '@/payload-types'
 import { toKebabCase } from '@/utilities/toKebabCase'
 import { formatFeeRange } from './profile-helpers'
 
-interface AtAGlanceSectionProps {
+interface AtAGlanceModalProps {
   firm: LawFirm
   practiceAreas?: PracticeArea[]
   countrySlug: string
+  onClose: () => void
 }
 
 type GlanceItem = {
@@ -33,7 +38,7 @@ const buildHrefWithQuery = (
   return query ? `${pathname}?${query}` : pathname
 }
 
-export function AtAGlanceSection({ firm, practiceAreas = [], countrySlug }: AtAGlanceSectionProps) {
+export function AtAGlanceModal({ firm, practiceAreas = [], countrySlug, onClose }: AtAGlanceModalProps) {
   const baseLawyersPath = `/${countrySlug}/lawyers`
 
   const hourlyFee = formatFeeRange({
@@ -51,8 +56,8 @@ export function AtAGlanceSection({ firm, practiceAreas = [], countrySlug }: AtAG
     practiceAreas.map((practiceArea) => [practiceArea.id, practiceArea]),
   )
 
-  const locationItems = ((firm.locations || []) as Array<Location | number>)
-    .filter((location): location is Location => typeof location === 'object')
+  const locationItems = ((firm.locations || []) as Array<any>)
+    .filter((location): location is any => typeof location === 'object')
     .map((location) => ({
       label: 'Service Areas',
       value: location.name,
@@ -164,31 +169,62 @@ export function AtAGlanceSection({ firm, practiceAreas = [], countrySlug }: AtAG
     })
   }
 
-  if (!cards.length) return null
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleEscape)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = ''
+    }
+  }, [onClose])
 
   return (
-    <section>
-      <h2 className="font-heading text-2xl font-bold text-royal-900">{firm.name} at a glance</h2>
-      <div className="mt-5 rounded-xl border border-warm-200 bg-white p-6 shadow-sm">
-        <div className="grid gap-4 md:grid-cols-2">
-          {cards.map((card) => (
-            <article key={card.label} className="rounded-lg border border-warm-200 bg-white p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-royal-500">{card.label}</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {card.items.map((item, index) => (
-                  <Link
-                    key={`${item.label}-${item.value}-${index}`}
-                    href={item.href}
-                    className="inline-flex items-center rounded-full border border-royal-200 bg-royal-50 px-2.5 py-1 text-xs font-medium text-royal-700 transition-colors hover:bg-royal-100 hover:text-royal-900"
-                  >
-                    {item.value}
-                  </Link>
-                ))}
-              </div>
-            </article>
-          ))}
+    <div
+      className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 p-4 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose()
+        }
+      }}
+    >
+      <div className="relative mx-auto max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-white shadow-xl">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-warm-200 bg-white text-royal-700 transition-colors hover:bg-cream-50"
+          aria-label="Close modal"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <div className="p-6">
+          <h2 className="font-heading text-2xl font-bold text-royal-900 mb-5">{firm.name} at a glance</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {cards.map((card) => (
+              <article key={card.label} className="rounded-lg border border-warm-200 bg-white p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-royal-500">{card.label}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {card.items.map((item, index) => (
+                    <Link
+                      key={`${item.label}-${item.value}-${index}`}
+                      href={item.href}
+                      onClick={onClose}
+                      className="inline-flex items-center rounded-full border border-royal-200 bg-royal-50 px-2.5 py-1 text-xs font-medium text-royal-700 transition-colors hover:bg-royal-100 hover:text-royal-900"
+                    >
+                      {item.value}
+                    </Link>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       </div>
-    </section>
+    </div>
   )
 }

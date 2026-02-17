@@ -19,10 +19,11 @@ import {
   MobileContactBar,
   TeamSection,
   ContactMapSection,
+  AtAGlanceSection,
 } from '@/components/profile'
 import { LawFirmCard } from '@/components/law-firms/LawFirmCard'
 import { getSupportedCountry } from '@/utilities/countries'
-import type { LawFirm, PracticeArea } from '@/payload-types'
+import type { LawFirm, Media, PracticeArea } from '@/payload-types'
 
 type SearchParams = { [key: string]: string | string[] | undefined }
 
@@ -266,6 +267,8 @@ async function getLawFirms({
       or: [
         { feeRangeMin: { exists: true } },
         { feeRangeMax: { exists: true } },
+        { hourlyFeeMin: { exists: true } },
+        { hourlyFeeMax: { exists: true } },
         { practiceAreaDetails: { exists: true } },
       ],
     })
@@ -340,15 +343,22 @@ async function getRelatedFirms(firm: LawFirm) {
   const locationId =
     typeof firm.primaryLocation === 'object' ? firm.primaryLocation?.id : firm.primaryLocation
 
+  const relatedConditions: Array<Record<string, unknown>> = []
+
+  if (locationId) {
+    relatedConditions.push({ primaryLocation: { equals: locationId } })
+  }
+  if (practiceAreaIds.length) {
+    relatedConditions.push({ practiceAreas: { in: practiceAreaIds.slice(0, 3) } })
+  }
+  if (!relatedConditions.length) return []
+
   const { docs } = await payload.find({
     collection: 'law-firms',
     where: {
       _status: { equals: 'published' },
       id: { not_equals: firm.id },
-      or: [
-        { primaryLocation: { equals: locationId } },
-        { practiceAreas: { in: practiceAreaIds.slice(0, 3) } },
-      ],
+      or: relatedConditions as any,
     },
     limit: 3,
     depth: 2,
@@ -651,6 +661,28 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
       const practiceAreas =
         (firm.practiceAreas as PracticeArea[])?.filter((pa): pa is PracticeArea => typeof pa === 'object') || []
       const location = typeof firm.primaryLocation === 'object' ? firm.primaryLocation : null
+      const coverImage = typeof firm.coverImage === 'object' ? firm.coverImage : null
+      const profileImages = (firm.profileImages || []).filter(
+        (item): item is Media => typeof item === 'object' && Boolean(item),
+      )
+      const galleryImages = [
+        ...(coverImage?.url
+          ? [
+              {
+                id: `cover-${coverImage.id || 'image'}`,
+                url: coverImage.url,
+                alt: `${firm.name} cover image`,
+              },
+            ]
+          : []),
+        ...profileImages
+          .filter((item) => item?.url)
+          .map((item, index) => ({
+            id: `gallery-${item.id || index}`,
+            url: item.url as string,
+            alt: item.alt || `${firm.name} gallery image ${index + 1}`,
+          })),
+      ].filter((item, index, list) => list.findIndex((candidate) => candidate.url === item.url) === index)
 
       // Build breadcrumbs
       const breadcrumbs = [
@@ -728,23 +760,52 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
             />
           ))}
 
-          <ProfileHero firm={firm as any} breadcrumbs={breadcrumbs} />
+          <ProfileHero firm={firm as any} breadcrumbs={breadcrumbs} practiceAreas={practiceAreas} countrySlug={country.slug} />
 
-          <div className="py-12">
+          <div className="bg-cream-100 pt-12 pb-12 lg:pt-14">
             <Container>
               <div className="flex flex-col gap-8 lg:flex-row">
                 <div className="flex-1 min-w-0 space-y-12">
-                  <AboutSection firmName={firm.name} description={firm.description} />
+                  <AboutSection
+                    firmName={firm.name}
+                    description={firm.description}
+                    galleryImages={galleryImages}
+                  />
                   <ServicesAndFeesSection
                     practiceAreaDetails={firm.practiceAreaDetails}
                     countrySlug={country.slug}
                     practiceAreas={practiceAreas}
+                    hourlyFeeMin={firm.hourlyFeeMin}
+                    hourlyFeeMax={firm.hourlyFeeMax}
+                    hourlyFeeCurrency={firm.hourlyFeeCurrency}
+                    hourlyFeeNote={firm.hourlyFeeNote}
                   />
                   <CaseHighlightsSection caseHighlights={firm.caseHighlights} />
                   <TestimonialsSection testimonials={firm.testimonials} />
-                  <TeamSection teamMembers={(firm.teamMembers || []) as any} />
+                  <TeamSection
+                    teamMembers={
+                      firm.teamMembers
+                        ? firm.teamMembers.map((member) => ({
+                            name: member.name,
+                            role: member.role,
+                            bio: member.bio,
+                            email: member.email,
+                            linkedIn: member.linkedIn,
+                            photo:
+                              member.photo && typeof member.photo === 'object' && 'url' in member.photo
+                                ? { url: member.photo.url, alt: member.photo.alt || '' }
+                                : null,
+                          }))
+                        : []
+                    }
+                  />
                   <FAQSection faq={firm.faq} />
                   <ContactMapSection firm={firm as any} />
+                  <AtAGlanceSection
+                    firm={firm as any}
+                    practiceAreas={practiceAreas}
+                    countrySlug={country.slug}
+                  />
                 </div>
 
                 <div className="lg:w-[340px] lg:shrink-0">
@@ -762,16 +823,19 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                 <div className="mb-8 flex items-end justify-between">
                   <div>
                     <h2 className="font-heading text-2xl font-bold text-royal-900 lg:text-3xl">Related Law Firms</h2>
-                    <p className="mt-2 text-royal-700/80">Other firms you might be interested in</p>
+                    <p className="mt-2 text-royal-700/80">Other firms with similar location or practice focus</p>
                   </div>
-                  <Link href={`/${country.slug}/lawyers`} className="hidden items-center gap-2 font-medium text-royal-700 hover:text-royal-600 sm:flex">
+                  <Link
+                    href={`/${country.slug}/lawyers`}
+                    className="hidden items-center gap-2 font-medium text-royal-700 hover:text-royal-600 sm:flex"
+                  >
                     View All
                     <ChevronRight className="h-4 w-4" />
                   </Link>
                 </div>
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {relatedFirms.map((rf) => (
-                    <LawFirmCard key={rf.id} firm={rf as any} variant="compact" />
+                    <LawFirmCard key={rf.id} firm={rf as any} variant="grid" />
                   ))}
                 </div>
               </Container>

@@ -157,6 +157,8 @@ async function searchLawFirms(searchParams: { [key: string]: string | string[] |
       or: [
         { feeRangeMin: { exists: true } },
         { feeRangeMax: { exists: true } },
+        { hourlyFeeMin: { exists: true } },
+        { hourlyFeeMax: { exists: true } },
         { practiceAreaDetails: { exists: true } },
       ],
     })

@@ -1,6 +1,13 @@
+import { ProfileImageGallery } from './ProfileImageGallery'
+
 interface AboutSectionProps {
   firmName: string
   description: any
+  galleryImages?: Array<{
+    id: string
+    url: string
+    alt: string
+  }>
 }
 
 const extractTextNodes = (node: any): string => {
@@ -40,20 +47,30 @@ const lexicalToHtml = (value: unknown) => {
     .join('')
 }
 
-export function AboutSection({ firmName, description }: AboutSectionProps) {
-  if (!description) return null
+export function AboutSection({ firmName, description, galleryImages = [] }: AboutSectionProps) {
+  if (!description && !galleryImages.length) return null
 
-  const html = lexicalToHtml(description)
-  if (!html) return null
+  const html = description ? lexicalToHtml(description) : ''
+  if (!html && !galleryImages.length) return null
 
   return (
     <section>
       <h2 className="font-heading text-2xl font-bold text-royal-900">About {firmName}</h2>
-      <div
-        className="prose prose-gray mt-4 max-w-none text-royal-700"
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+      {(html || galleryImages.length > 0) && (
+        <div className="mt-4 overflow-hidden rounded-xl border border-warm-200 bg-white p-6 shadow-sm">
+          {html && (
+            <div
+              className="prose prose-gray max-w-none text-royal-700"
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+          )}
+          {galleryImages.length > 0 && (
+            <div className={html ? 'mt-6' : ''}>
+              <ProfileImageGallery images={galleryImages} />
+            </div>
+          )}
+        </div>
+      )}
     </section>
   )
 }
-

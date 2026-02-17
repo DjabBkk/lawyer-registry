@@ -11,6 +11,14 @@ import { MetaTitleComponent as MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c08
 import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaDescriptionComponent as MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
+import { HighlightRowLabel as HighlightRowLabel_2b725bd5e653b5d2d69fad22d19ebf2e } from '@/collections/LawFirms/RowLabels'
+import { PracticeAreaServiceRowLabel as PracticeAreaServiceRowLabel_2b725bd5e653b5d2d69fad22d19ebf2e } from '@/collections/LawFirms/RowLabels'
+import { PracticeAreaDetailRowLabel as PracticeAreaDetailRowLabel_2b725bd5e653b5d2d69fad22d19ebf2e } from '@/collections/LawFirms/RowLabels'
+import { CaseHighlightRowLabel as CaseHighlightRowLabel_2b725bd5e653b5d2d69fad22d19ebf2e } from '@/collections/LawFirms/RowLabels'
+import { TestimonialRowLabel as TestimonialRowLabel_2b725bd5e653b5d2d69fad22d19ebf2e } from '@/collections/LawFirms/RowLabels'
+import { FAQRowLabel as FAQRowLabel_2b725bd5e653b5d2d69fad22d19ebf2e } from '@/collections/LawFirms/RowLabels'
+import { OfficeLocationRowLabel as OfficeLocationRowLabel_2b725bd5e653b5d2d69fad22d19ebf2e } from '@/collections/LawFirms/RowLabels'
+import { TeamMemberRowLabel as TeamMemberRowLabel_2b725bd5e653b5d2d69fad22d19ebf2e } from '@/collections/LawFirms/RowLabels'
 import { InlineToolbarFeatureClient as InlineToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { FixedToolbarFeatureClient as FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { FolderTableCell as FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
@@ -39,6 +47,14 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#MetaImageComponent": MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaDescriptionComponent": MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
+  "@/collections/LawFirms/RowLabels#HighlightRowLabel": HighlightRowLabel_2b725bd5e653b5d2d69fad22d19ebf2e,
+  "@/collections/LawFirms/RowLabels#PracticeAreaServiceRowLabel": PracticeAreaServiceRowLabel_2b725bd5e653b5d2d69fad22d19ebf2e,
+  "@/collections/LawFirms/RowLabels#PracticeAreaDetailRowLabel": PracticeAreaDetailRowLabel_2b725bd5e653b5d2d69fad22d19ebf2e,
+  "@/collections/LawFirms/RowLabels#CaseHighlightRowLabel": CaseHighlightRowLabel_2b725bd5e653b5d2d69fad22d19ebf2e,
+  "@/collections/LawFirms/RowLabels#TestimonialRowLabel": TestimonialRowLabel_2b725bd5e653b5d2d69fad22d19ebf2e,
+  "@/collections/LawFirms/RowLabels#FAQRowLabel": FAQRowLabel_2b725bd5e653b5d2d69fad22d19ebf2e,
+  "@/collections/LawFirms/RowLabels#OfficeLocationRowLabel": OfficeLocationRowLabel_2b725bd5e653b5d2d69fad22d19ebf2e,
+  "@/collections/LawFirms/RowLabels#TeamMemberRowLabel": TeamMemberRowLabel_2b725bd5e653b5d2d69fad22d19ebf2e,
   "@payloadcms/richtext-lexical/client#InlineToolbarFeatureClient": InlineToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#FixedToolbarFeatureClient": FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/next/rsc#FolderTableCell": FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1,

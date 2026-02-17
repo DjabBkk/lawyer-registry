@@ -408,6 +408,10 @@ export interface LawFirm {
   slug: string;
   logo?: (number | null) | Media;
   coverImage?: (number | null) | Media;
+  /**
+   * Additional gallery images for the profile page. These are shown in the hero gallery/slider.
+   */
+  profileImages?: (number | Media)[] | null;
   description?: {
     root: {
       type: string;
@@ -461,6 +465,13 @@ export interface LawFirm {
   feeRangeMin?: number | null;
   feeRangeMax?: number | null;
   feeCurrency?: ('THB' | 'USD' | 'EUR') | null;
+  hourlyFeeMin?: number | null;
+  hourlyFeeMax?: number | null;
+  hourlyFeeCurrency?: ('THB' | 'USD' | 'EUR') | null;
+  /**
+   * Optional note shown with hourly fees. E.g. 'partner rate', 'blended team rate', 'minimum 2 hours'
+   */
+  hourlyFeeNote?: string | null;
   /**
    * Define what your firm offers in each practice area, including specific services and pricing. This powers the main Services & Fees section on your profile.
    */
@@ -1281,6 +1292,7 @@ export interface LawFirmsSelect<T extends boolean = true> {
   slug?: T;
   logo?: T;
   coverImage?: T;
+  profileImages?: T;
   description?: T;
   shortDescription?: T;
   tagline?: T;
@@ -1306,6 +1318,10 @@ export interface LawFirmsSelect<T extends boolean = true> {
   feeRangeMin?: T;
   feeRangeMax?: T;
   feeCurrency?: T;
+  hourlyFeeMin?: T;
+  hourlyFeeMax?: T;
+  hourlyFeeCurrency?: T;
+  hourlyFeeNote?: T;
   practiceAreaDetails?:
     | T
     | {
