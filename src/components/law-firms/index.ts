@@ -1,5 +1,5 @@
-export { LawFirmCard } from './LawFirmCard'
-export { LawFirmGrid } from './LawFirmGrid'
+export { BusinessCard } from './BusinessCard'
+export { BusinessGrid } from './BusinessGrid'
 export { FilterSidebar } from './FilterSidebar'
 export { Pagination } from './Pagination'
 export { SortSelect } from './SortSelect'

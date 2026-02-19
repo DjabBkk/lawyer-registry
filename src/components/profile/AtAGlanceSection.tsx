@@ -1,11 +1,11 @@
 import Link from 'next/link'
 
-import type { LawFirm, Location, PracticeArea } from '@/payload-types'
+import type { Business, Location, PracticeArea } from '@/payload-types'
 import { toKebabCase } from '@/utilities/toKebabCase'
 import { formatFeeRange } from './profile-helpers'
 
 interface AtAGlanceSectionProps {
-  firm: LawFirm
+  firm: Business
   practiceAreas?: PracticeArea[]
   countrySlug: string
 }

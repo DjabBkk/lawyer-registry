@@ -3,10 +3,20 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import { MapPin, Calendar, Users, Globe, ChevronRight, ShieldCheck, Star, Zap, X } from 'lucide-react'
+import {
+  MapPin,
+  Calendar,
+  Users,
+  Globe,
+  ChevronRight,
+  ShieldCheck,
+  Star,
+  Zap,
+  X,
+} from 'lucide-react'
 
 import { Container } from '@/components/layout/Container'
-import type { LawFirm, Location, Media, PracticeArea } from '@/payload-types'
+import type { Business, Location, Media, PracticeArea } from '@/payload-types'
 import { formatFeeRange, responseTimeBadgeLabel } from './profile-helpers'
 import { AtAGlanceModal } from './AtAGlanceModal'
 
@@ -16,7 +26,7 @@ interface BreadcrumbItem {
 }
 
 interface ProfileHeroProps {
-  firm: LawFirm & {
+  firm: Business & {
     primaryLocation?: Location | number | null
     logo?: Media | number | null
     coverImage?: Media | number | null
@@ -26,7 +36,12 @@ interface ProfileHeroProps {
   countrySlug?: string
 }
 
-export function ProfileHero({ firm, breadcrumbs, practiceAreas = [], countrySlug = '' }: ProfileHeroProps) {
+export function ProfileHero({
+  firm,
+  breadcrumbs,
+  practiceAreas = [],
+  countrySlug = '',
+}: ProfileHeroProps) {
   const [showModal, setShowModal] = useState(false)
   const location = typeof firm.primaryLocation === 'object' ? firm.primaryLocation : null
   const logo = typeof firm.logo === 'object' ? firm.logo : null
@@ -47,7 +62,10 @@ export function ProfileHero({ firm, breadcrumbs, practiceAreas = [], countrySlug
               {breadcrumbs.map((crumb, index) => (
                 <span key={index} className="flex items-center gap-2">
                   {crumb.href ? (
-                    <Link href={crumb.href} className="transition-colors hover:text-white/80 text-white/90">
+                    <Link
+                      href={crumb.href}
+                      className="transition-colors hover:text-white/80 text-white/90"
+                    >
                       {crumb.label}
                     </Link>
                   ) : (
@@ -90,7 +108,7 @@ export function ProfileHero({ firm, breadcrumbs, practiceAreas = [], countrySlug
                 >
                   {firm.name}
                 </button>
-                {firm.listingTier === 'premium' && (
+                {firm.listingTier && ['silver', 'gold', 'platinum'].includes(firm.listingTier) && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-gold-50 px-2 py-0.5 text-xs font-medium text-gold-600">
                     <Star className="h-3.5 w-3.5" />
                     Featured

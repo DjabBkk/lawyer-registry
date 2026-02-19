@@ -4,20 +4,23 @@ import { MapPin, Users, Globe, ArrowRight, Building2 } from 'lucide-react'
 
 import { cn } from '@/utilities/ui'
 import { Button } from '@/components/ui/button'
-import type { LawFirm, PracticeArea, Location, Media } from '@/payload-types'
+import type { Business, PracticeArea, Location, Media } from '@/payload-types'
+import { getBusinessUrl } from '@/utilities/getBusinessUrl'
 
-interface LawFirmCardProps {
-  firm: LawFirm & {
+interface BusinessCardProps {
+  firm: Business & {
     practiceAreas?: PracticeArea[] | number[]
     primaryLocation?: Location | number | null
     logo?: Media | number | null
     coverImage?: Media | number | null
   }
+  countrySlug: string
   variant?: 'default' | 'featured' | 'compact' | 'grid'
 }
 
-export function LawFirmCard({ firm, variant = 'default' }: LawFirmCardProps) {
+export function BusinessCard({ firm, countrySlug, variant = 'default' }: BusinessCardProps) {
   const practiceAreas = firm.practiceAreas?.filter((pa): pa is PracticeArea => typeof pa !== 'number') || []
+  const profileUrl = getBusinessUrl(firm, countrySlug)
 
   const location = typeof firm.primaryLocation === 'object' ? firm.primaryLocation : null
   const logo = typeof firm.logo === 'object' ? firm.logo : null
@@ -91,7 +94,7 @@ export function LawFirmCard({ firm, variant = 'default' }: LawFirmCardProps) {
   if (variant === 'compact') {
     return (
       <Link
-        href={`/thailand/lawyers/${firm.slug}`}
+        href={profileUrl}
         className="group flex items-center gap-4 rounded-xl border border-warm-200 bg-white p-4 transition-all duration-300 hover:border-royal-300 hover:shadow-md"
       >
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-royal-700 to-royal-800">
@@ -193,7 +196,7 @@ export function LawFirmCard({ firm, variant = 'default' }: LawFirmCardProps) {
 
           <div className="mt-auto pt-4 border-t border-warm-100">
             <Link
-              href={`/thailand/lawyers/${firm.slug}`}
+              href={profileUrl}
               className="group/link flex items-center justify-center gap-2 rounded-lg border border-royal-200 bg-royal-50/50 px-4 py-2.5 text-sm font-semibold text-royal-700 transition-all hover:border-royal-300 hover:bg-royal-100"
             >
               View Profile
@@ -294,7 +297,7 @@ export function LawFirmCard({ firm, variant = 'default' }: LawFirmCardProps) {
               variant="outline"
               className="flex-1 border-royal-200 bg-royal-50/50 text-sm font-semibold text-royal-700 hover:border-royal-300 hover:bg-royal-100"
             >
-              <Link href={`/thailand/lawyers/${firm.slug}`}>
+              <Link href={profileUrl}>
                 View Profile
                 <ArrowRight className="h-4 w-4" />
               </Link>

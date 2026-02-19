@@ -21,7 +21,15 @@ type ResponseTime =
   | 'within-48-hours'
   | 'within-1-week'
 
-type ListingTier = 'free' | 'claimed' | 'premium'
+type ListingTier = 'free' | 'bronze' | 'silver' | 'gold' | 'platinum'
+type BusinessType = 'law-firm' | 'lawyer' | 'accounting-firm' | 'accountant'
+type ServiceCategory =
+  | 'legal'
+  | 'accounting'
+  | 'visa-services'
+  | 'company-registration'
+  | 'tax'
+  | 'audit'
 
 type OpeningHours = {
   monday: OpeningDay
@@ -33,8 +41,10 @@ type OpeningHours = {
   sunday: OpeningDay
 }
 
-export type LawFirmSeed = {
+export type BusinessSeed = {
   name: string
+  businessType: BusinessType
+  serviceCategories?: ServiceCategory[]
   email: string
   phone?: string
   website?: string
@@ -148,9 +158,11 @@ const extendedHours: OpeningHours = {
   sunday: { closed: true },
 }
 
-export const lawFirms: LawFirmSeed[] = [
+export const businesses: BusinessSeed[] = [
   {
     name: 'Bangkok Legal Partners',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'contact@bangkoklegalpartners.com',
     phone: '+66 2 555 0101',
     website: 'https://bangkoklegalpartners.com',
@@ -200,6 +212,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Siam Heritage Law',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'hello@siamheritagelaw.co.th',
     phone: '+66 2 555 0112',
     website: 'https://siamheritagelaw.co.th',
@@ -249,6 +263,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Phuket Coastal Attorneys',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'info@phuketcoastallaw.com',
     phone: '+66 76 555 0201',
     website: 'https://phuketcoastallaw.com',
@@ -298,6 +314,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Northern Insight Legal',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'contact@northerninsightlaw.com',
     phone: '+66 53 555 0301',
     website: 'https://northerninsightlaw.com',
@@ -346,6 +364,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Eastern Seaboard Counsel',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'team@easternseaboardcounsel.com',
     phone: '+66 38 555 0401',
     website: 'https://easternseaboardcounsel.com',
@@ -394,6 +414,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Samui Island Legal',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'info@samuilegal.co.th',
     phone: '+66 77 555 0501',
     website: 'https://samuilegal.co.th',
@@ -442,6 +464,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Krabi Maritime & Trade Law',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'contact@krabimaritime.com',
     phone: '+66 75 555 0601',
     website: 'https://krabimaritime.com',
@@ -498,6 +522,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Isan Growth Legal',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'hello@isangrowthlegal.com',
     phone: '+66 42 555 0701',
     website: 'https://isangrowthlegal.com',
@@ -554,6 +580,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Chiang Rai Cross-Border Law',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'info@chiangraicrossborder.com',
     phone: '+66 53 555 0801',
     website: 'https://chiangraicrossborder.com',
@@ -610,6 +638,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Hua Hin Property Counsel',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'contact@huahinpropertylaw.com',
     phone: '+66 32 555 0901',
     website: 'https://huahinpropertylaw.com',
@@ -666,6 +696,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Bangkok Arbitration Chambers',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'contact@bkkarbitration.com',
     phone: '+66 2 555 1001',
     website: 'https://bkkarbitration.com',
@@ -714,6 +746,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Premier Immigration Advisors',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'support@premierimmigration.co.th',
     phone: '+66 2 555 1101',
     website: 'https://premierimmigration.co.th',
@@ -763,6 +797,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Bangkok Cyber Law Group',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'contact@bkkcyberlaw.com',
     phone: '+66 2 555 1201',
     website: 'https://bkkcyberlaw.com',
@@ -811,6 +847,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Golden Triangle Corporate',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'info@goldentrianglecorp.com',
     phone: '+66 2 555 1301',
     website: 'https://goldentrianglecorp.com',
@@ -866,6 +904,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Pattaya Litigation Center',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'contact@pattayalitigation.com',
     phone: '+66 38 555 1401',
     website: 'https://pattayalitigation.com',
@@ -922,6 +962,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Phuket Hospitality Legal',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'hello@phukethospitalitylaw.com',
     phone: '+66 76 555 1501',
     website: 'https://phukethospitalitylaw.com',
@@ -970,6 +1012,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Chiang Mai Family Advocates',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'info@chiangmaifamilyadvocates.com',
     phone: '+66 53 555 1601',
     website: 'https://chiangmaifamilyadvocates.com',
@@ -1018,6 +1062,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Bangkok Tax & Finance Advisors',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'contact@bkktaxfinance.com',
     phone: '+66 2 555 1701',
     website: 'https://bkktaxfinance.com',
@@ -1066,6 +1112,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Southern Maritime Counsel',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'info@southernmaritimecounsel.com',
     phone: '+66 76 555 1801',
     website: 'https://southernmaritimecounsel.com',
@@ -1122,6 +1170,8 @@ export const lawFirms: LawFirmSeed[] = [
   },
   {
     name: 'Northeast Construction Law',
+    businessType: 'law-firm',
+    serviceCategories: ['legal'],
     email: 'contact@neconstructionlaw.com',
     phone: '+66 43 555 1901',
     website: 'https://neconstructionlaw.com',
@@ -1166,6 +1216,84 @@ export const lawFirms: LawFirmSeed[] = [
       { service: 'Construction contract drafting' },
       { service: 'Project dispute advisory' },
       { service: 'Compliance monitoring' },
+    ],
+  },
+  {
+    name: 'Bangkok Ledger & Co.',
+    businessType: 'accounting-firm',
+    serviceCategories: ['accounting', 'company-registration', 'tax'],
+    email: 'hello@bangkokledger.co.th',
+    phone: '+66 2 555 2101',
+    website: 'https://bangkokledger.co.th',
+    address: 'Sathorn Road, Bangkok',
+    googleMapsUrl: 'https://maps.google.com/?q=Bangkok+Ledger+and+Co',
+    shortDescription: 'Accounting and company setup support for SMEs and foreign founders.',
+    featured: false,
+    foundingYear: 2013,
+    companySize: '11-25',
+    languages: ['English', 'Thai'],
+    feeRangeMin: 3500,
+    feeRangeMax: 18000,
+    feeCurrency: 'THB',
+    practiceAreas: ['Tax Law', 'Corporate Law', 'Contract Law'],
+    locations: ['Bangkok'],
+    primaryLocation: 'Bangkok',
+    services: [
+      { service: 'Bookkeeping and monthly reporting' },
+      { service: 'Company registration support' },
+      { service: 'Corporate tax filing' },
+    ],
+  },
+  {
+    name: 'Chiang Mai Accounting Partners',
+    businessType: 'accounting-firm',
+    serviceCategories: ['accounting', 'company-registration', 'tax'],
+    email: 'contact@chiangmaiaccountingpartners.com',
+    phone: '+66 53 555 2201',
+    website: 'https://chiangmaiaccountingpartners.com',
+    address: 'Nimman Road, Chiang Mai',
+    googleMapsUrl: 'https://maps.google.com/?q=Chiang+Mai+Accounting+Partners',
+    shortDescription: 'Regional accounting firm supporting startups and hospitality businesses.',
+    featured: false,
+    foundingYear: 2016,
+    companySize: '6-10',
+    languages: ['English', 'Thai'],
+    feeRangeMin: 3000,
+    feeRangeMax: 15000,
+    feeCurrency: 'THB',
+    practiceAreas: ['Tax Law', 'Corporate Law'],
+    locations: ['Chiang Mai'],
+    primaryLocation: 'Chiang Mai',
+    services: [
+      { service: 'SME accounting and payroll' },
+      { service: 'Tax planning and filing' },
+      { service: 'Business registration advisory' },
+    ],
+  },
+  {
+    name: 'Phuket Tax & Compliance Group',
+    businessType: 'accounting-firm',
+    serviceCategories: ['accounting', 'company-registration', 'tax'],
+    email: 'team@phukettaxcompliance.com',
+    phone: '+66 76 555 2301',
+    website: 'https://phukettaxcompliance.com',
+    address: 'Phuket Town, Phuket',
+    googleMapsUrl: 'https://maps.google.com/?q=Phuket+Tax+and+Compliance+Group',
+    shortDescription: 'Tax and accounting support for tourism, marine, and property businesses.',
+    featured: false,
+    foundingYear: 2011,
+    companySize: '11-25',
+    languages: ['English', 'Thai'],
+    feeRangeMin: 4000,
+    feeRangeMax: 22000,
+    feeCurrency: 'THB',
+    practiceAreas: ['Tax Law', 'Corporate Law', 'International Trade'],
+    locations: ['Phuket'],
+    primaryLocation: 'Phuket',
+    services: [
+      { service: 'VAT and withholding tax compliance' },
+      { service: 'Financial statements and bookkeeping' },
+      { service: 'Entity setup and registration' },
     ],
   },
 ]

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { RowLabelProps, useRowLabel } from '@payloadcms/ui'
 
-import type { LawFirm } from '@/payload-types'
+import type { Business } from '@/payload-types'
 
 type RelationValue =
   | number
@@ -72,14 +72,14 @@ function useRelationshipName(value: RelationValue, collectionSlug: string) {
 }
 
 export const HighlightRowLabel: React.FC<RowLabelProps> = () => {
-  const row = useRowLabel<NonNullable<LawFirm['highlights']>[number]>()
+  const row = useRowLabel<NonNullable<Business['highlights']>[number]>()
   const value = row?.data?.label || row?.data?.value
 
   return <div>{value ? truncate(value) : 'Row'}</div>
 }
 
 export const PracticeAreaDetailRowLabel: React.FC<RowLabelProps> = () => {
-  const row = useRowLabel<NonNullable<LawFirm['practiceAreaDetails']>[number]>()
+  const row = useRowLabel<NonNullable<Business['practiceAreaDetails']>[number]>()
   const practiceAreaName = useRelationshipName(row?.data?.practiceArea as RelationValue, 'practice-areas')
 
   const fallback =
@@ -95,35 +95,35 @@ export const PracticeAreaDetailRowLabel: React.FC<RowLabelProps> = () => {
 
 export const PracticeAreaServiceRowLabel: React.FC<RowLabelProps> = () => {
   const row =
-    useRowLabel<NonNullable<NonNullable<LawFirm['practiceAreaDetails']>[number]['services']>[number]>()
+    useRowLabel<NonNullable<NonNullable<Business['practiceAreaDetails']>[number]['services']>[number]>()
   const value = row?.data?.name || row?.data?.price || ''
 
   return <div>{value ? truncate(value) : 'Row'}</div>
 }
 
 export const CaseHighlightRowLabel: React.FC<RowLabelProps> = () => {
-  const row = useRowLabel<NonNullable<LawFirm['caseHighlights']>[number]>()
+  const row = useRowLabel<NonNullable<Business['caseHighlights']>[number]>()
   const value = row?.data?.title || row?.data?.metric || ''
 
   return <div>{value ? truncate(value) : 'Row'}</div>
 }
 
 export const TestimonialRowLabel: React.FC<RowLabelProps> = () => {
-  const row = useRowLabel<NonNullable<LawFirm['testimonials']>[number]>()
+  const row = useRowLabel<NonNullable<Business['testimonials']>[number]>()
   const value = row?.data?.authorName || row?.data?.quote || ''
 
   return <div>{value ? truncate(value) : 'Row'}</div>
 }
 
 export const FAQRowLabel: React.FC<RowLabelProps> = () => {
-  const row = useRowLabel<NonNullable<LawFirm['faq']>[number]>()
+  const row = useRowLabel<NonNullable<Business['faq']>[number]>()
   const value = row?.data?.question || ''
 
   return <div>{value ? truncate(value) : 'Row'}</div>
 }
 
 export const OfficeLocationRowLabel: React.FC<RowLabelProps> = () => {
-  const row = useRowLabel<NonNullable<LawFirm['officeLocations']>[number]>()
+  const row = useRowLabel<NonNullable<Business['officeLocations']>[number]>()
   const locationName = useRelationshipName(row?.data?.location as RelationValue, 'locations')
   const value = locationName || row?.data?.address || ''
 
@@ -131,7 +131,7 @@ export const OfficeLocationRowLabel: React.FC<RowLabelProps> = () => {
 }
 
 export const TeamMemberRowLabel: React.FC<RowLabelProps> = () => {
-  const row = useRowLabel<NonNullable<LawFirm['teamMembers']>[number]>()
+  const row = useRowLabel<NonNullable<Business['teamMembers']>[number]>()
   const value = row?.data?.name || row?.data?.role || ''
 
   return <div>{value ? truncate(value) : 'Row'}</div>

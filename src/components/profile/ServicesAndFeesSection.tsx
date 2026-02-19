@@ -4,13 +4,13 @@ import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { ArrowRight, BriefcaseBusiness, ChevronDown, ChevronUp } from 'lucide-react'
 
-import type { LawFirm, PracticeArea } from '@/payload-types'
+import type { Business, PracticeArea } from '@/payload-types'
 import { formatCurrencyAmount } from './profile-helpers'
 
-type DetailItem = NonNullable<LawFirm['practiceAreaDetails']>[number]
+type DetailItem = NonNullable<Business['practiceAreaDetails']>[number]
 
 interface ServicesAndFeesSectionProps {
-  practiceAreaDetails?: LawFirm['practiceAreaDetails']
+  practiceAreaDetails?: Business['practiceAreaDetails']
   practiceAreas?: PracticeArea[]
   countrySlug: string
   hourlyFeeMin?: number | null

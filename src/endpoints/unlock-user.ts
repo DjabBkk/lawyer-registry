@@ -12,7 +12,8 @@ export const unlockUserEndpoint: Endpoint = {
   method: 'post',
   handler: async (req) => {
     try {
-      const { email } = await req.json()
+      const body = req.json ? await req.json() : null
+      const { email } = (body || {}) as { email?: string }
 
       if (!email) {
         return Response.json(

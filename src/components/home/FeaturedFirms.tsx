@@ -2,17 +2,18 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 
 import { Container } from '@/components/layout/Container'
-import { LawFirmCard } from '@/components/law-firms/LawFirmCard'
-import type { LawFirm, PracticeArea, Location } from '@/payload-types'
+import { BusinessCard } from '@/components/law-firms/BusinessCard'
+import type { Business, PracticeArea, Location } from '@/payload-types'
 
 interface FeaturedFirmsProps {
-  firms: Array<LawFirm & {
+  firms: Array<Business & {
     practiceAreas: PracticeArea[]
     primaryLocation: Location | null
   }>
+  countrySlug: string
 }
 
-export function FeaturedFirms({ firms }: FeaturedFirmsProps) {
+export function FeaturedFirms({ firms, countrySlug }: FeaturedFirmsProps) {
   if (!firms.length) return null
 
   // Show max 6 firms in a 3-column grid (2 rows)
@@ -46,11 +47,10 @@ export function FeaturedFirms({ firms }: FeaturedFirmsProps) {
         {/* Firms Grid - 3 columns */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {displayedFirms.map((firm) => (
-            <LawFirmCard key={firm.id} firm={firm} variant="grid" />
+            <BusinessCard key={firm.id} firm={firm} countrySlug={countrySlug} variant="grid" />
           ))}
         </div>
       </Container>
     </section>
   )
 }
-

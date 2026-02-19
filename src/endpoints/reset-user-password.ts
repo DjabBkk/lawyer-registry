@@ -13,7 +13,11 @@ export const resetUserPasswordEndpoint: Endpoint = {
   method: 'post',
   handler: async (req) => {
     try {
-      const { email, newPassword } = await req.json()
+      const body = req.json ? await req.json() : null
+      const { email, newPassword } = (body || {}) as {
+        email?: string
+        newPassword?: string
+      }
 
       if (!email || !newPassword) {
         return Response.json(

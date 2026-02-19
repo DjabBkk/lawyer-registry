@@ -9,7 +9,7 @@ const ensureAuthenticated = (user: unknown) => {
 
 const deleteAll = async (
   req: Parameters<Endpoint['handler']>[0],
-  collection: 'law-firms' | 'practice-areas' | 'locations',
+  collection: 'businesses' | 'practice-areas' | 'locations',
 ) => {
   const docs = await req.payload.find({
     collection,
@@ -34,19 +34,19 @@ export const clearSeedEndpoint: Endpoint = {
   handler: async (req) => {
     ensureAuthenticated(req.user)
 
-    const deletedLawFirms = await deleteAll(req, 'law-firms')
+    const deletedBusinesses = await deleteAll(req, 'businesses')
     const deletedPracticeAreas = await deleteAll(req, 'practice-areas')
     const deletedLocations = await deleteAll(req, 'locations')
 
     return Response.json({
       message: 'Seed data cleared',
       deleted: {
-        lawFirms: deletedLawFirms,
+        businesses: deletedBusinesses,
         practiceAreas: deletedPracticeAreas,
         locations: deletedLocations,
       },
       counts: {
-        lawFirms: 0,
+        businesses: 0,
         practiceAreas: 0,
         locations: 0,
       },

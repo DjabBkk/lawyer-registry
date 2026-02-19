@@ -4,11 +4,11 @@ import Image from 'next/image'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Linkedin, Mail, User, X } from 'lucide-react'
 
-import type { LawFirm, Media } from '@/payload-types'
+import type { Business, Media } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 import { isLeadTeamRole } from './profile-helpers'
 
-type TeamMember = NonNullable<LawFirm['teamMembers']>[number]
+type TeamMember = NonNullable<Business['teamMembers']>[number]
 
 interface TeamSectionProps {
   teamMembers: Array<TeamMember & { photo?: Media | number | null }>

@@ -40,7 +40,7 @@ interface PageProps {
   searchParams: Promise<DirectorySearchParams>
 }
 
-const LAWYER_BUSINESS_TYPES: BusinessType[] = ['law-firm', 'lawyer']
+const ACCOUNTING_BUSINESS_TYPES: BusinessType[] = ['accounting-firm', 'accountant']
 
 const getPayloadClient = cache(async () => getPayload({ config }))
 
@@ -70,7 +70,7 @@ async function getRelatedFirms(firm: Business) {
     where: {
       _status: { equals: 'published' },
       id: { not_equals: firm.id },
-      businessType: { in: LAWYER_BUSINESS_TYPES },
+      businessType: { in: ACCOUNTING_BUSINESS_TYPES },
       or: relatedConditions as any,
     },
     limit: 3,
@@ -81,14 +81,14 @@ async function getRelatedFirms(firm: Business) {
 }
 
 function slugToQuery(slug: string) {
-  return slug.replace(/-lawyers?$/i, '').replace(/-/g, ' ').trim()
+  return slug.replace(/-accounting(?:-services)?$/i, '').replace(/-/g, ' ').trim()
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug: countrySlug, segments = [] } = await params
   const country = getSupportedCountry(countrySlug)
   if (!country) return { title: 'Not Found' }
-  const canonicalFor = (suffix: string = '') => `/${country.slug}/lawyers${suffix}`
+  const canonicalFor = (suffix: string = '') => `/${country.slug}/accounting${suffix}`
   const withCanonical = (metadata: Metadata, suffix: string = ''): Metadata => ({
     ...metadata,
     alternates: {
@@ -98,8 +98,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (segments.length === 0) {
     return withCanonical({
-      title: `Lawyers in ${country.name}`,
-      description: `Browse law firms and lawyers in ${country.name}. Filter by location and practice area.`,
+      title: `Accounting Services in ${country.name}`,
+      description: `Browse accounting businesses and accounting services in ${country.name}. Filter by location and practice area.`,
     })
   }
 
@@ -108,19 +108,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const [location, practiceArea, firm] = await Promise.all([
       getLocationBySlug(s1),
       getPracticeAreaBySlug(s1),
-      getBusinessBySlug(s1, { businessTypes: LAWYER_BUSINESS_TYPES }),
+      getBusinessBySlug(s1, { businessTypes: ACCOUNTING_BUSINESS_TYPES }),
     ])
 
     if (location) {
       return withCanonical({
-        title: `Lawyers in ${location.name}, ${country.name}`,
-        description: `Find law firms and lawyers in ${location.name}, ${country.name}.`,
+        title: `Accounting Services in ${location.name}, ${country.name}`,
+        description: `Find accounting businesses and accounting services in ${location.name}, ${country.name}.`,
       }, `/${location.slug}`)
     }
     if (practiceArea) {
       return withCanonical({
-        title: `${practiceArea.name} Lawyers in ${country.name}`,
-        description: `Find experienced ${practiceArea.name.toLowerCase()} lawyers in ${country.name}.`,
+        title: `${practiceArea.name} Accounting Services in ${country.name}`,
+        description: `Find experienced ${practiceArea.name.toLowerCase()} accounting services in ${country.name}.`,
       }, `/${practiceArea.slug}`)
     }
     if (firm) {
@@ -152,16 +152,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       const pa = await getPracticeAreaBySlug(s2)
       if (!pa) return { title: 'Not Found' }
       return withCanonical({
-        title: `${pa.name} Lawyers in ${location.name} | ${country.name}`,
-        description: `Find ${pa.name.toLowerCase()} lawyers in ${location.name}, ${country.name}.`,
+        title: `${pa.name} Accounting Services in ${location.name} | ${country.name}`,
+        description: `Find ${pa.name.toLowerCase()} accounting services in ${location.name}, ${country.name}.`,
       }, `/${location.slug}/${pa.slug}`)
     }
 
     if (practiceArea) {
       const q = slugToQuery(s2)
       return withCanonical({
-        title: `${q} | ${practiceArea.name} Lawyers in ${country.name}`,
-        description: `Browse ${practiceArea.name.toLowerCase()} lawyers in ${country.name} focused on ${q}.`,
+        title: `${q} | ${practiceArea.name} Accounting Services in ${country.name}`,
+        description: `Browse ${practiceArea.name.toLowerCase()} accounting services in ${country.name} focused on ${q}.`,
       }, `/${practiceArea.slug}/${s2}`)
     }
   }
@@ -176,15 +176,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     const q = slugToQuery(specSlug)
     return withCanonical({
-      title: `${q} | ${practiceArea.name} Lawyers in ${location.name}`,
-      description: `Browse ${practiceArea.name.toLowerCase()} lawyers in ${location.name}, ${country.name} focused on ${q}.`,
+      title: `${q} | ${practiceArea.name} Accounting Services in ${location.name}`,
+      description: `Browse ${practiceArea.name.toLowerCase()} accounting services in ${location.name}, ${country.name} focused on ${q}.`,
     }, `/${location.slug}/${practiceArea.slug}/${specSlug}`)
   }
 
   return { title: 'Not Found' }
 }
 
-export default async function CountryLawyersPage({ params, searchParams }: PageProps) {
+export default async function CountryAccountingPage({ params, searchParams }: PageProps) {
   const { slug: countrySlug, segments = [] } = await params
   const resolvedSearchParams = await searchParams
 
@@ -197,19 +197,19 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
 
   if (segments.length === 0) {
     const [{ firms, totalPages, currentPage, totalDocs, languageCounts, sortParam }, filterOptions] = await Promise.all([
-      getBusinesses({ searchParams: resolvedSearchParams, businessTypes: LAWYER_BUSINESS_TYPES }),
+      getBusinesses({ searchParams: resolvedSearchParams, businessTypes: ACCOUNTING_BUSINESS_TYPES }),
       getFilterOptions(),
     ])
 
     return (
       <>
         <DarkHero
-          title={`Lawyers in ${country.name}`}
-          description="Browse our directory of law firms. Filter by practice area, location, and more."
-          meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
+          title={`Accounting Services in ${country.name}`}
+          description="Browse our directory of accounting businesses. Filter by practice area, location, and more."
+          meta={`${totalDocs} accounting provider${totalDocs !== 1 ? 's' : ''} found`}
           breadcrumbs={[
             { label: 'Home', href: '/' },
-            { label: 'Lawyers', href: '/lawyers' },
+            { label: 'Accounting Services', href: '/accounting' },
             { label: country.name },
           ]}
           className="py-16 lg:py-20"
@@ -223,7 +223,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                   practiceAreas={filterOptions.practiceAreas}
                   locations={filterOptions.locations}
                   languageCounts={languageCounts}
-                  showPracticeAreas={true}
+                  showPracticeAreas={false}
                   showLocations={true}
                 />
               </div>
@@ -237,11 +237,11 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                   locations={filterOptions.locations}
                 />
 
-                <BusinessGrid firms={firms as any} countrySlug={country.slug} emptyMessage="No law firms found matching your criteria." />
+                <BusinessGrid firms={firms as any} countrySlug={country.slug} emptyMessage="No accounting businesses found matching your criteria." />
 
                 {totalPages > 1 && (
                   <div className="mt-8">
-                    <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${country.slug}/lawyers`} />
+                    <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${country.slug}/accounting`} />
                   </div>
                 )}
               </div>
@@ -256,7 +256,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
     const [location, practiceArea, firm] = await Promise.all([
       getLocationBySlug(s1),
       getPracticeAreaBySlug(s1),
-      getBusinessBySlug(s1, { businessTypes: LAWYER_BUSINESS_TYPES }),
+      getBusinessBySlug(s1, { businessTypes: ACCOUNTING_BUSINESS_TYPES }),
     ])
 
     if (location) {
@@ -264,7 +264,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
         getBusinesses({
           locationId: location.id,
           searchParams: resolvedSearchParams,
-          businessTypes: LAWYER_BUSINESS_TYPES,
+          businessTypes: ACCOUNTING_BUSINESS_TYPES,
         }),
         getFilterOptions(),
       ])
@@ -272,13 +272,13 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
       return (
         <>
           <DarkHero
-            title={`Lawyers in ${location.name}`}
-            description={`Browse law firms in ${location.name}, ${country.name}. Filter by practice area and more.`}
-            meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
+            title={`Accounting Services in ${location.name}`}
+            description={`Browse accounting businesses in ${location.name}, ${country.name}. Filter by practice area and more.`}
+            meta={`${totalDocs} accounting provider${totalDocs !== 1 ? 's' : ''} found`}
             breadcrumbs={[
               { label: 'Home', href: '/' },
-              { label: 'Lawyers', href: '/lawyers' },
-              { label: country.name, href: `/${country.slug}/lawyers` },
+              { label: 'Accounting Services', href: '/accounting' },
+              { label: country.name, href: `/${country.slug}/accounting` },
               { label: location.name },
             ]}
           />
@@ -291,7 +291,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                     practiceAreas={filterOptions.practiceAreas}
                     locations={filterOptions.locations}
                     languageCounts={languageCounts}
-                    showPracticeAreas={true}
+                    showPracticeAreas={false}
                     showLocations={false}
                   />
                 </div>
@@ -305,11 +305,11 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                     locations={filterOptions.locations}
                   />
 
-                  <BusinessGrid firms={firms as any} countrySlug={country.slug} emptyMessage={`No law firms found in ${location.name} matching your criteria.`} />
+                  <BusinessGrid firms={firms as any} countrySlug={country.slug} emptyMessage={`No accounting businesses found in ${location.name} matching your criteria.`} />
 
                   {totalPages > 1 && (
                     <div className="mt-8">
-                      <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${country.slug}/lawyers/${location.slug}`} />
+                      <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${country.slug}/accounting/${location.slug}`} />
                     </div>
                   )}
                 </div>
@@ -325,7 +325,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
         getBusinesses({
           practiceAreaId: practiceArea.id,
           searchParams: resolvedSearchParams,
-          businessTypes: LAWYER_BUSINESS_TYPES,
+          businessTypes: ACCOUNTING_BUSINESS_TYPES,
         }),
         getFilterOptions(),
       ])
@@ -333,16 +333,16 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
       return (
         <>
           <DarkHero
-            title={`${practiceArea.name} Lawyers in ${country.name}`}
+            title={`${practiceArea.name} Accounting Services in ${country.name}`}
             description={
               practiceArea.shortDescription ||
-              `Find qualified ${practiceArea.name.toLowerCase()} lawyers across ${country.name}.`
+              `Find qualified ${practiceArea.name.toLowerCase()} accounting services across ${country.name}.`
             }
-            meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
+            meta={`${totalDocs} accounting provider${totalDocs !== 1 ? 's' : ''} found`}
             breadcrumbs={[
               { label: 'Home', href: '/' },
-              { label: 'Lawyers', href: '/lawyers' },
-              { label: country.name, href: `/${country.slug}/lawyers` },
+              { label: 'Accounting Services', href: '/accounting' },
+              { label: country.name, href: `/${country.slug}/accounting` },
               { label: practiceArea.name },
             ]}
           />
@@ -369,11 +369,11 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                     locations={filterOptions.locations}
                   />
 
-                  <BusinessGrid firms={firms as any} countrySlug={country.slug} emptyMessage={`No ${practiceArea.name.toLowerCase()} lawyers found matching your criteria.`} />
+                  <BusinessGrid firms={firms as any} countrySlug={country.slug} emptyMessage={`No ${practiceArea.name.toLowerCase()} accounting services found matching your criteria.`} />
 
                   {totalPages > 1 && (
                     <div className="mt-8">
-                      <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${country.slug}/lawyers/${practiceArea.slug}`} />
+                      <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${country.slug}/accounting/${practiceArea.slug}`} />
                     </div>
                   )}
                 </div>
@@ -388,7 +388,8 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
     if (firm) {
       const relatedFirms = await getRelatedFirms(firm)
       const relatedEntityLabel = getBusinessTypeLabel(firm.businessType)
-      const relatedHeading = relatedEntityLabel === 'Law Firm' ? 'Related Law Firms' : 'Related Lawyers'
+      const relatedHeading =
+        relatedEntityLabel === 'Accounting Firm' ? 'Related Accounting Firms' : 'Related Accountants'
       const practiceAreas =
         (firm.practiceAreas as PracticeArea[])?.filter((pa): pa is PracticeArea => typeof pa === 'object') || []
       const location = typeof firm.primaryLocation === 'object' ? firm.primaryLocation : null
@@ -418,9 +419,9 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
       // Build breadcrumbs
       const breadcrumbs = [
         { label: 'Home', href: '/' },
-        { label: 'Lawyers', href: '/lawyers' },
-        { label: country.name, href: `/${country.slug}/lawyers` },
-        ...(location ? [{ label: location.name, href: `/${country.slug}/lawyers/${location.slug}` }] : []),
+        { label: 'Accounting Services', href: '/accounting' },
+        { label: country.name, href: `/${country.slug}/accounting` },
+        ...(location ? [{ label: location.name, href: `/${country.slug}/accounting/${location.slug}` }] : []),
         { label: firm.name },
       ]
 
@@ -541,7 +542,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                     <p className="mt-2 text-royal-700/80">Other firms with similar location or practice focus</p>
                   </div>
                   <Link
-                    href={`/${country.slug}/lawyers`}
+                    href={`/${country.slug}/accounting`}
                     className="hidden items-center gap-2 font-medium text-royal-700 hover:text-royal-600 sm:flex"
                   >
                     View All
@@ -576,21 +577,21 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
           locationId: location.id,
           practiceAreaId: practiceArea.id,
           searchParams: resolvedSearchParams,
-          businessTypes: LAWYER_BUSINESS_TYPES,
+          businessTypes: ACCOUNTING_BUSINESS_TYPES,
         }),
       ])
 
       return (
         <>
           <DarkHero
-            title={`${practiceArea.name} Lawyers in ${location.name}`}
-            description={`Find qualified ${practiceArea.name.toLowerCase()} lawyers in ${location.name}, ${country.name}.`}
-            meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
+            title={`${practiceArea.name} Accounting Services in ${location.name}`}
+            description={`Find qualified ${practiceArea.name.toLowerCase()} accounting services in ${location.name}, ${country.name}.`}
+            meta={`${totalDocs} accounting provider${totalDocs !== 1 ? 's' : ''} found`}
             breadcrumbs={[
               { label: 'Home', href: '/' },
-              { label: 'Lawyers', href: '/lawyers' },
-              { label: country.name, href: `/${country.slug}/lawyers` },
-              { label: location.name, href: `/${country.slug}/lawyers/${location.slug}` },
+              { label: 'Accounting Services', href: '/accounting' },
+              { label: country.name, href: `/${country.slug}/accounting` },
+              { label: location.name, href: `/${country.slug}/accounting/${location.slug}` },
               { label: practiceArea.name },
             ]}
           />
@@ -612,11 +613,11 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                     sortValue={sortParam}
                   />
 
-                  <BusinessGrid firms={firms as any} countrySlug={country.slug} emptyMessage={`No ${practiceArea.name.toLowerCase()} lawyers found in ${location.name} matching your criteria.`} />
+                  <BusinessGrid firms={firms as any} countrySlug={country.slug} emptyMessage={`No ${practiceArea.name.toLowerCase()} accounting services found in ${location.name} matching your criteria.`} />
 
                   {totalPages > 1 && (
                     <div className="mt-8">
-                      <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${country.slug}/lawyers/${location.slug}/${practiceArea.slug}`} />
+                      <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${country.slug}/accounting/${location.slug}/${practiceArea.slug}`} />
                     </div>
                   )}
                 </div>
@@ -635,20 +636,20 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
       practiceAreaId: practiceArea.id,
       keyword: q,
       searchParams: resolvedSearchParams,
-      businessTypes: LAWYER_BUSINESS_TYPES,
+      businessTypes: ACCOUNTING_BUSINESS_TYPES,
     })
 
     return (
       <>
         <DarkHero
-          title={`${q} ${practiceArea.name} Lawyers in ${country.name}`}
+          title={`${q} ${practiceArea.name} Accounting Services in ${country.name}`}
           description={`Browse ${practiceArea.name.toLowerCase()} firms focused on ${q}.`}
-          meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
+          meta={`${totalDocs} accounting provider${totalDocs !== 1 ? 's' : ''} found`}
           breadcrumbs={[
             { label: 'Home', href: '/' },
-            { label: 'Lawyers', href: '/lawyers' },
-            { label: country.name, href: `/${country.slug}/lawyers` },
-            { label: practiceArea.name, href: `/${country.slug}/lawyers/${practiceArea.slug}` },
+            { label: 'Accounting Services', href: '/accounting' },
+            { label: country.name, href: `/${country.slug}/accounting` },
+            { label: practiceArea.name, href: `/${country.slug}/accounting/${practiceArea.slug}` },
             { label: q },
           ]}
         />
@@ -672,7 +673,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                 <BusinessGrid firms={firms as any} countrySlug={country.slug} emptyMessage={`No ${practiceArea.name.toLowerCase()} firms found for "${q}".`} />
                 {totalPages > 1 && (
                   <div className="mt-8">
-                    <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${country.slug}/lawyers/${practiceArea.slug}/${s2}`} />
+                    <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${country.slug}/accounting/${practiceArea.slug}/${s2}`} />
                   </div>
                 )}
               </div>
@@ -696,21 +697,21 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
       practiceAreaId: practiceArea.id,
       keyword: q,
       searchParams: resolvedSearchParams,
-      businessTypes: LAWYER_BUSINESS_TYPES,
+      businessTypes: ACCOUNTING_BUSINESS_TYPES,
     })
 
     return (
       <>
         <DarkHero
-          title={`${q} ${practiceArea.name} Lawyers in ${location.name}`}
+          title={`${q} ${practiceArea.name} Accounting Services in ${location.name}`}
           description={`Browse ${practiceArea.name.toLowerCase()} firms in ${location.name} focused on ${q}.`}
-          meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
+          meta={`${totalDocs} accounting provider${totalDocs !== 1 ? 's' : ''} found`}
           breadcrumbs={[
             { label: 'Home', href: '/' },
-            { label: 'Lawyers', href: '/lawyers' },
-            { label: country.name, href: `/${country.slug}/lawyers` },
-            { label: location.name, href: `/${country.slug}/lawyers/${location.slug}` },
-            { label: practiceArea.name, href: `/${country.slug}/lawyers/${location.slug}/${practiceArea.slug}` },
+            { label: 'Accounting Services', href: '/accounting' },
+            { label: country.name, href: `/${country.slug}/accounting` },
+            { label: location.name, href: `/${country.slug}/accounting/${location.slug}` },
+            { label: practiceArea.name, href: `/${country.slug}/accounting/${location.slug}/${practiceArea.slug}` },
             { label: q },
           ]}
         />
@@ -734,7 +735,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                 <BusinessGrid firms={firms as any} countrySlug={country.slug} emptyMessage={`No firms found for "${q}" in ${location.name}.`} />
                 {totalPages > 1 && (
                   <div className="mt-8">
-                    <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${country.slug}/lawyers/${location.slug}/${practiceArea.slug}/${s3}`} />
+                    <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${country.slug}/accounting/${location.slug}/${practiceArea.slug}/${s3}`} />
                   </div>
                 )}
               </div>

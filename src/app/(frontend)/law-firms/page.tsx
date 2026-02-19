@@ -1,5 +1,5 @@
 import { permanentRedirect } from 'next/navigation'
 
-export default async function LawFirmsIndexPage() {
+export default async function BusinessesIndexPage() {
   permanentRedirect('/thailand/lawyers')
 }

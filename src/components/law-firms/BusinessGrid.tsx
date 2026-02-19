@@ -1,16 +1,21 @@
-import { LawFirmCard } from './LawFirmCard'
-import type { LawFirm, PracticeArea, Location, Media } from '@/payload-types'
+import { BusinessCard } from './BusinessCard'
+import type { Business, PracticeArea, Location, Media } from '@/payload-types'
 
-interface LawFirmGridProps {
-  firms: Array<LawFirm & {
+interface BusinessGridProps {
+  firms: Array<Business & {
     practiceAreas?: PracticeArea[] | number[]
     primaryLocation?: Location | number | null
     logo?: Media | number | null
   }>
+  countrySlug: string
   emptyMessage?: string
 }
 
-export function LawFirmGrid({ firms, emptyMessage = 'No law firms found.' }: LawFirmGridProps) {
+export function BusinessGrid({
+  firms,
+  countrySlug,
+  emptyMessage = 'No law firms found.',
+}: BusinessGridProps) {
   if (!firms.length) {
     return (
       <div className="rounded-xl border border-border/50 bg-white p-12 text-center">
@@ -22,7 +27,7 @@ export function LawFirmGrid({ firms, emptyMessage = 'No law firms found.' }: Law
   return (
     <div className="space-y-4">
       {firms.map((firm) => (
-        <LawFirmCard key={firm.id} firm={firm} />
+        <BusinessCard key={firm.id} firm={firm} countrySlug={countrySlug} />
       ))}
     </div>
   )

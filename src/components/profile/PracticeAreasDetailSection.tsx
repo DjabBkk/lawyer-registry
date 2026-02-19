@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import type { LawFirm, PracticeArea } from '@/payload-types'
+import type { Business, PracticeArea } from '@/payload-types'
 
 interface PracticeAreasDetailSectionProps {
-  firm: LawFirm
+  firm: Business
   countrySlug: string
   practiceAreas: PracticeArea[]
 }

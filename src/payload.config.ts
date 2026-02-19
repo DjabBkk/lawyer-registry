@@ -5,7 +5,7 @@ import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
 import { Categories } from './collections/Categories'
-import { LawFirms } from './collections/LawFirms'
+import { Businesses } from './collections/Businesses'
 import { Locations } from './collections/Locations'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
@@ -79,7 +79,7 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URL || '',
     },
   }),
-  collections: [Pages, Posts, Categories, LawFirms, PracticeAreas, Locations, Media, Users],
+  collections: [Pages, Posts, Categories, Businesses, PracticeAreas, Locations, Media, Users],
   cors: [getServerSideURL()].filter(Boolean),
   endpoints: [seedStatusEndpoint, seedEndpoint, clearSeedEndpoint, createFirstUserEndpoint, resetUserPasswordEndpoint, listUsersEndpoint, updateUserEndpoint, unlockUserEndpoint],
   globals: [Header, Footer],

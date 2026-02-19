@@ -4,7 +4,7 @@ import { Container } from '@/components/layout/Container'
 
 interface TrustSignalsProps {
   counts: {
-    lawFirms: number
+    businesses: number
     practiceAreas: number
     locations: number
   }
@@ -14,7 +14,7 @@ export function TrustSignals({ counts }: TrustSignalsProps) {
   const stats = [
     {
       icon: Building2,
-      value: counts.lawFirms,
+      value: counts.businesses,
       label: 'Law Firms',
       description: 'Verified legal practices',
     },

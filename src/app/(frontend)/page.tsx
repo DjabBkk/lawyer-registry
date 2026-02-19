@@ -22,7 +22,7 @@ async function getData() {
       sort: 'name',
     }),
     payload.find({
-      collection: 'law-firms',
+      collection: 'businesses',
       where: {
         featured: { equals: true },
         _status: { equals: 'published' },
@@ -45,7 +45,7 @@ async function getData() {
 
   // Get counts
   const counts = {
-    lawFirms: await payload.count({ collection: 'law-firms', where: { _status: { equals: 'published' } } }),
+    businesses: await payload.count({ collection: 'businesses', where: { _status: { equals: 'published' } } }),
     practiceAreas: practiceAreasResult.totalDocs,
     locations: locationsResult.totalDocs,
   }
@@ -57,7 +57,7 @@ async function getData() {
     featuredLocations,
     featuredFirms: featuredFirmsResult.docs,
     counts: {
-      lawFirms: counts.lawFirms.totalDocs,
+      businesses: counts.businesses.totalDocs,
       practiceAreas: counts.practiceAreas,
       locations: counts.locations,
     },
@@ -89,7 +89,7 @@ export default async function HomePage() {
         }))}
       />
 
-      <FeaturedFirms firms={featuredFirms as any} />
+      <FeaturedFirms firms={featuredFirms as any} countrySlug="thailand" />
 
       <PracticeAreasGrid practiceAreas={featuredPracticeAreas} />
 

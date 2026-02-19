@@ -12,7 +12,12 @@ export const updateUserEndpoint: Endpoint = {
   method: 'post',
   handler: async (req) => {
     try {
-      const { email, newPassword, role } = await req.json()
+      const body = req.json ? await req.json() : null
+      const { email, newPassword, role } = (body || {}) as {
+        email?: string
+        newPassword?: string
+        role?: 'admin' | 'editor'
+      }
 
       if (!email) {
         return Response.json(

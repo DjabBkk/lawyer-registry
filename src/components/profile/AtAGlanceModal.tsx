@@ -4,12 +4,12 @@ import Link from 'next/link'
 import { useEffect } from 'react'
 import { X } from 'lucide-react'
 
-import type { LawFirm, PracticeArea } from '@/payload-types'
+import type { Business, PracticeArea } from '@/payload-types'
 import { toKebabCase } from '@/utilities/toKebabCase'
 import { formatFeeRange } from './profile-helpers'
 
 interface AtAGlanceModalProps {
-  firm: LawFirm
+  firm: Business
   practiceAreas?: PracticeArea[]
   countrySlug: string
   onClose: () => void

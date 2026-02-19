@@ -11,7 +11,12 @@ export const createFirstUserEndpoint: Endpoint = {
   method: 'post',
   handler: async (req) => {
     try {
-      const { email, password, name } = await req.json()
+      const body = req.json ? await req.json() : null
+      const { email, password, name } = (body || {}) as {
+        email?: string
+        password?: string
+        name?: string
+      }
 
       if (!email || !password || !name) {
         return Response.json(
@@ -25,7 +30,7 @@ export const createFirstUserEndpoint: Endpoint = {
         collection: 'users',
       })
 
-      if (userCount > 0) {
+      if (userCount.totalDocs > 0) {
         return Response.json(
           { error: 'Users already exist. Please log in or use the admin panel to create users.' },
           { status: 403 },

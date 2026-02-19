@@ -70,7 +70,7 @@ export interface Config {
     pages: Page;
     posts: Post;
     categories: Category;
-    'law-firms': LawFirm;
+    businesses: Business;
     'practice-areas': PracticeArea;
     locations: Location;
     media: Media;
@@ -95,7 +95,7 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
-    'law-firms': LawFirmsSelect<false> | LawFirmsSelect<true>;
+    businesses: BusinessesSelect<false> | BusinessesSelect<true>;
     'practice-areas': PracticeAreasSelect<false> | PracticeAreasSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -400,9 +400,9 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "law-firms".
+ * via the `definition` "businesses".
  */
-export interface LawFirm {
+export interface Business {
   id: number;
   name: string;
   slug: string;
@@ -693,10 +693,15 @@ export interface LawFirm {
     image?: (number | null) | Media;
     description?: string | null;
   };
+  businessType: 'law-firm' | 'lawyer' | 'accounting-firm' | 'accountant';
+  serviceCategories?: ('legal' | 'accounting' | 'visa-services' | 'company-registration' | 'tax' | 'audit')[] | null;
+  claimToken?: string | null;
+  claimTokenUsedAt?: string | null;
+  supabaseUserId?: string | null;
   /**
-   * Free = basic auto-listed. Claimed = firm has verified their profile. Premium = paid featured listing.
+   * Free = basic auto-listed. Bronze = verified claimed profile. Silver/Gold/Platinum = upgraded listing tiers.
    */
-  listingTier?: ('free' | 'claimed' | 'premium') | null;
+  listingTier?: ('free' | 'bronze' | 'silver' | 'gold' | 'platinum') | null;
   verified?: boolean | null;
   updatedAt: string;
   createdAt: string;
@@ -779,8 +784,8 @@ export interface Redirect {
   to?: {
     type?: ('reference' | 'custom') | null;
     reference?: {
-      relationTo: 'law-firms';
-      value: number | LawFirm;
+      relationTo: 'businesses';
+      value: number | Business;
     } | null;
     url?: string | null;
   };
@@ -989,8 +994,8 @@ export interface Search {
   title?: string | null;
   priority?: number | null;
   doc: {
-    relationTo: 'law-firms';
-    value: number | LawFirm;
+    relationTo: 'businesses';
+    value: number | Business;
   };
   slug?: string | null;
   meta?: {
@@ -1138,8 +1143,8 @@ export interface PayloadLockedDocument {
         value: number | Category;
       } | null)
     | ({
-        relationTo: 'law-firms';
-        value: number | LawFirm;
+        relationTo: 'businesses';
+        value: number | Business;
       } | null)
     | ({
         relationTo: 'practice-areas';
@@ -1285,9 +1290,9 @@ export interface CategoriesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "law-firms_select".
+ * via the `definition` "businesses_select".
  */
-export interface LawFirmsSelect<T extends boolean = true> {
+export interface BusinessesSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
   logo?: T;
@@ -1466,6 +1471,11 @@ export interface LawFirmsSelect<T extends boolean = true> {
         image?: T;
         description?: T;
       };
+  businessType?: T;
+  serviceCategories?: T;
+  claimToken?: T;
+  claimTokenUsedAt?: T;
+  supabaseUserId?: T;
   listingTier?: T;
   verified?: T;
   updatedAt?: T;
@@ -1912,8 +1922,8 @@ export interface Header {
           newTab?: boolean | null;
           reference?:
             | ({
-                relationTo: 'law-firms';
-                value: number | LawFirm;
+                relationTo: 'businesses';
+                value: number | Business;
               } | null)
             | ({
                 relationTo: 'practice-areas';
@@ -1945,8 +1955,8 @@ export interface Footer {
           newTab?: boolean | null;
           reference?:
             | ({
-                relationTo: 'law-firms';
-                value: number | LawFirm;
+                relationTo: 'businesses';
+                value: number | Business;
               } | null)
             | ({
                 relationTo: 'practice-areas';
@@ -2029,8 +2039,8 @@ export interface TaskSchedulePublish {
           value: number | Post;
         } | null)
       | ({
-          relationTo: 'law-firms';
-          value: number | LawFirm;
+          relationTo: 'businesses';
+          value: number | Business;
         } | null);
     global?: string | null;
     user?: (number | null) | User;

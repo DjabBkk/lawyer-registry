@@ -6,8 +6,9 @@ const SITE_URL =
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
   siteUrl: SITE_URL,
+  sitemapBaseFileName: 'auto-sitemap',
   generateRobotsTxt: true,
-  exclude: ['/admin/*', '/api/*', '/posts-sitemap.xml', '/pages-sitemap.xml', '/posts/*'],
+  exclude: ['/admin/*', '/api/*', '/posts-sitemap.xml', '/pages-sitemap.xml', '/posts/*', '/sitemap.xml'],
   robotsTxtOptions: {
     policies: [
       {
@@ -15,6 +16,6 @@ module.exports = {
         disallow: ['/admin/*', '/api/*'],
       },
     ],
-    additionalSitemaps: [`${SITE_URL}/pages-sitemap.xml`, `${SITE_URL}/posts-sitemap.xml`],
+    additionalSitemaps: [`${SITE_URL}/sitemap.xml`],
   },
 }

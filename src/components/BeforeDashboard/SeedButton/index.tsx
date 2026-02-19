@@ -7,7 +7,7 @@ import './index.scss'
 type SeedCounts = {
   practiceAreas: number
   locations: number
-  lawFirms: number
+  businesses: number
 }
 
 type SeedStatus = {
@@ -18,7 +18,7 @@ type SeedStatus = {
 const emptyCounts: SeedCounts = {
   practiceAreas: 0,
   locations: 0,
-  lawFirms: 0,
+  businesses: 0,
 }
 
 const SeedButton: React.FC = () => {
@@ -136,7 +136,7 @@ const SeedButton: React.FC = () => {
       <h4>Seed Database</h4>
       <p>
         {status.seeded ? 'Database contains seed data.' : 'Database is empty.'} Count:{' '}
-        {status.counts.lawFirms} Law Firms, {status.counts.practiceAreas} Practice Areas,{' '}
+        {status.counts.businesses} Law Firms, {status.counts.practiceAreas} Practice Areas,{' '}
         {status.counts.locations} Locations.
       </p>
       <div className="seed-panel__actions">

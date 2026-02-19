@@ -1,11 +1,11 @@
 import { Clock, Globe, Mail, MapPin, Phone, Train } from 'lucide-react'
 
-import type { LawFirm, Location } from '@/payload-types'
+import type { Business, Location } from '@/payload-types'
 
-type OfficeLocation = NonNullable<LawFirm['officeLocations']>[number]
+type OfficeLocation = NonNullable<Business['officeLocations']>[number]
 
 interface ContactMapSectionProps {
-  firm: LawFirm & {
+  firm: Business & {
     primaryLocation?: Location | number | null
     officeLocations?: Array<OfficeLocation & { location?: Location | number | null }>
   }

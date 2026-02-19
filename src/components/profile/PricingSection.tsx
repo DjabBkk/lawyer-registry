@@ -1,9 +1,9 @@
-import type { LawFirm } from '@/payload-types'
+import type { Business } from '@/payload-types'
 
 import { formatCurrencyAmount, formatFeeRange } from './profile-helpers'
 
 interface PricingSectionProps {
-  firm: LawFirm
+  firm: Business
 }
 
 type PricingEntry = {

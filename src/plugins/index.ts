@@ -10,17 +10,18 @@ import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/
 import { searchFields } from '@/search/fieldOverrides'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
 
-import { LawFirm } from '@/payload-types'
+import { Business } from '@/payload-types'
+import { getBusinessUrl } from '@/utilities/getBusinessUrl'
 import { getServerSideURL } from '@/utilities/getURL'
 
-const generateTitle: GenerateTitle<LawFirm> = ({ doc }) => {
+const generateTitle: GenerateTitle<Business> = ({ doc }) => {
   return doc?.name ? `${doc.name} | Thailand Law Firm Directory` : 'Thailand Law Firm Directory'
 }
 
-const generateURL: GenerateURL<LawFirm> = ({ doc }) => {
+const generateURL: GenerateURL<Business> = ({ doc }) => {
   const url = getServerSideURL()
 
-  return doc?.slug ? `${url}/thailand/lawyers/${doc.slug}` : url
+  return doc?.slug ? `${url}${getBusinessUrl(doc, 'thailand')}` : url
 }
 
 export const plugins: Plugin[] = [
@@ -28,7 +29,7 @@ export const plugins: Plugin[] = [
     collections: ['categories'],
   }),
   redirectsPlugin({
-    collections: ['law-firms'],
+    collections: ['businesses'],
     overrides: {
       // @ts-expect-error - This is a valid override, mapped fields don't resolve to the same type
       fields: ({ defaultFields }) => {
@@ -80,7 +81,7 @@ export const plugins: Plugin[] = [
     },
   }),
   searchPlugin({
-    collections: ['law-firms'],
+    collections: ['businesses'],
     beforeSync: beforeSyncWithSearch,
     searchOverrides: {
       fields: ({ defaultFields }) => {

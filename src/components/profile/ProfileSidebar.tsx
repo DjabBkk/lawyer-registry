@@ -5,10 +5,10 @@ import { Phone, Send } from 'lucide-react'
 
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import type { LawFirm, Location } from '@/payload-types'
+import type { Business, Location } from '@/payload-types'
 
 interface ProfileSidebarProps {
-  firm: LawFirm & {
+  firm: Business & {
     primaryLocation?: Location | number | null
   }
 }

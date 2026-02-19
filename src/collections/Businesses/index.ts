@@ -24,8 +24,11 @@ const languageOptions = [
   'Arabic',
 ]
 
-export const LawFirms: CollectionConfig = {
-  slug: 'law-firms',
+const adminOnly = ({ req: { user } }: { req: { user: { role?: string } | null } }) =>
+  user?.role === 'admin'
+
+export const Businesses: CollectionConfig = {
+  slug: 'businesses',
   access: {
     create: authenticated,
     delete: authenticated,
@@ -33,9 +36,9 @@ export const LawFirms: CollectionConfig = {
     update: authenticated,
   },
   admin: {
-    group: 'Law Firm Registry',
+    group: 'Business Registry',
     useAsTitle: 'name',
-    defaultColumns: ['name', 'slug', 'featured', 'updatedAt'],
+    defaultColumns: ['name', 'businessType', 'listingTier', 'verified', 'updatedAt'],
   },
   fields: [
     {
@@ -146,7 +149,7 @@ export const LawFirms: CollectionConfig = {
                 description:
                   "Key statistics or proof points displayed in the 'At a Glance' section",
                 components: {
-                  RowLabel: '@/collections/LawFirms/RowLabels#HighlightRowLabel',
+                  RowLabel: '@/collections/Businesses/RowLabels#HighlightRowLabel',
                 },
               },
               fields: [
@@ -283,7 +286,7 @@ export const LawFirms: CollectionConfig = {
                 description:
                   'Define what your firm offers in each practice area, including specific services and pricing. This powers the main Services & Fees section on your profile.',
                 components: {
-                  RowLabel: '@/collections/LawFirms/RowLabels#PracticeAreaDetailRowLabel',
+                  RowLabel: '@/collections/Businesses/RowLabels#PracticeAreaDetailRowLabel',
                 },
               },
               fields: [
@@ -336,7 +339,7 @@ export const LawFirms: CollectionConfig = {
                   type: 'array',
                   admin: {
                     components: {
-                      RowLabel: '@/collections/LawFirms/RowLabels#PracticeAreaServiceRowLabel',
+                      RowLabel: '@/collections/Businesses/RowLabels#PracticeAreaServiceRowLabel',
                     },
                   },
                   fields: [
@@ -417,7 +420,7 @@ export const LawFirms: CollectionConfig = {
               maxRows: 6,
               admin: {
                 components: {
-                  RowLabel: '@/collections/LawFirms/RowLabels#CaseHighlightRowLabel',
+                  RowLabel: '@/collections/Businesses/RowLabels#CaseHighlightRowLabel',
                 },
               },
               fields: [
@@ -446,7 +449,7 @@ export const LawFirms: CollectionConfig = {
                 description:
                   "Client testimonials submitted by the firm. These will be marked as 'Provided by the firm' on the profile.",
                 components: {
-                  RowLabel: '@/collections/LawFirms/RowLabels#TestimonialRowLabel',
+                  RowLabel: '@/collections/Businesses/RowLabels#TestimonialRowLabel',
                 },
               },
               fields: [
@@ -486,7 +489,7 @@ export const LawFirms: CollectionConfig = {
                 description:
                   'Frequently asked questions displayed on the profile. Great for SEO and user engagement.',
                 components: {
-                  RowLabel: '@/collections/LawFirms/RowLabels#FAQRowLabel',
+                  RowLabel: '@/collections/Businesses/RowLabels#FAQRowLabel',
                 },
               },
               fields: [
@@ -534,9 +537,10 @@ export const LawFirms: CollectionConfig = {
               type: 'array',
               label: 'Office Locations',
               admin: {
-                description: 'Add multiple office locations with their specific details and opening hours',
+                description:
+                  'Add multiple office locations with their specific details and opening hours',
                 components: {
-                  RowLabel: '@/collections/LawFirms/RowLabels#OfficeLocationRowLabel',
+                  RowLabel: '@/collections/Businesses/RowLabels#OfficeLocationRowLabel',
                 },
               },
               fields: [
@@ -581,7 +585,7 @@ export const LawFirms: CollectionConfig = {
                   name: 'nearestTransit',
                   type: 'text',
                   admin: {
-                    description: "Nearest BTS/MRT station or landmark for this office",
+                    description: 'Nearest BTS/MRT station or landmark for this office',
                   },
                 },
                 {
@@ -806,7 +810,7 @@ export const LawFirms: CollectionConfig = {
               type: 'array',
               admin: {
                 components: {
-                  RowLabel: '@/collections/LawFirms/RowLabels#TeamMemberRowLabel',
+                  RowLabel: '@/collections/Businesses/RowLabels#TeamMemberRowLabel',
                 },
               },
               fields: [
@@ -876,13 +880,123 @@ export const LawFirms: CollectionConfig = {
       ],
     },
     {
+      name: 'businessType',
+      type: 'select',
+      required: true,
+      defaultValue: 'law-firm',
+      options: [
+        {
+          label: 'Law Firm',
+          value: 'law-firm',
+        },
+        {
+          label: 'Lawyer',
+          value: 'lawyer',
+        },
+        {
+          label: 'Accounting Firm',
+          value: 'accounting-firm',
+        },
+        {
+          label: 'Accountant',
+          value: 'accountant',
+        },
+      ],
+      access: {
+        create: adminOnly,
+        read: adminOnly,
+        update: adminOnly,
+      },
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'serviceCategories',
+      type: 'select',
+      hasMany: true,
+      options: [
+        {
+          label: 'Legal',
+          value: 'legal',
+        },
+        {
+          label: 'Accounting',
+          value: 'accounting',
+        },
+        {
+          label: 'Visa Services',
+          value: 'visa-services',
+        },
+        {
+          label: 'Company Registration',
+          value: 'company-registration',
+        },
+        {
+          label: 'Tax',
+          value: 'tax',
+        },
+        {
+          label: 'Audit',
+          value: 'audit',
+        },
+      ],
+      access: {
+        create: adminOnly,
+        read: adminOnly,
+        update: adminOnly,
+      },
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'claimToken',
+      type: 'text',
+      index: true,
+      unique: true,
+      access: {
+        create: adminOnly,
+        read: adminOnly,
+        update: adminOnly,
+      },
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'claimTokenUsedAt',
+      type: 'date',
+      access: {
+        create: adminOnly,
+        read: adminOnly,
+        update: adminOnly,
+      },
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'supabaseUserId',
+      type: 'text',
+      index: true,
+      access: {
+        create: adminOnly,
+        read: adminOnly,
+        update: adminOnly,
+      },
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'listingTier',
       type: 'select',
       defaultValue: 'free',
       admin: {
         position: 'sidebar',
         description:
-          'Free = basic auto-listed. Claimed = firm has verified their profile. Premium = paid featured listing.',
+          'Free = basic auto-listed. Bronze = verified claimed profile. Silver/Gold/Platinum = upgraded listing tiers.',
       },
       options: [
         {
@@ -890,12 +1004,20 @@ export const LawFirms: CollectionConfig = {
           value: 'free',
         },
         {
-          label: 'Claimed',
-          value: 'claimed',
+          label: 'Bronze',
+          value: 'bronze',
         },
         {
-          label: 'Premium',
-          value: 'premium',
+          label: 'Silver',
+          value: 'silver',
+        },
+        {
+          label: 'Gold',
+          value: 'gold',
+        },
+        {
+          label: 'Platinum',
+          value: 'platinum',
         },
       ],
     },

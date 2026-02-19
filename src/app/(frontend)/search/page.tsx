@@ -7,7 +7,7 @@ import { cache } from 'react'
 
 import { Container } from '@/components/layout/Container'
 import { DarkHero } from '@/components/layout/DarkHero'
-import { LawFirmGrid, FilterSidebar, Pagination, ResultsToolbar } from '@/components/law-firms'
+import { BusinessGrid, FilterSidebar, Pagination, ResultsToolbar } from '@/components/law-firms'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
@@ -46,7 +46,7 @@ const normalizeSortParamValue = (value: string) => {
 
 const getPayloadClient = cache(async () => getPayload({ config }))
 
-async function searchLawFirms(searchParams: { [key: string]: string | string[] | undefined }) {
+async function searchBusinesses(searchParams: { [key: string]: string | string[] | undefined }) {
   const payload = await getPayloadClient()
   
   const query = String(searchParams.q || '')
@@ -168,7 +168,7 @@ async function searchLawFirms(searchParams: { [key: string]: string | string[] |
   }
 
   const languageCountsResult = await payload.find({
-    collection: 'law-firms',
+    collection: 'businesses',
     where: whereBase,
     limit: 500,
     page: 1,
@@ -202,7 +202,7 @@ async function searchLawFirms(searchParams: { [key: string]: string | string[] |
   }
 
   const result = await payload.find({
-    collection: 'law-firms',
+    collection: 'businesses',
     where,
     limit,
     page,
@@ -254,7 +254,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
   const query = String(resolvedSearchParams.q || '')
   
   const [{ firms, totalPages, currentPage, totalDocs, languageCounts, sortParam }, filterOptions] = await Promise.all([
-    searchLawFirms(resolvedSearchParams),
+    searchBusinesses(resolvedSearchParams),
     getFilterOptions(),
   ])
 
@@ -312,8 +312,9 @@ export default async function SearchPage({ searchParams }: PageProps) {
                   practiceAreas={filterOptions.practiceAreas}
                   locations={filterOptions.locations}
                 />
-                <LawFirmGrid
+                <BusinessGrid
                   firms={firms as any}
+                  countrySlug="thailand"
                   emptyMessage={`No law firms found matching "${query}".`}
                 />
 

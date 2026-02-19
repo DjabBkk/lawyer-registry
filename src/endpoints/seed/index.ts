@@ -1,7 +1,7 @@
 import { APIError } from 'payload'
 import type { Endpoint } from 'payload'
 
-import { lawFirms } from './data/lawFirms'
+import { businesses } from './data/businesses'
 import { locations } from './data/locations'
 import { practiceAreas } from './data/practiceAreas'
 import { toKebabCase } from '@/utilities/toKebabCase'
@@ -13,7 +13,7 @@ const ensureAuthenticated = (user: unknown) => {
 }
 
 const getCounts = async (req: Parameters<Endpoint['handler']>[0]) => {
-  const [practiceAreasResult, locationsResult, lawFirmsResult] = await Promise.all([
+  const [practiceAreasResult, locationsResult, businessesResult] = await Promise.all([
     req.payload.find({
       collection: 'practice-areas',
       depth: 0,
@@ -25,7 +25,7 @@ const getCounts = async (req: Parameters<Endpoint['handler']>[0]) => {
       limit: 0,
     }),
     req.payload.find({
-      collection: 'law-firms',
+      collection: 'businesses',
       depth: 0,
       limit: 0,
     }),
@@ -34,7 +34,7 @@ const getCounts = async (req: Parameters<Endpoint['handler']>[0]) => {
   return {
     practiceAreas: practiceAreasResult.totalDocs,
     locations: locationsResult.totalDocs,
-    lawFirms: lawFirmsResult.totalDocs,
+    businesses: businessesResult.totalDocs,
   }
 }
 
@@ -207,9 +207,9 @@ const practiceAreaServiceTemplates: Record<string, string[]> = {
   ],
 }
 
-const listingTierForIndex = (index: number): 'free' | 'claimed' | 'premium' => {
-  if (index < 5) return 'premium'
-  if (index < 15) return 'claimed'
+const listingTierForIndex = (index: number): 'free' | 'bronze' | 'gold' => {
+  if (index < 5) return 'gold'
+  if (index < 15) return 'bronze'
   return 'free'
 }
 
@@ -262,7 +262,7 @@ const buildServiceRows = ({
 
   return templateServices.slice(0, count).map((service, serviceIndex) => {
     const min = Math.round((baseMin * (1 + serviceIndex * 0.25)) / 100) * 100
-    const max = Math.round((Math.min(baseMax, min * (1.4 + serviceIndex * 0.1))) / 100) * 100
+    const max = Math.round(Math.min(baseMax, min * (1.4 + serviceIndex * 0.1)) / 100) * 100
     const price =
       serviceIndex % 3 === 0
         ? `${formatPrice(min, currency)} - ${formatPrice(max, currency)}`
@@ -282,13 +282,15 @@ const buildPracticeAreaDetails = ({
   firm,
   getPracticeAreaId,
 }: {
-  firm: (typeof lawFirms)[number]
+  firm: (typeof businesses)[number]
   getPracticeAreaId: (name: string) => number
 }) =>
   firm.practiceAreas.slice(0, 5).map((practiceAreaName, practiceAreaIndex) => {
     const currency = firm.feeCurrency || 'THB'
-    const baseMin = Math.round(((firm.feeRangeMin || 2500) * (1 + practiceAreaIndex * 0.15)) / 100) * 100
-    const baseMax = Math.round(((firm.feeRangeMax || baseMin * 3) * (1 + practiceAreaIndex * 0.1)) / 100) * 100
+    const baseMin =
+      Math.round(((firm.feeRangeMin || 2500) * (1 + practiceAreaIndex * 0.15)) / 100) * 100
+    const baseMax =
+      Math.round(((firm.feeRangeMax || baseMin * 3) * (1 + practiceAreaIndex * 0.1)) / 100) * 100
     const services = buildServiceRows({
       practiceAreaName,
       baseMin,
@@ -307,7 +309,7 @@ const buildPracticeAreaDetails = ({
     }
   })
 
-const buildServicePricing = (firm: (typeof lawFirms)[number]) => {
+const buildServicePricing = (firm: (typeof businesses)[number]) => {
   const currency = firm.feeCurrency || 'THB'
   const baseMin = firm.feeRangeMin || 2500
   const baseMax = firm.feeRangeMax || baseMin * 3
@@ -331,7 +333,7 @@ const buildServicePricing = (firm: (typeof lawFirms)[number]) => {
   const pricedServices = (firm.services || []).slice(0, 4)
   pricedServices.forEach((service, idx) => {
     const min = Math.round((baseMin * (1 + idx * 0.25)) / 100) * 100
-    const max = Math.round((Math.min(baseMax, min * 2.2)) / 100) * 100
+    const max = Math.round(Math.min(baseMax, min * 2.2) / 100) * 100
 
     entries.push({
       serviceName: service.service,
@@ -345,17 +347,22 @@ const buildServicePricing = (firm: (typeof lawFirms)[number]) => {
   return entries.slice(0, 5)
 }
 
-const buildCaseHighlights = (firm: (typeof lawFirms)[number]) => {
+const buildCaseHighlights = (firm: (typeof businesses)[number]) => {
   const areas = firm.practiceAreas.slice(0, 3)
 
   return areas.map((area, idx) => ({
     title: `${area} outcomes for clients in ${firm.primaryLocation}`,
     description: `Delivered consistent ${area.toLowerCase()} support for individuals and businesses in ${firm.primaryLocation}, with clear communication and practical timelines from intake to resolution.`,
-    metric: idx === 0 ? '95%+ positive outcomes' : idx === 1 ? '200+ matters advised' : '15+ years combined experience',
+    metric:
+      idx === 0
+        ? '95%+ positive outcomes'
+        : idx === 1
+          ? '200+ matters advised'
+          : '15+ years combined experience',
   }))
 }
 
-const buildTestimonials = (firm: (typeof lawFirms)[number]) => [
+const buildTestimonials = (firm: (typeof businesses)[number]) => [
   {
     quote: `The team at ${firm.name} was clear, responsive, and commercially practical from day one.`,
     authorName: 'International Client',
@@ -370,7 +377,7 @@ const buildTestimonials = (firm: (typeof lawFirms)[number]) => [
   },
 ]
 
-const buildFaq = (firm: (typeof lawFirms)[number]) => {
+const buildFaq = (firm: (typeof businesses)[number]) => {
   const leadArea = firm.practiceAreas[0] || 'legal'
 
   return [
@@ -392,7 +399,7 @@ const buildFaq = (firm: (typeof lawFirms)[number]) => {
   ]
 }
 
-const buildHighlights = (firm: (typeof lawFirms)[number]) => {
+const buildHighlights = (firm: (typeof businesses)[number]) => {
   const highlightItems = []
 
   if (firm.foundingYear) {
@@ -431,7 +438,7 @@ export const seedStatusEndpoint: Endpoint = {
     const counts = await getCounts(req)
 
     return Response.json({
-      seeded: counts.practiceAreas > 0 || counts.locations > 0 || counts.lawFirms > 0,
+      seeded: counts.practiceAreas > 0 || counts.locations > 0 || counts.businesses > 0,
       counts,
     })
   },
@@ -444,7 +451,7 @@ export const seedEndpoint: Endpoint = {
     ensureAuthenticated(req.user)
 
     const counts = await getCounts(req)
-    if (counts.practiceAreas > 0 || counts.locations > 0 || counts.lawFirms > 0) {
+    if (counts.practiceAreas > 0 || counts.locations > 0 || counts.businesses > 0) {
       return Response.json(
         {
           error: 'Seed data already exists. Clear the database before seeding again.',
@@ -494,9 +501,7 @@ export const seedEndpoint: Endpoint = {
       createdLocations.push(created)
     }
 
-    const practiceAreaIdByName = new Map(
-      createdPracticeAreas.map((doc) => [doc.name, doc.id]),
-    )
+    const practiceAreaIdByName = new Map(createdPracticeAreas.map((doc) => [doc.name, doc.id]))
     const locationIdByName = new Map(createdLocations.map((doc) => [doc.name, doc.id]))
 
     const getPracticeAreaIds = (names: string[]) =>
@@ -524,13 +529,20 @@ export const seedEndpoint: Endpoint = {
       return id
     }
 
-    const createdLawFirms = []
-    for (const [index, firm] of lawFirms.entries()) {
+    const createdBusinesses = []
+    for (const [index, firm] of businesses.entries()) {
       const locationIds = firm.locations.map(getLocationId)
       const primaryLocationId = getLocationId(firm.primaryLocation)
+      const businessType = firm.businessType || 'law-firm'
+      const serviceCategories =
+        firm.serviceCategories ||
+        (businessType === 'accounting-firm' || businessType === 'accountant'
+          ? ['accounting', 'company-registration', 'tax']
+          : ['legal'])
       const listingTier = firm.listingTier || listingTierForIndex(index)
-      const verified = firm.verified ?? listingTier === 'premium'
-      const responseTime = firm.responseTime || responseTimeOptions[index % responseTimeOptions.length]
+      const verified = firm.verified ?? listingTier !== 'free'
+      const responseTime =
+        firm.responseTime || responseTimeOptions[index % responseTimeOptions.length]
       const nearestTransit =
         firm.nearestTransit ||
         (firm.locations.includes('Bangkok')
@@ -543,16 +555,12 @@ export const seedEndpoint: Endpoint = {
           : undefined
       const derivedHourlyMax =
         typeof firm.feeRangeMax === 'number'
-          ? Math.max(
-              derivedHourlyMin || 0,
-              Math.round((firm.feeRangeMax * 0.45) / 100) * 100,
-            )
+          ? Math.max(derivedHourlyMin || 0, Math.round((firm.feeRangeMax * 0.45) / 100) * 100)
           : undefined
       const hourlyFeeMin = firm.hourlyFeeMin ?? derivedHourlyMin
       const hourlyFeeMax = firm.hourlyFeeMax ?? derivedHourlyMax
       const hourlyFeeNote =
-        firm.hourlyFeeNote ||
-        (hourlyFeeMin || hourlyFeeMax ? 'indicative hourly rate' : undefined)
+        firm.hourlyFeeNote || (hourlyFeeMin || hourlyFeeMax ? 'indicative hourly rate' : undefined)
 
       const tagline =
         firm.tagline ||
@@ -602,7 +610,7 @@ export const seedEndpoint: Endpoint = {
       }))
 
       const created = await req.payload.create({
-        collection: 'law-firms',
+        collection: 'businesses',
         draft: false,
         data: {
           name: firm.name,
@@ -616,6 +624,8 @@ export const seedEndpoint: Endpoint = {
           tagline,
           featured: firm.featured,
           featuredOrder: firm.featuredOrder,
+          businessType,
+          serviceCategories,
           listingTier,
           verified,
           foundingYear: firm.foundingYear,
@@ -647,7 +657,7 @@ export const seedEndpoint: Endpoint = {
         req,
       })
 
-      createdLawFirms.push(created)
+      createdBusinesses.push(created)
     }
 
     const updatedCounts = await getCounts(req)
@@ -658,7 +668,7 @@ export const seedEndpoint: Endpoint = {
       created: {
         practiceAreas: createdPracticeAreas.length,
         locations: createdLocations.length,
-        lawFirms: createdLawFirms.length,
+        businesses: createdBusinesses.length,
       },
     })
   },

@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react'
 import { Phone, Send } from 'lucide-react'
 
-import type { LawFirm, Location } from '@/payload-types'
+import type { Business, Location } from '@/payload-types'
 
 interface MobileContactBarProps {
-  firm: LawFirm & {
+  firm: Business & {
     primaryLocation?: Location | number | null
   }
 }
