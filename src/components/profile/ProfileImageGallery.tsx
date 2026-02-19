@@ -72,6 +72,7 @@ export function ProfileImageGallery({ images }: ProfileImageGalleryProps) {
                 src={image.url}
                 alt={image.alt}
                 fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 320px"
                 className="object-cover transition-transform duration-300 hover:scale-[1.03]"
               />
             </button>
@@ -109,7 +110,7 @@ export function ProfileImageGallery({ images }: ProfileImageGalleryProps) {
                 alt={activeImage.alt}
                 fill
                 className="object-contain"
-                sizes="100vw"
+                sizes="(max-width: 1280px) 100vw, 1280px"
               />
             </div>
 
@@ -145,7 +146,13 @@ export function ProfileImageGallery({ images }: ProfileImageGalleryProps) {
                       onClick={() => setActiveIndex(index)}
                       className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-md border ${selected ? 'border-gold-500' : 'border-white/20'}`}
                     >
-                      <Image src={image.url} alt={image.alt} fill className="object-cover" />
+                      <Image
+                        src={image.url}
+                        alt={image.alt}
+                        fill
+                        sizes="96px"
+                        className="object-cover"
+                      />
                     </button>
                   )
                 })}

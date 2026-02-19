@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { Search } from 'lucide-react'
 import type { Metadata } from 'next'
+import { cache } from 'react'
 
 import { Container } from '@/components/layout/Container'
 import { DarkHero } from '@/components/layout/DarkHero'
@@ -43,8 +44,10 @@ const normalizeSortParamValue = (value: string) => {
   return value
 }
 
+const getPayloadClient = cache(async () => getPayload({ config }))
+
 async function searchLawFirms(searchParams: { [key: string]: string | string[] | undefined }) {
-  const payload = await getPayload({ config })
+  const payload = await getPayloadClient()
   
   const query = String(searchParams.q || '')
   const page = Number(searchParams.page) || 1
@@ -171,6 +174,9 @@ async function searchLawFirms(searchParams: { [key: string]: string | string[] |
     page: 1,
     depth: 0,
     sort: '-featured',
+    select: {
+      languages: true,
+    } as any,
   })
 
   const languageCounts = languageOptions.reduce(
@@ -200,7 +206,7 @@ async function searchLawFirms(searchParams: { [key: string]: string | string[] |
     where,
     limit,
     page,
-    depth: 2,
+    depth: 1,
     sort,
   })
 
@@ -215,7 +221,7 @@ async function searchLawFirms(searchParams: { [key: string]: string | string[] |
 }
 
 async function getFilterOptions() {
-  const payload = await getPayload({ config })
+  const payload = await getPayloadClient()
   
   const [practiceAreas, locations] = await Promise.all([
     payload.find({ collection: 'practice-areas', limit: 100, sort: 'name' }),
@@ -237,6 +243,9 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     description: query
       ? `Find law firms matching "${query}" in Thailand.`
       : 'Search for law firms in Thailand by name, description, or services.',
+    alternates: {
+      canonical: query ? `/search?q=${encodeURIComponent(query)}` : '/search',
+    },
   }
 }
 

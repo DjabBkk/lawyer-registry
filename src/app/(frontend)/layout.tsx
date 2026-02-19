@@ -4,6 +4,7 @@ import { Inter, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { SiteFooter } from '@/components/layout/SiteFooter'
+import { getServerSideURL } from '@/utilities/getURL'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -19,6 +20,7 @@ const playfair = Playfair_Display({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getServerSideURL()),
   title: {
     default: 'Top Lawyers Thailand | Find Your Legal Expert',
     template: '%s | Top Lawyers Thailand',
@@ -33,6 +35,24 @@ export const metadata: Metadata = {
     'criminal lawyer Thailand',
     'immigration lawyer Thailand',
   ],
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    siteName: 'Top Lawyers Thailand',
+    title: 'Top Lawyers Thailand | Find Your Legal Expert',
+    description:
+      'Find the best lawyers and law firms in Thailand. Search by practice area, location, and expertise.',
+    url: '/',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Top Lawyers Thailand | Find Your Legal Expert',
+    description:
+      'Find the best lawyers and law firms in Thailand. Search by practice area, location, and expertise.',
+  },
 }
 
 export default function FrontendLayout({ children }: { children: React.ReactNode }) {

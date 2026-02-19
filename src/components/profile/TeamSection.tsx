@@ -39,6 +39,7 @@ const TeamCard = ({
               src={photo.url}
               alt={member.name}
               fill
+              sizes="130px"
               className="object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]"
             />
           ) : (
@@ -221,6 +222,7 @@ export function TeamSection({ teamMembers, className }: TeamSectionProps) {
                     src={activeMember.photo.url}
                     alt={activeMember.name}
                     fill
+                    sizes="220px"
                     className="object-cover object-top"
                   />
                 ) : (

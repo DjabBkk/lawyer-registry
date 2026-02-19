@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { ChevronRight } from 'lucide-react'
 import type { Metadata } from 'next'
+import { cache } from 'react'
 
 import { Container } from '@/components/layout/Container'
 import { DarkHero } from '@/components/layout/DarkHero'
@@ -70,9 +71,11 @@ const appendAndCondition = (where: Record<string, unknown>, condition: Record<st
   where.and = [...existing, condition]
 }
 
+const getPayloadClient = cache(async () => getPayload({ config }))
+
 async function getPracticeAreaBySlug(slug: string) {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadClient()
     const { docs } = await payload.find({
       collection: 'practice-areas',
       where: { slug: { equals: slug } },
@@ -88,7 +91,7 @@ async function getPracticeAreaBySlug(slug: string) {
 
 async function getLocationBySlug(slug: string) {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadClient()
     const { docs } = await payload.find({
       collection: 'locations',
       where: { slug: { equals: slug } },
@@ -104,7 +107,7 @@ async function getLocationBySlug(slug: string) {
 
 async function getLawFirmBySlug(slug: string) {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadClient()
     const { docs } = await payload.find({
       collection: 'law-firms',
       where: {
@@ -112,7 +115,7 @@ async function getLawFirmBySlug(slug: string) {
         _status: { equals: 'published' },
       },
       limit: 1,
-      depth: 2,
+      depth: 1,
     })
     return docs[0] || null
   } catch (error) {
@@ -123,7 +126,7 @@ async function getLawFirmBySlug(slug: string) {
 
 async function getFilterOptions() {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadClient()
 
     const [practiceAreas, locations] = await Promise.all([
       payload.find({ collection: 'practice-areas', limit: 200, sort: 'name' }),
@@ -154,7 +157,7 @@ async function getLawFirms({
   keyword?: string
   searchParams: SearchParams
 }) {
-  const payload = await getPayload({ config })
+  const payload = await getPayloadClient()
 
   const page = Number(searchParams.page) || 1
   const limit = 12
@@ -287,6 +290,9 @@ async function getLawFirms({
     page: 1,
     depth: 0,
     sort: '-featured',
+    select: {
+      languages: true,
+    } as any,
   })
 
   const languageCounts = languageOptions.reduce(
@@ -318,7 +324,7 @@ async function getLawFirms({
     where: where as any,
     limit,
     page,
-    depth: 2,
+    depth: 1,
     sort,
   })
 
@@ -333,7 +339,7 @@ async function getLawFirms({
 }
 
 async function getRelatedFirms(firm: LawFirm) {
-  const payload = await getPayload({ config })
+  const payload = await getPayloadClient()
 
   const practiceAreaIds =
     (firm.practiceAreas as PracticeArea[])
@@ -361,7 +367,7 @@ async function getRelatedFirms(firm: LawFirm) {
       or: relatedConditions as any,
     },
     limit: 3,
-    depth: 2,
+    depth: 1,
   })
 
   return docs
@@ -375,12 +381,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug: countrySlug, segments = [] } = await params
   const country = getSupportedCountry(countrySlug)
   if (!country) return { title: 'Not Found' }
+  const canonicalFor = (suffix: string = '') => `/${country.slug}/lawyers${suffix}`
+  const withCanonical = (metadata: Metadata, suffix: string = ''): Metadata => ({
+    ...metadata,
+    alternates: {
+      canonical: canonicalFor(suffix),
+    },
+  })
 
   if (segments.length === 0) {
-    return {
+    return withCanonical({
       title: `Lawyers in ${country.name}`,
       description: `Browse law firms and lawyers in ${country.name}. Filter by location and practice area.`,
-    }
+    })
   }
 
   if (segments.length === 1) {
@@ -392,16 +405,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ])
 
     if (location) {
-      return {
+      return withCanonical({
         title: `Lawyers in ${location.name}, ${country.name}`,
         description: `Find law firms and lawyers in ${location.name}, ${country.name}.`,
-      }
+      }, `/${location.slug}`)
     }
     if (practiceArea) {
-      return {
+      return withCanonical({
         title: `${practiceArea.name} Lawyers in ${country.name}`,
         description: `Find experienced ${practiceArea.name.toLowerCase()} lawyers in ${country.name}.`,
-      }
+      }, `/${practiceArea.slug}`)
     }
     if (firm) {
       const loc = typeof firm.primaryLocation === 'object' ? firm.primaryLocation : null
@@ -410,13 +423,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         .slice(0, 3)
         .map((area) => area.name)
       const areaSummary = areaNames.length ? `Specialties include ${areaNames.join(', ')}.` : ''
-      return {
+      return withCanonical({
         title: firm.meta?.title || `${firm.name} | Law Firm in ${loc?.name || country.name}`,
         description:
           firm.meta?.description ||
           firm.shortDescription ||
           `${firm.name} is a law firm based in ${loc?.name || country.name}. ${areaSummary} Learn more about their services, team, fees, and client FAQs.`,
-      }
+      }, `/${firm.slug}`)
     }
   }
 
@@ -430,18 +443,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     if (location) {
       const pa = await getPracticeAreaBySlug(s2)
       if (!pa) return { title: 'Not Found' }
-      return {
+      return withCanonical({
         title: `${pa.name} Lawyers in ${location.name} | ${country.name}`,
         description: `Find ${pa.name.toLowerCase()} lawyers in ${location.name}, ${country.name}.`,
-      }
+      }, `/${location.slug}/${pa.slug}`)
     }
 
     if (practiceArea) {
       const q = slugToQuery(s2)
-      return {
+      return withCanonical({
         title: `${q} | ${practiceArea.name} Lawyers in ${country.name}`,
         description: `Browse ${practiceArea.name.toLowerCase()} lawyers in ${country.name} focused on ${q}.`,
-      }
+      }, `/${practiceArea.slug}/${s2}`)
     }
   }
 
@@ -454,10 +467,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     if (!location || !practiceArea) return { title: 'Not Found' }
 
     const q = slugToQuery(specSlug)
-    return {
+    return withCanonical({
       title: `${q} | ${practiceArea.name} Lawyers in ${location.name}`,
       description: `Browse ${practiceArea.name.toLowerCase()} lawyers in ${location.name}, ${country.name} focused on ${q}.`,
-    }
+    }, `/${location.slug}/${practiceArea.slug}/${specSlug}`)
   }
 
   return { title: 'Not Found' }
@@ -782,23 +795,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
                   />
                   <CaseHighlightsSection caseHighlights={firm.caseHighlights} />
                   <TestimonialsSection testimonials={firm.testimonials} />
-                  <TeamSection
-                    teamMembers={
-                      firm.teamMembers
-                        ? firm.teamMembers.map((member) => ({
-                            name: member.name,
-                            role: member.role,
-                            bio: member.bio,
-                            email: member.email,
-                            linkedIn: member.linkedIn,
-                            photo:
-                              member.photo && typeof member.photo === 'object' && 'url' in member.photo
-                                ? { url: member.photo.url, alt: member.photo.alt || '' }
-                                : null,
-                          }))
-                        : []
-                    }
-                  />
+                  <TeamSection teamMembers={(firm.teamMembers || []) as any} />
                   <FAQSection faq={firm.faq} />
                   <ContactMapSection firm={firm as any} />
                   <AtAGlanceSection
