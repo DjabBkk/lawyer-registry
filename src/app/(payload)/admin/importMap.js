@@ -19,6 +19,7 @@ import { TestimonialRowLabel as TestimonialRowLabel_487e2edc3b067425aaadc8c3cf9d
 import { FAQRowLabel as FAQRowLabel_487e2edc3b067425aaadc8c3cf9dade6 } from '@/collections/Businesses/RowLabels'
 import { OfficeLocationRowLabel as OfficeLocationRowLabel_487e2edc3b067425aaadc8c3cf9dade6 } from '@/collections/Businesses/RowLabels'
 import { TeamMemberRowLabel as TeamMemberRowLabel_487e2edc3b067425aaadc8c3cf9dade6 } from '@/collections/Businesses/RowLabels'
+import { default as default_0c41624cdf76e907b51a32248e8ec197 } from '@/components/admin/BusinessesImportTool'
 import { InlineToolbarFeatureClient as InlineToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { FixedToolbarFeatureClient as FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { FolderTableCell as FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
@@ -55,6 +56,7 @@ export const importMap = {
   "@/collections/Businesses/RowLabels#FAQRowLabel": FAQRowLabel_487e2edc3b067425aaadc8c3cf9dade6,
   "@/collections/Businesses/RowLabels#OfficeLocationRowLabel": OfficeLocationRowLabel_487e2edc3b067425aaadc8c3cf9dade6,
   "@/collections/Businesses/RowLabels#TeamMemberRowLabel": TeamMemberRowLabel_487e2edc3b067425aaadc8c3cf9dade6,
+  "@/components/admin/BusinessesImportTool#default": default_0c41624cdf76e907b51a32248e8ec197,
   "@payloadcms/richtext-lexical/client#InlineToolbarFeatureClient": InlineToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#FixedToolbarFeatureClient": FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/next/rsc#FolderTableCell": FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1,

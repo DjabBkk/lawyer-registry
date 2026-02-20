@@ -39,6 +39,9 @@ export const Businesses: CollectionConfig = {
     group: 'Business Registry',
     useAsTitle: 'name',
     defaultColumns: ['name', 'businessType', 'listingTier', 'verified', 'updatedAt'],
+    components: {
+      beforeList: ['@/components/admin/BusinessesImportTool'],
+    },
   },
   fields: [
     {

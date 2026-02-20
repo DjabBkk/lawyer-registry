@@ -24,6 +24,7 @@ import { resetUserPasswordEndpoint } from './endpoints/reset-user-password'
 import { listUsersEndpoint } from './endpoints/list-users'
 import { updateUserEndpoint } from './endpoints/update-user'
 import { unlockUserEndpoint } from './endpoints/unlock-user'
+import { importBusinessRowEndpoint } from './endpoints/businesses/import-row'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -81,7 +82,7 @@ export default buildConfig({
   }),
   collections: [Pages, Posts, Categories, Businesses, PracticeAreas, Locations, Media, Users],
   cors: [getServerSideURL()].filter(Boolean),
-  endpoints: [seedStatusEndpoint, seedEndpoint, clearSeedEndpoint, createFirstUserEndpoint, resetUserPasswordEndpoint, listUsersEndpoint, updateUserEndpoint, unlockUserEndpoint],
+  endpoints: [seedStatusEndpoint, seedEndpoint, clearSeedEndpoint, createFirstUserEndpoint, resetUserPasswordEndpoint, listUsersEndpoint, updateUserEndpoint, unlockUserEndpoint, importBusinessRowEndpoint],
   globals: [Header, Footer],
   plugins,
   secret: process.env.PAYLOAD_SECRET,

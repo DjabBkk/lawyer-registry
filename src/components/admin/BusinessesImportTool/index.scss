@@ -1,0 +1,158 @@
+.business-import-panel {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 0.5rem;
+  background: var(--theme-bg);
+}
+
+.business-import-panel__header h3 {
+  margin: 0 0 0.25rem;
+}
+
+.business-import-panel__header p {
+  margin: 0 0 1rem;
+  color: var(--theme-elevation-650);
+}
+
+.business-import-panel__dropzone {
+  border: 2px dashed var(--theme-elevation-300);
+  border-radius: 0.5rem;
+  padding: 2rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.business-import-panel__dropzone.is-dragging {
+  border-color: var(--theme-success-500);
+  background: var(--theme-elevation-50);
+}
+
+.business-import-panel__file-input {
+  display: none;
+}
+
+.business-import-panel__mapping-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.business-import-panel__mapping-grid label,
+.business-import-panel__email-mapping label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.business-import-panel__mapping-grid select {
+  height: 2rem;
+}
+
+.business-import-panel__email-mapping {
+  margin-top: 1rem;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 0.4rem;
+  padding: 0.75rem;
+}
+
+.business-import-panel__checkboxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.5rem;
+}
+
+.business-import-panel__checkboxes label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.business-import-panel__actions {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.business-import-panel__actions button {
+  border: 1px solid var(--theme-elevation-250);
+  background: var(--theme-elevation-50);
+  color: var(--theme-text);
+  border-radius: 0.35rem;
+  padding: 0.45rem 0.8rem;
+  cursor: pointer;
+}
+
+.business-import-panel__actions button:hover:not(:disabled) {
+  background: var(--theme-elevation-100);
+}
+
+.business-import-panel__actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.business-import-panel__table-wrapper {
+  margin-top: 1rem;
+  max-height: 360px;
+  overflow: auto;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 0.4rem;
+}
+
+.business-import-panel__table-wrapper table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.business-import-panel__table-wrapper th,
+.business-import-panel__table-wrapper td {
+  padding: 0.55rem;
+  text-align: left;
+  border-bottom: 1px solid var(--theme-elevation-100);
+  vertical-align: top;
+}
+
+.business-import-panel__table-wrapper tr.is-conflict {
+  background: color-mix(in srgb, var(--theme-warning-200) 30%, transparent);
+}
+
+.business-import-panel__table-wrapper tr.is-invalid {
+  background: color-mix(in srgb, var(--theme-error-250) 28%, transparent);
+}
+
+.business-import-panel__email-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.business-import-panel__email-options label {
+  display: inline-flex;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.business-import-panel__failures {
+  margin-top: 1rem;
+  border: 1px solid var(--theme-error-250);
+  border-radius: 0.4rem;
+  padding: 0.75rem;
+}
+
+.business-import-panel__failures h4 {
+  margin: 0 0 0.5rem;
+}
+
+.business-import-panel__failures ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.business-import-panel__error {
+  color: var(--theme-error-500);
+}
