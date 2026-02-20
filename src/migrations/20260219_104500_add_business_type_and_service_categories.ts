@@ -1,6 +1,14 @@
 import { MigrateDownArgs, MigrateUpArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db }: MigrateUpArgs): Promise<void> {
+  const tableCheck = await db.execute(
+    sql<{ businesses: string | null }>`SELECT to_regclass('public.businesses')::text AS businesses`,
+  )
+
+  if (!tableCheck.rows[0]?.businesses) {
+    return
+  }
+
   await db.execute(sql`
     DO $$
     BEGIN
@@ -130,6 +138,14 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
 }
 
 export async function down({ db }: MigrateDownArgs): Promise<void> {
+  const tableCheck = await db.execute(
+    sql<{ businesses: string | null }>`SELECT to_regclass('public.businesses')::text AS businesses`,
+  )
+
+  if (!tableCheck.rows[0]?.businesses) {
+    return
+  }
+
   await db.execute(sql`
     DO $$
     BEGIN

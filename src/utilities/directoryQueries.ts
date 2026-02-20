@@ -4,8 +4,6 @@ import config from '@payload-config'
 
 import type { BusinessType } from '@/utilities/getBusinessUrl'
 
-const languageOptions = ['English', 'Thai', 'Chinese', 'Japanese', 'German'] as const
-
 export type DirectorySearchParams = { [key: string]: string | string[] | undefined }
 export type ServiceCategory =
   | 'legal'
@@ -59,6 +57,21 @@ const normalizeLocale = (locale?: string): 'en' | 'th' | 'zh' => {
   }
 
   return 'en'
+}
+
+const getLanguageId = (value: unknown): number | null => {
+  if (typeof value === 'number') {
+    return value
+  }
+
+  if (value && typeof value === 'object' && 'id' in value) {
+    const id = (value as { id?: unknown }).id
+    if (typeof id === 'number') {
+      return id
+    }
+  }
+
+  return null
 }
 
 export async function getPracticeAreaBySlug(slug: string, locale?: string) {
@@ -135,20 +148,28 @@ export async function getFilterOptions(locale?: string) {
     const payload = await getPayloadClient()
     const queryLocale = normalizeLocale(locale)
 
-    const [practiceAreas, locations] = await Promise.all([
+    const [practiceAreas, locations, languages] = await Promise.all([
       payload.find({ collection: 'practice-areas', limit: 200, sort: 'name', locale: queryLocale }),
       payload.find({ collection: 'locations', limit: 200, sort: 'name', locale: queryLocale }),
+      payload.find({ collection: 'languages', limit: 200, sort: 'name', locale: queryLocale }),
     ])
 
     return {
       practiceAreas: practiceAreas.docs.map((pa) => ({ id: pa.id, name: pa.name, slug: pa.slug })),
       locations: locations.docs.map((l) => ({ id: l.id, name: l.name, slug: l.slug })),
+      languages: languages.docs
+        .map((language) => ({
+          id: language.id,
+          name: language.name,
+        }))
+        .filter((language) => typeof language.name === 'string' && language.name.length > 0),
     }
   } catch (error) {
     console.error('Error fetching filter options:', error)
     return {
       practiceAreas: [],
       locations: [],
+      languages: [],
     }
   }
 }
@@ -184,6 +205,24 @@ export async function getBusinesses({
   const selectedFeeRanges = parseListParam(searchParams.feeRange)
   const verifiedOnly = String(searchParams.verified || '') === 'true'
   const hasPricing = String(searchParams.hasPricing || '') === 'true'
+
+  const languageResult = await payload.find({
+    collection: 'languages',
+    depth: 0,
+    limit: 200,
+    locale: queryLocale,
+    sort: 'name',
+  })
+  const languageDocs = languageResult.docs
+    .map((language) => ({
+      id: language.id,
+      name: typeof language.name === 'string' ? language.name : null,
+    }))
+    .filter((language): language is { id: number; name: string } => Boolean(language.name))
+  const languageNameById = new Map(languageDocs.map((language) => [language.id, language.name]))
+  const selectedLanguageIds = languageDocs
+    .filter((language) => selectedLanguages.includes(language.name))
+    .map((language) => language.id)
 
   const [practiceAreaDocs, locationDocs] = await Promise.all([
     selectedPracticeAreaSlugs.length
@@ -337,15 +376,24 @@ export async function getBusinesses({
     } as any,
   })
 
-  const languageCounts = languageOptions.reduce(
-    (acc, language) => ({ ...acc, [language]: 0 }),
-    {} as Record<string, number>,
+  const languageCounts: Record<string, number> = Object.fromEntries(
+    languageDocs.map((language) => [language.name, 0]),
   )
 
-  languageCountsResult.docs.forEach((doc: any) => {
+  languageCountsResult.docs.forEach((doc) => {
     const firmLanguages = Array.isArray(doc.languages) ? doc.languages : []
-    firmLanguages.forEach((language: string) => {
-      languageCounts[language] = (languageCounts[language] || 0) + 1
+    firmLanguages.forEach((language) => {
+      const languageId = getLanguageId(language)
+      if (!languageId) {
+        return
+      }
+
+      const languageName = languageNameById.get(languageId)
+      if (!languageName) {
+        return
+      }
+
+      languageCounts[languageName] = (languageCounts[languageName] || 0) + 1
     })
   })
 
@@ -353,10 +401,10 @@ export async function getBusinesses({
     ...whereBase,
   }
 
-  if (selectedLanguages.length) {
+  if (selectedLanguageIds.length) {
     appendAndCondition(where, {
-      or: selectedLanguages.map((language) => ({
-        languages: { contains: language },
+      or: selectedLanguageIds.map((languageId) => ({
+        languages: { contains: languageId },
       })),
     })
   }

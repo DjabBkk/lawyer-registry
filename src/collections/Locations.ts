@@ -36,15 +36,22 @@ export const Locations: CollectionConfig = {
     update: authenticated,
   },
   admin: {
-    group: 'Law Firm Registry',
+    group: 'Geography',
     useAsTitle: 'name',
-    defaultColumns: ['name', 'region', 'featured', 'updatedAt'],
+    defaultColumns: ['name', 'country', 'locationType', 'parent', 'featured', 'updatedAt'],
+    listSearchableFields: ['name', 'slug'],
   },
   fields: [
     {
       name: 'name',
       type: 'text',
       localized: true,
+      required: true,
+    },
+    {
+      name: 'country',
+      type: 'relationship',
+      relationTo: 'countries',
       required: true,
     },
     {
@@ -75,9 +82,36 @@ export const Locations: CollectionConfig = {
     },
     {
       name: 'region',
-      type: 'select',
-      options: ['Central', 'North', 'Northeast', 'East', 'South'],
+      type: 'text',
       required: true,
+    },
+    {
+      name: 'locationType',
+      type: 'select',
+      required: true,
+      options: [
+        {
+          label: 'City',
+          value: 'city',
+        },
+        {
+          label: 'District',
+          value: 'district',
+        },
+        {
+          label: 'Province',
+          value: 'province',
+        },
+      ],
+    },
+    {
+      name: 'parent',
+      type: 'relationship',
+      relationTo: 'locations',
+    },
+    {
+      name: 'zipCodes',
+      type: 'text',
     },
     {
       name: 'description',

@@ -15,8 +15,6 @@ interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-const languageOptions = ['English', 'Thai', 'Chinese', 'Japanese', 'German'] as const
-
 const parseListParam = (value: string | string[] | undefined) =>
   String(value || '')
     .split(',')
@@ -46,6 +44,21 @@ const normalizeSortParamValue = (value: string) => {
 
 const getPayloadClient = cache(async () => getPayload({ config }))
 
+const getLanguageId = (value: unknown): number | null => {
+  if (typeof value === 'number') {
+    return value
+  }
+
+  if (value && typeof value === 'object' && 'id' in value) {
+    const id = (value as { id?: unknown }).id
+    if (typeof id === 'number') {
+      return id
+    }
+  }
+
+  return null
+}
+
 async function searchBusinesses(searchParams: { [key: string]: string | string[] | undefined }) {
   const payload = await getPayloadClient()
   
@@ -67,7 +80,7 @@ async function searchBusinesses(searchParams: { [key: string]: string | string[]
   const verifiedOnly = String(searchParams.verified || '') === 'true'
   const hasPricing = String(searchParams.hasPricing || '') === 'true'
 
-  const [practiceAreaDocs, locationDocs] = await Promise.all([
+  const [practiceAreaDocs, locationDocs, languagesResult] = await Promise.all([
     selectedPracticeAreas.length
       ? payload.find({
           collection: 'practice-areas',
@@ -84,7 +97,18 @@ async function searchBusinesses(searchParams: { [key: string]: string | string[]
           depth: 0,
         })
       : Promise.resolve({ docs: [] as Array<{ id: number }> }),
+    payload.find({ collection: 'languages', limit: 200, sort: 'name', depth: 0 }),
   ])
+  const languageDocs = languagesResult.docs
+    .map((language) => ({
+      id: language.id,
+      name: typeof language.name === 'string' ? language.name : null,
+    }))
+    .filter((language): language is { id: number; name: string } => Boolean(language.name))
+  const languageNameById = new Map(languageDocs.map((language) => [language.id, language.name]))
+  const selectedLanguageIds = languageDocs
+    .filter((language) => selectedLanguages.includes(language.name))
+    .map((language) => language.id)
 
   const whereBase: any = {
     _status: { equals: 'published' },
@@ -179,24 +203,33 @@ async function searchBusinesses(searchParams: { [key: string]: string | string[]
     } as any,
   })
 
-  const languageCounts = languageOptions.reduce(
-    (acc, language) => ({ ...acc, [language]: 0 }),
-    {} as Record<string, number>,
+  const languageCounts: Record<string, number> = Object.fromEntries(
+    languageDocs.map((language) => [language.name, 0]),
   )
 
-  languageCountsResult.docs.forEach((doc: any) => {
+  languageCountsResult.docs.forEach((doc) => {
     const firmLanguages = Array.isArray(doc.languages) ? doc.languages : []
-    firmLanguages.forEach((language: string) => {
-      languageCounts[language] = (languageCounts[language] || 0) + 1
+    firmLanguages.forEach((language) => {
+      const languageId = getLanguageId(language)
+      if (!languageId) {
+        return
+      }
+
+      const languageName = languageNameById.get(languageId)
+      if (!languageName) {
+        return
+      }
+
+      languageCounts[languageName] = (languageCounts[languageName] || 0) + 1
     })
   })
 
   const where = { ...whereBase }
-  if (selectedLanguages.length) {
+  if (selectedLanguageIds.length) {
     where.and = [
       ...(where.and || []),
       {
-        or: selectedLanguages.map((language) => ({ languages: { contains: language } })),
+        or: selectedLanguageIds.map((languageId) => ({ languages: { contains: languageId } })),
       },
     ]
   }

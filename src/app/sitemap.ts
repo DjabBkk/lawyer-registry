@@ -4,7 +4,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 
 import type { Business, PracticeArea } from '@/payload-types'
-import { SUPPORTED_COUNTRIES } from '@/utilities/countries'
+import { getActiveCountries } from '@/utilities/countries'
 import { getBusinessUrl } from '@/utilities/getBusinessUrl'
 import { getServerSideURL } from '@/utilities/getURL'
 import { getAlternateUrls } from '@/utilities/locales'
@@ -97,7 +97,7 @@ const withTrailingSlash = (path: string): string => {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || getServerSideURL()).replace(/\/$/, '')
   const now = new Date()
-  const countries = Object.values(SUPPORTED_COUNTRIES)
+  const countries = await getActiveCountries()
   const [businesses, practiceAreas] = await Promise.all([getPublishedBusinesses(), getPracticeAreas()])
 
   const entries: MetadataRoute.Sitemap = []

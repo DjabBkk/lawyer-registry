@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 import type { Business, Location, PracticeArea } from '@/payload-types'
 import { toKebabCase } from '@/utilities/toKebabCase'
-import { formatFeeRange } from './profile-helpers'
+import { formatFeeRange, getLanguageLabels } from './profile-helpers'
 
 interface AtAGlanceSectionProps {
   firm: Business
@@ -35,6 +35,7 @@ const buildHrefWithQuery = (
 
 export function AtAGlanceSection({ firm, practiceAreas = [], countrySlug }: AtAGlanceSectionProps) {
   const baseLawyersPath = `/${countrySlug}/lawyers`
+  const languageLabels = getLanguageLabels(firm.languages)
 
   const hourlyFee = formatFeeRange({
     min: firm.hourlyFeeMin,
@@ -132,10 +133,10 @@ export function AtAGlanceSection({ firm, practiceAreas = [], countrySlug }: AtAG
     })
   }
 
-  if (firm.languages?.length) {
+  if (languageLabels.length) {
     cards.push({
       label: 'Languages',
-      items: firm.languages.map((language) => ({
+      items: languageLabels.map((language) => ({
         label: 'Languages',
         value: language,
         href: buildHrefWithQuery(baseLawyersPath, { languages: language }),

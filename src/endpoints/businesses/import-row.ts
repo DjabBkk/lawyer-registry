@@ -68,6 +68,42 @@ const slugExists = async (req: Parameters<Endpoint['handler']>[0], slug: string)
   return result.docs.length > 0
 }
 
+const getDefaultCountryId = async (req: Parameters<Endpoint['handler']>[0]) => {
+  const bySlug = await req.payload.find({
+    collection: 'countries',
+    where: {
+      slug: {
+        equals: 'thailand',
+      },
+      active: {
+        equals: true,
+      },
+    },
+    depth: 0,
+    limit: 1,
+    locale: 'en',
+  })
+
+  if (bySlug.docs.length > 0) {
+    return bySlug.docs[0].id
+  }
+
+  const activeCountries = await req.payload.find({
+    collection: 'countries',
+    where: {
+      active: {
+        equals: true,
+      },
+    },
+    depth: 0,
+    limit: 1,
+    sort: '-updatedAt',
+    locale: 'en',
+  })
+
+  return activeCountries.docs[0]?.id || null
+}
+
 export const importBusinessRowEndpoint: Endpoint = {
   path: '/import-business-row',
   method: 'post',
@@ -96,6 +132,16 @@ export const importBusinessRowEndpoint: Endpoint = {
         zipCode: sanitize(body?.zipCode),
         country: sanitize(body?.country),
       })
+      const defaultCountryId = await getDefaultCountryId(req)
+      if (!defaultCountryId) {
+        return Response.json(
+          {
+            success: false,
+            error: 'No active country is configured. Create and activate a country first.',
+          },
+          { status: 400 },
+        )
+      }
 
       const baseSlug = toKebabCase(name) || 'business'
 
@@ -109,10 +155,13 @@ export const importBusinessRowEndpoint: Endpoint = {
         try {
           const created = await req.payload.create({
             collection: 'businesses',
+            draft: false,
+            locale: 'en',
             data: {
               name,
               slug,
               email,
+              country: defaultCountryId,
               address,
               phone: sanitize(body?.phone),
               website: sanitize(body?.website),

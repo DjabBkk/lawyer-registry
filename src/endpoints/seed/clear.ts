@@ -9,7 +9,14 @@ const ensureAuthenticated = (user: unknown) => {
 
 const deleteAll = async (
   req: Parameters<Endpoint['handler']>[0],
-  collection: 'businesses' | 'services' | 'practice-areas' | 'locations',
+  collection:
+    | 'businesses'
+    | 'locations'
+    | 'services'
+    | 'practice-areas'
+    | 'countries'
+    | 'languages'
+    | 'currencies',
 ) => {
   const docs = await req.payload.find({
     collection,
@@ -35,23 +42,32 @@ export const clearSeedEndpoint: Endpoint = {
     ensureAuthenticated(req.user)
 
     const deletedBusinesses = await deleteAll(req, 'businesses')
+    const deletedLocations = await deleteAll(req, 'locations')
     const deletedServices = await deleteAll(req, 'services')
     const deletedPracticeAreas = await deleteAll(req, 'practice-areas')
-    const deletedLocations = await deleteAll(req, 'locations')
+    const deletedCountries = await deleteAll(req, 'countries')
+    const deletedLanguages = await deleteAll(req, 'languages')
+    const deletedCurrencies = await deleteAll(req, 'currencies')
 
     return Response.json({
       message: 'Seed data cleared',
       deleted: {
         businesses: deletedBusinesses,
+        locations: deletedLocations,
         services: deletedServices,
         practiceAreas: deletedPracticeAreas,
-        locations: deletedLocations,
+        countries: deletedCountries,
+        languages: deletedLanguages,
+        currencies: deletedCurrencies,
       },
       counts: {
         businesses: 0,
+        locations: 0,
         services: 0,
         practiceAreas: 0,
-        locations: 0,
+        countries: 0,
+        languages: 0,
+        currencies: 0,
       },
     })
   },

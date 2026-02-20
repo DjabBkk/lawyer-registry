@@ -35,17 +35,45 @@ const getNameForSlug = (value: unknown): string | undefined => {
   return undefined
 }
 
-const languageOptions = [
-  'English',
-  'Thai',
-  'Chinese',
-  'Japanese',
-  'German',
-  'French',
-  'Spanish',
-  'Russian',
-  'Arabic',
-]
+const getCountryId = (siblingData?: unknown, data?: unknown) => {
+  const siblingRecord =
+    siblingData && typeof siblingData === 'object'
+      ? (siblingData as Record<string, unknown>)
+      : undefined
+  const dataRecord =
+    data && typeof data === 'object' ? (data as Record<string, unknown>) : undefined
+
+  const fromSiblings = siblingRecord?.country
+  if (typeof fromSiblings === 'number' || typeof fromSiblings === 'string') {
+    return fromSiblings
+  }
+
+  const fromData = dataRecord?.country
+  if (typeof fromData === 'number' || typeof fromData === 'string') {
+    return fromData
+  }
+
+  return undefined
+}
+
+const locationFilterOptions = ({
+  siblingData,
+  data,
+}: {
+  siblingData?: unknown
+  data?: unknown
+}) => {
+  const countryId = getCountryId(siblingData, data)
+  if (!countryId) {
+    return true
+  }
+
+  return {
+    country: {
+      equals: countryId,
+    },
+  }
+}
 
 const adminOnly = ({ req: { user } }: { req: { user: { role?: string } | null } }) =>
   user?.role === 'admin'
@@ -59,7 +87,7 @@ export const Businesses: CollectionConfig = {
     update: authenticated,
   },
   admin: {
-    group: 'Business Registry',
+    group: 'Businesses',
     useAsTitle: 'name',
     defaultColumns: ['name', 'businessType', 'listingTier', 'verified', 'updatedAt'],
     components: {
@@ -73,6 +101,15 @@ export const Businesses: CollectionConfig = {
         {
           label: 'Basic',
           fields: [
+            {
+              name: 'country',
+              type: 'relationship',
+              relationTo: 'countries',
+              required: true,
+              admin: {
+                position: 'sidebar',
+              },
+            },
             {
               name: 'name',
               type: 'text',
@@ -260,9 +297,9 @@ export const Businesses: CollectionConfig = {
             },
             {
               name: 'languages',
-              type: 'select',
+              type: 'relationship',
+              relationTo: 'languages',
               hasMany: true,
-              options: languageOptions,
             },
             {
               name: 'feeRangeMin',
@@ -276,9 +313,8 @@ export const Businesses: CollectionConfig = {
             },
             {
               name: 'feeCurrency',
-              type: 'select',
-              defaultValue: 'THB',
-              options: ['THB', 'USD', 'EUR'],
+              type: 'relationship',
+              relationTo: 'currencies',
             },
           ],
         },
@@ -299,9 +335,8 @@ export const Businesses: CollectionConfig = {
             },
             {
               name: 'hourlyFeeCurrency',
-              type: 'select',
-              defaultValue: 'THB',
-              options: ['THB', 'USD', 'EUR'],
+              type: 'relationship',
+              relationTo: 'currencies',
             },
             {
               name: 'hourlyFeeNote',
@@ -365,9 +400,8 @@ export const Businesses: CollectionConfig = {
                 },
                 {
                   name: 'priceCurrency',
-                  type: 'select',
-                  defaultValue: 'THB',
-                  options: ['THB', 'USD', 'EUR'],
+                  type: 'relationship',
+                  relationTo: 'currencies',
                 },
                 {
                   name: 'priceNote',
@@ -433,9 +467,8 @@ export const Businesses: CollectionConfig = {
                 },
                 {
                   name: 'currency',
-                  type: 'select',
-                  defaultValue: 'THB',
-                  options: ['THB', 'USD', 'EUR'],
+                  type: 'relationship',
+                  relationTo: 'currencies',
                 },
               ],
             },
@@ -566,11 +599,13 @@ export const Businesses: CollectionConfig = {
               type: 'relationship',
               relationTo: 'locations',
               hasMany: true,
+              filterOptions: locationFilterOptions,
             },
             {
               name: 'primaryLocation',
               type: 'relationship',
               relationTo: 'locations',
+              filterOptions: locationFilterOptions,
             },
           ],
         },
@@ -594,6 +629,7 @@ export const Businesses: CollectionConfig = {
                   type: 'relationship',
                   relationTo: 'locations',
                   required: true,
+                  filterOptions: locationFilterOptions,
                   admin: {
                     description: 'Select the location for this office',
                   },

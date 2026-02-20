@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react'
 import { ArrowRight, BriefcaseBusiness, ChevronDown, ChevronUp } from 'lucide-react'
 
 import type { Business, PracticeArea } from '@/payload-types'
-import { formatCurrencyAmount } from './profile-helpers'
+import { formatCurrencyAmount, type CurrencyLike } from './profile-helpers'
 
 type DetailItem = NonNullable<Business['practiceAreaDetails']>[number]
 
@@ -15,17 +15,17 @@ interface ServicesAndFeesSectionProps {
   countrySlug: string
   hourlyFeeMin?: number | null
   hourlyFeeMax?: number | null
-  hourlyFeeCurrency?: string | null
+  hourlyFeeCurrency?: CurrencyLike
   hourlyFeeNote?: string | null
 }
 
 const formatAreaPrice = (detail: {
   priceMin?: number | null
   priceMax?: number | null
-  priceCurrency?: string | null
+  priceCurrency?: CurrencyLike
   priceNote?: string | null
 }) => {
-  const currency = detail.priceCurrency || 'THB'
+  const currency = detail.priceCurrency
   let range = ''
 
   if (typeof detail.priceMin === 'number' && typeof detail.priceMax === 'number') {
@@ -48,10 +48,10 @@ const parsePriceNumber = (value?: string | null) => {
   return Number.isFinite(parsed) ? parsed : null
 }
 
-const formatServicePrice = (value: string, currency: string) => {
+const formatServicePrice = (value: string, currency: CurrencyLike) => {
   const trimmed = value.trim()
   if (!trimmed) return ''
-  if (/[฿$€]/.test(trimmed)) return trimmed
+  if (/(฿|\$|€|£|HK\$|S\$|\b[A-Z]{3}\b)/.test(trimmed)) return trimmed
 
   const matches = trimmed.replace(/,/g, '').match(/\d+(?:\.\d+)?/g) || []
   if (!matches.length) return trimmed
@@ -100,7 +100,7 @@ export function ServicesAndFeesSection({
 
           if (!relatedArea) return null
 
-          const currency = detail.priceCurrency || hourlyFeeCurrency || 'THB'
+          const currency = detail.priceCurrency || hourlyFeeCurrency
           const services = (detail.services || [])
             .map((service) => ({
               name: service?.name || '',
@@ -140,7 +140,7 @@ export function ServicesAndFeesSection({
   const hourlyFeeLabel = formatAreaPrice({
     priceMin: hourlyFeeMin,
     priceMax: hourlyFeeMax,
-    priceCurrency: hourlyFeeCurrency || 'THB',
+    priceCurrency: hourlyFeeCurrency,
     priceNote: hourlyFeeNote,
   })
 

@@ -6,7 +6,7 @@ import { X } from 'lucide-react'
 
 import type { Business, PracticeArea } from '@/payload-types'
 import { toKebabCase } from '@/utilities/toKebabCase'
-import { formatFeeRange } from './profile-helpers'
+import { formatFeeRange, getLanguageLabels } from './profile-helpers'
 
 interface AtAGlanceModalProps {
   firm: Business
@@ -40,6 +40,7 @@ const buildHrefWithQuery = (
 
 export function AtAGlanceModal({ firm, practiceAreas = [], countrySlug, onClose }: AtAGlanceModalProps) {
   const baseLawyersPath = `/${countrySlug}/lawyers`
+  const languageLabels = getLanguageLabels(firm.languages)
 
   const hourlyFee = formatFeeRange({
     min: firm.hourlyFeeMin,
@@ -137,10 +138,10 @@ export function AtAGlanceModal({ firm, practiceAreas = [], countrySlug, onClose 
     })
   }
 
-  if (firm.languages?.length) {
+  if (languageLabels.length) {
     cards.push({
       label: 'Languages',
-      items: firm.languages.map((language) => ({
+      items: languageLabels.map((language) => ({
         label: 'Languages',
         value: language,
         href: buildHrefWithQuery(baseLawyersPath, { languages: language }),

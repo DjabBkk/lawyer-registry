@@ -17,7 +17,7 @@ import {
 
 import { Container } from '@/components/layout/Container'
 import type { Business, Location, Media, PracticeArea } from '@/payload-types'
-import { formatFeeRange, responseTimeBadgeLabel } from './profile-helpers'
+import { formatFeeRange, getLanguageLabels, responseTimeBadgeLabel } from './profile-helpers'
 import { AtAGlanceModal } from './AtAGlanceModal'
 
 interface BreadcrumbItem {
@@ -46,6 +46,12 @@ export function ProfileHero({
   const location = typeof firm.primaryLocation === 'object' ? firm.primaryLocation : null
   const logo = typeof firm.logo === 'object' ? firm.logo : null
   const responseTime = responseTimeBadgeLabel(firm.responseTime)
+  const languageLabels = getLanguageLabels(firm.languages)
+  const countryName =
+    countrySlug
+      ?.split('-')
+      .map((segment) => `${segment.charAt(0).toUpperCase()}${segment.slice(1)}`)
+      .join(' ') || 'Thailand'
   const feeRange = formatFeeRange({
     min: firm.feeRangeMin,
     max: firm.feeRangeMax,
@@ -135,7 +141,7 @@ export function ProfileHero({
                 {location && (
                   <div className="flex items-center gap-1.5">
                     <MapPin className="h-4 w-4 text-royal-600" />
-                    <span>{location.name}, Thailand</span>
+                    <span>{location.name}, {countryName}</span>
                   </div>
                 )}
                 {firm.foundingYear && (
@@ -150,10 +156,10 @@ export function ProfileHero({
                     <span>{firm.companySize} employees</span>
                   </div>
                 )}
-                {firm.languages && firm.languages.length > 0 && (
+                {languageLabels.length > 0 && (
                   <div className="flex items-center gap-1.5">
                     <Globe className="h-4 w-4 text-royal-600" />
-                    <span>{firm.languages.join(', ')}</span>
+                    <span>{languageLabels.join(', ')}</span>
                   </div>
                 )}
                 {responseTime && (

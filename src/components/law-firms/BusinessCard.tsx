@@ -6,6 +6,7 @@ import { cn } from '@/utilities/ui'
 import { Button } from '@/components/ui/button'
 import type { Business, PracticeArea, Location, Media } from '@/payload-types'
 import { getBusinessUrl } from '@/utilities/getBusinessUrl'
+import { getLanguageLabels } from '@/components/profile/profile-helpers'
 
 interface BusinessCardProps {
   firm: Business & {
@@ -25,6 +26,7 @@ export function BusinessCard({ firm, countrySlug, variant = 'default' }: Busines
   const location = typeof firm.primaryLocation === 'object' ? firm.primaryLocation : null
   const logo = typeof firm.logo === 'object' ? firm.logo : null
   const coverImage = typeof firm.coverImage === 'object' ? firm.coverImage : null
+  const languageLabels = getLanguageLabels(firm.languages)
 
   // ─── Image placeholder shared across variants ───
   const ImagePlaceholder = ({
@@ -75,7 +77,7 @@ export function BusinessCard({ firm, countrySlug, variant = 'default' }: Busines
         {shown.map((area) => (
           <Link
             key={area.id}
-            href={`/thailand/lawyers/${area.slug}`}
+            href={`/${countrySlug}/lawyers/${area.slug}`}
             className="inline-flex items-center rounded-full border border-warm-300 bg-transparent px-2.5 py-0.5 text-xs font-medium text-royal-800 transition-colors hover:border-royal-400 hover:bg-royal-50 hover:text-royal-900"
           >
             {area.name}
@@ -259,11 +261,11 @@ export function BusinessCard({ firm, countrySlug, variant = 'default' }: Busines
                     {location.name}
                   </span>
                 )}
-                {firm.languages && firm.languages.length > 0 && (
+                {languageLabels.length > 0 && (
                   <span className="flex items-center gap-1.5">
                     <Globe className="h-4 w-4 text-royal-500" />
-                    {firm.languages.slice(0, 2).join(', ')}
-                    {firm.languages.length > 2 && ` +${firm.languages.length - 2}`}
+                    {languageLabels.slice(0, 2).join(', ')}
+                    {languageLabels.length > 2 && ` +${languageLabels.length - 2}`}
                   </span>
                 )}
               </div>

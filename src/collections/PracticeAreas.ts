@@ -36,7 +36,7 @@ export const PracticeAreas: CollectionConfig = {
     update: authenticated,
   },
   admin: {
-    group: 'Law Firm Registry',
+    group: 'Directory Content',
     useAsTitle: 'name',
     defaultColumns: ['name', 'slug', 'tier', 'updatedAt'],
   },

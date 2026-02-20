@@ -27,8 +27,8 @@ const getNameForSlug = (value: unknown): string | undefined => {
   return undefined
 }
 
-export const Services: CollectionConfig = {
-  slug: 'services',
+export const Countries: CollectionConfig = {
+  slug: 'countries',
   access: {
     create: authenticated,
     delete: authenticated,
@@ -36,9 +36,9 @@ export const Services: CollectionConfig = {
     update: authenticated,
   },
   admin: {
-    group: 'Directory Content',
+    group: 'Platform Settings',
     useAsTitle: 'name',
-    defaultColumns: ['name', 'practiceArea', 'slug', 'tier', 'updatedAt'],
+    defaultColumns: ['name', 'slug', 'active', 'updatedAt'],
   },
   fields: [
     {
@@ -74,19 +74,23 @@ export const Services: CollectionConfig = {
       unique: true,
     },
     {
-      name: 'practiceArea',
-      type: 'relationship',
-      relationTo: 'practice-areas',
-      required: true,
-      admin: {
-        position: 'sidebar',
-      },
+      name: 'active',
+      type: 'checkbox',
+      defaultValue: false,
     },
     {
-      name: 'shortDescription',
-      type: 'textarea',
-      localized: true,
-      maxLength: 200,
+      name: 'defaultCurrency',
+      type: 'relationship',
+      relationTo: 'currencies',
+    },
+    {
+      name: 'defaultLanguage',
+      type: 'relationship',
+      relationTo: 'languages',
+    },
+    {
+      name: 'flagEmoji',
+      type: 'text',
     },
     {
       name: 'seoTitleTemplate',
@@ -97,27 +101,11 @@ export const Services: CollectionConfig = {
       name: 'seoDescriptionTemplate',
       type: 'textarea',
       localized: true,
-      maxLength: 160,
     },
     {
-      name: 'tier',
-      type: 'select',
-      defaultValue: 'primary',
-      options: [
-        {
-          value: 'primary',
-          label: 'Primary — shown prominently in firm profile',
-        },
-        {
-          value: 'secondary',
-          label: 'Secondary — shown in full service list',
-        },
-      ],
-    },
-    {
-      name: 'featured',
-      type: 'checkbox',
-      defaultValue: false,
+      name: 'shortDescription',
+      type: 'textarea',
+      localized: true,
     },
   ],
   timestamps: true,

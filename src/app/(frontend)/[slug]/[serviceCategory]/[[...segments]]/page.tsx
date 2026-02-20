@@ -148,7 +148,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const serviceConfig = getServiceCategoryConfig(serviceCategory)
   if (!serviceConfig) return { title: 'Not Found' }
 
-  const country = getSupportedCountry(countrySlug)
+  const country = await getSupportedCountry(countrySlug)
   if (!country) return { title: 'Not Found' }
 
   const applyTemplate = (template: string, variables: Record<string, string | undefined> = {}) =>
@@ -307,7 +307,7 @@ export default async function CountryServiceCategoryPage({ params, searchParams 
   }
 
   const resolvedSearchParams = await searchParams
-  const country = getSupportedCountry(countrySlug)
+  const country = await getSupportedCountry(countrySlug)
   if (!country) notFound()
 
   const applyTemplate = (template: string, variables: Record<string, string | undefined> = {}) =>

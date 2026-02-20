@@ -2,6 +2,9 @@ import { APIError } from 'payload'
 import type { Endpoint } from 'payload'
 
 import { businesses } from './data/businesses'
+import { countries } from './data/countries'
+import { currencies } from './data/currencies'
+import { languages } from './data/languages'
 import { locations } from './data/locations'
 import { practiceAreas } from './data/practiceAreas'
 import { services } from './data/services'
@@ -14,7 +17,30 @@ const ensureAuthenticated = (user: unknown) => {
 }
 
 const getCounts = async (req: Parameters<Endpoint['handler']>[0]) => {
-  const [practiceAreasResult, servicesResult, locationsResult, businessesResult] = await Promise.all([
+  const [
+    currenciesResult,
+    languagesResult,
+    countriesResult,
+    practiceAreasResult,
+    servicesResult,
+    locationsResult,
+    businessesResult,
+  ] = await Promise.all([
+    req.payload.find({
+      collection: 'currencies',
+      depth: 0,
+      limit: 0,
+    }),
+    req.payload.find({
+      collection: 'languages',
+      depth: 0,
+      limit: 0,
+    }),
+    req.payload.find({
+      collection: 'countries',
+      depth: 0,
+      limit: 0,
+    }),
     req.payload.find({
       collection: 'practice-areas',
       depth: 0,
@@ -38,6 +64,9 @@ const getCounts = async (req: Parameters<Endpoint['handler']>[0]) => {
   ])
 
   return {
+    currencies: currenciesResult.totalDocs,
+    languages: languagesResult.totalDocs,
+    countries: countriesResult.totalDocs,
     practiceAreas: practiceAreasResult.totalDocs,
     services: servicesResult.totalDocs,
     locations: locationsResult.totalDocs,
@@ -56,6 +85,12 @@ const practiceAreaAliases: Record<string, string> = {
   'Intellectual Property': 'Intellectual Property Law',
   'Personal Injury': 'Personal Injury Law',
   'Banking & Finance': 'Banking & Finance Law',
+}
+
+const languageAliases: Record<string, string> = {
+  Chinese: 'Chinese - Mandarin',
+  Mandarin: 'Chinese - Mandarin',
+  Cantonese: 'Chinese - Cantonese',
 }
 
 const responseTimeOptions = [
@@ -252,13 +287,18 @@ const estimateTeamSizeFromBand = (band?: string) => {
   }
 }
 
-const toCurrencySymbol = (currency: 'THB' | 'USD' | 'EUR') => {
-  if (currency === 'USD') return '$'
-  if (currency === 'EUR') return '€'
-  return '฿'
+const currencySymbolMap: Record<string, string> = {
+  THB: '฿',
+  USD: '$',
+  EUR: '€',
+  HKD: 'HK$',
+  SGD: 'S$',
+  GBP: '£',
 }
 
-const formatPrice = (value: number, currency: 'THB' | 'USD' | 'EUR') =>
+const toCurrencySymbol = (currency: string) => currencySymbolMap[currency] || `${currency} `
+
+const formatPrice = (value: number, currency: string) =>
   `${toCurrencySymbol(currency)}${value.toLocaleString()}`
 
 const buildServiceRows = ({
@@ -270,7 +310,7 @@ const buildServiceRows = ({
   practiceAreaName: string
   baseMin: number
   baseMax: number
-  currency: 'THB' | 'USD' | 'EUR'
+  currency: string
 }) => {
   const templateServices = practiceAreaServiceTemplates[practiceAreaName] || [
     `${practiceAreaName} strategy and advisory`,
@@ -339,7 +379,7 @@ const buildServicePricing = (firm: (typeof businesses)[number]) => {
     priceMin?: number
     priceMax?: number
     priceNote?: string
-    currency: 'THB' | 'USD' | 'EUR'
+    currency: string
   }> = [
     {
       serviceName: 'Initial Consultation',
@@ -458,7 +498,14 @@ export const seedStatusEndpoint: Endpoint = {
     const counts = await getCounts(req)
 
     return Response.json({
-      seeded: counts.practiceAreas > 0 || counts.services > 0 || counts.locations > 0 || counts.businesses > 0,
+      seeded:
+        counts.currencies > 0 ||
+        counts.languages > 0 ||
+        counts.countries > 0 ||
+        counts.practiceAreas > 0 ||
+        counts.services > 0 ||
+        counts.locations > 0 ||
+        counts.businesses > 0,
       counts,
     })
   },
@@ -471,7 +518,15 @@ export const seedEndpoint: Endpoint = {
     ensureAuthenticated(req.user)
 
     const counts = await getCounts(req)
-    if (counts.practiceAreas > 0 || counts.services > 0 || counts.locations > 0 || counts.businesses > 0) {
+    if (
+      counts.currencies > 0 ||
+      counts.languages > 0 ||
+      counts.countries > 0 ||
+      counts.practiceAreas > 0 ||
+      counts.services > 0 ||
+      counts.locations > 0 ||
+      counts.businesses > 0
+    ) {
       return Response.json(
         {
           error: 'Seed data already exists. Clear the database before seeding again.',
@@ -479,6 +534,86 @@ export const seedEndpoint: Endpoint = {
         },
         { status: 409 },
       )
+    }
+
+    const createdCurrencies = []
+    for (const item of currencies) {
+      const created = await req.payload.create({
+        collection: 'currencies',
+        draft: false,
+        locale: 'en',
+        data: {
+          code: item.code,
+          name: item.name,
+          symbol: item.symbol,
+          symbolPosition: item.symbolPosition || 'before',
+        },
+        req,
+      })
+      createdCurrencies.push(created)
+    }
+    const currencyIdByCode = new Map(createdCurrencies.map((doc) => [doc.code, doc.id]))
+
+    const createdLanguages = []
+    for (const item of languages) {
+      const created = await req.payload.create({
+        collection: 'languages',
+        draft: false,
+        locale: 'en',
+        data: {
+          code: item.code,
+          name: item.name,
+          nativeName: item.nativeName,
+        },
+        req,
+      })
+      createdLanguages.push(created)
+    }
+    const languageIdByCode = new Map(createdLanguages.map((doc) => [doc.code, doc.id]))
+    const languageIdByName = new Map(createdLanguages.map((doc) => [doc.name, doc.id]))
+
+    const createdCountries = []
+    for (const item of countries) {
+      const defaultCurrencyId = currencyIdByCode.get(item.defaultCurrencyCode)
+      if (!defaultCurrencyId) {
+        throw new APIError(
+          `Default currency not found for country "${item.name}": ${item.defaultCurrencyCode}`,
+          400,
+        )
+      }
+
+      const defaultLanguageId = languageIdByCode.get(item.defaultLanguageCode)
+      if (!defaultLanguageId) {
+        throw new APIError(
+          `Default language not found for country "${item.name}": ${item.defaultLanguageCode}`,
+          400,
+        )
+      }
+
+      const created = await req.payload.create({
+        collection: 'countries',
+        draft: false,
+        locale: 'en',
+        data: {
+          name: item.name,
+          slug: item.slug,
+          active: item.active,
+          defaultCurrency: defaultCurrencyId,
+          defaultLanguage: defaultLanguageId,
+          flagEmoji: item.flagEmoji,
+          seoTitleTemplate: item.seoTitleTemplate,
+          seoDescriptionTemplate: item.seoDescriptionTemplate,
+          shortDescription: item.shortDescription,
+        },
+        req,
+      })
+
+      createdCountries.push(created)
+    }
+    const countryIdByName = new Map(createdCountries.map((doc) => [doc.name, doc.id]))
+    const thailandCountryId = countryIdByName.get('Thailand')
+    if (!thailandCountryId) {
+      throw new APIError('Thailand country seed record was not created', 400)
     }
 
     const createdPracticeAreas = []
@@ -501,30 +636,7 @@ export const seedEndpoint: Endpoint = {
       })
       createdPracticeAreas.push(created)
     }
-
-    const createdLocations = []
-    for (const item of locations) {
-      const created = await req.payload.create({
-        collection: 'locations',
-        draft: false,
-        locale: 'en',
-        data: {
-          name: item.name,
-          slug: toKebabCase(item.name),
-          region: item.region,
-          shortDescription: item.shortDescription,
-          featured: item.featured,
-          featuredOrder: item.featuredOrder,
-          seoTitle: item.seoTitle,
-          seoDescription: item.seoDescription,
-        },
-        req,
-      })
-      createdLocations.push(created)
-    }
-
     const practiceAreaIdByName = new Map(createdPracticeAreas.map((doc) => [doc.name, doc.id]))
-    const locationIdByName = new Map(createdLocations.map((doc) => [doc.name, doc.id]))
 
     const createdServices = []
     for (const item of services) {
@@ -554,6 +666,63 @@ export const seedEndpoint: Endpoint = {
       createdServices.push(created)
     }
 
+    const createdLocations = []
+    for (const item of locations) {
+      const countryId = countryIdByName.get(item.countryName)
+      if (!countryId) {
+        throw new APIError(`Country not found for location "${item.name}": ${item.countryName}`, 400)
+      }
+
+      const created = await req.payload.create({
+        collection: 'locations',
+        draft: false,
+        locale: 'en',
+        data: {
+          name: item.name,
+          slug: toKebabCase(item.name),
+          country: countryId,
+          region: item.region,
+          locationType: item.locationType,
+          parent: undefined,
+          zipCodes: item.zipCodes,
+          shortDescription: item.shortDescription,
+          featured: item.featured,
+          featuredOrder: item.featuredOrder,
+          seoTitle: item.seoTitle,
+          seoDescription: item.seoDescription,
+        },
+        req,
+      })
+      createdLocations.push(created)
+    }
+
+    const locationIdByName = new Map(createdLocations.map((doc) => [doc.name, doc.id]))
+    for (const item of locations) {
+      if (!item.parentName) {
+        continue
+      }
+
+      const locationId = locationIdByName.get(item.name)
+      const parentId = locationIdByName.get(item.parentName)
+      if (!locationId || !parentId) {
+        throw new APIError(
+          `Location parent relation not found: ${item.name} -> ${item.parentName}`,
+          400,
+        )
+      }
+
+      await req.payload.update({
+        collection: 'locations',
+        id: locationId,
+        draft: false,
+        locale: 'en',
+        data: {
+          parent: parentId,
+        },
+        req,
+      })
+    }
+
     const getPracticeAreaIds = (names: string[]) =>
       names.map((name) => {
         const canonicalName = practiceAreaAliases[name] || name
@@ -581,6 +750,23 @@ export const seedEndpoint: Endpoint = {
       return id
     }
 
+    const getCurrencyId = (code: string) => {
+      const id = currencyIdByCode.get(code)
+      if (!id) {
+        throw new APIError(`Currency not found: ${code}`, 400)
+      }
+      return id
+    }
+
+    const getLanguageId = (name: string) => {
+      const canonicalName = languageAliases[name] || name
+      const id = languageIdByName.get(canonicalName)
+      if (!id) {
+        throw new APIError(`Language not found: ${name} (mapped as ${canonicalName})`, 400)
+      }
+      return id
+    }
+
     const createdBusinesses = []
     for (const [index, firm] of businesses.entries()) {
       const locationIds = firm.locations.map(getLocationId)
@@ -600,7 +786,8 @@ export const seedEndpoint: Endpoint = {
         (firm.locations.includes('Bangkok')
           ? bangkokTransitHints[index % bangkokTransitHints.length]
           : undefined)
-      const hourlyFeeCurrency = firm.hourlyFeeCurrency || firm.feeCurrency || 'THB'
+      const hourlyFeeCurrencyCode = firm.hourlyFeeCurrency || firm.feeCurrency || 'THB'
+      const hourlyFeeCurrency = getCurrencyId(hourlyFeeCurrencyCode)
       const derivedHourlyMin =
         typeof firm.feeRangeMin === 'number'
           ? Math.max(1000, Math.round((firm.feeRangeMin * 0.35) / 100) * 100)
@@ -625,14 +812,18 @@ export const seedEndpoint: Endpoint = {
           description: item.description,
           priceMin: item.priceMin,
           priceMax: item.priceMax,
-          priceCurrency: item.priceCurrency || firm.feeCurrency || 'THB',
+          priceCurrency: getCurrencyId(item.priceCurrency || firm.feeCurrency || 'THB'),
           priceNote: item.priceNote,
           services: (item.services || []).map((service) => ({
             name: service.name,
             price: service.price,
             description: service.description,
           })),
-        })) || buildPracticeAreaDetails({ firm, getPracticeAreaId })
+        })) ||
+        buildPracticeAreaDetails({ firm, getPracticeAreaId }).map((item) => ({
+          ...item,
+          priceCurrency: getCurrencyId(item.priceCurrency || firm.feeCurrency || 'THB'),
+        }))
 
       const servicePricing =
         firm.servicePricing?.map((item) => ({
@@ -640,8 +831,12 @@ export const seedEndpoint: Endpoint = {
           priceMin: item.priceMin,
           priceMax: item.priceMax,
           priceNote: item.priceNote,
-          currency: item.currency || firm.feeCurrency || 'THB',
-        })) || buildServicePricing(firm)
+          currency: getCurrencyId(item.currency || firm.feeCurrency || 'THB'),
+        })) ||
+        buildServicePricing(firm).map((item) => ({
+          ...item,
+          currency: getCurrencyId(item.currency || firm.feeCurrency || 'THB'),
+        }))
 
       const caseHighlights = firm.caseHighlights || buildCaseHighlights(firm).slice(0, 3)
       const testimonials = firm.testimonials || buildTestimonials(firm).slice(0, 3)
@@ -660,6 +855,8 @@ export const seedEndpoint: Endpoint = {
             : undefined),
         openingHours: office.openingHours,
       }))
+      const languageIds = (firm.languages || []).map((language) => getLanguageId(language))
+      const feeCurrency = getCurrencyId(firm.feeCurrency || 'THB')
 
       const created = await req.payload.create({
         collection: 'businesses',
@@ -683,10 +880,11 @@ export const seedEndpoint: Endpoint = {
           verified,
           foundingYear: firm.foundingYear,
           companySize: firm.companySize,
-          languages: firm.languages,
+          languages: languageIds,
           feeRangeMin: firm.feeRangeMin,
           feeRangeMax: firm.feeRangeMax,
-          feeCurrency: firm.feeCurrency,
+          feeCurrency,
+          country: thailandCountryId,
           hourlyFeeMin,
           hourlyFeeMax,
           hourlyFeeCurrency,
@@ -719,6 +917,9 @@ export const seedEndpoint: Endpoint = {
       message: 'Seed data created',
       counts: updatedCounts,
       created: {
+        currencies: createdCurrencies.length,
+        languages: createdLanguages.length,
+        countries: createdCountries.length,
         practiceAreas: createdPracticeAreas.length,
         services: createdServices.length,
         locations: createdLocations.length,

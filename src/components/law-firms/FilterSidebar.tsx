@@ -43,14 +43,6 @@ const companySizes = [
   { value: '100+', label: '100+ employees' },
 ]
 
-const languageOptions = [
-  { value: 'English', label: 'English' },
-  { value: 'Thai', label: 'Thai' },
-  { value: 'Chinese', label: 'Chinese' },
-  { value: 'Japanese', label: 'Japanese' },
-  { value: 'German', label: 'German' },
-]
-
 const feeRangeOptions = [
   { value: 'under-2000', label: 'Under ฿2,000' },
   { value: '2000-5000', label: '฿2,000 - ฿5,000' },
@@ -148,6 +140,14 @@ export function FilterSidebar({
   const selectedState = useMemo(
     () => getFilterStateFromSearchParams(searchParams),
     [searchParams],
+  )
+
+  const languageOptions = useMemo(
+    () =>
+      Object.keys(languageCounts)
+        .sort((a, b) => a.localeCompare(b))
+        .map((language) => ({ value: language, label: language })),
+    [languageCounts],
   )
 
   const [isMobileOpen, setIsMobileOpen] = useState(false)

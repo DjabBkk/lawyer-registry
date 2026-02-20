@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 
 import { Container } from '@/components/layout/Container'
 import { DarkHero } from '@/components/layout/DarkHero'
-import { getSupportedCountry, SUPPORTED_COUNTRIES } from '@/utilities/countries'
+import { getActiveCountries } from '@/utilities/countries'
 
 export const metadata: Metadata = {
   title: 'Lawyers Directory',
@@ -11,8 +11,7 @@ export const metadata: Metadata = {
 }
 
 export default async function LawyersDirectoryPage() {
-  // Today we only support Thailand, but keep the page global for future expansion.
-  const thailand = getSupportedCountry('thailand')
+  const countries = await getActiveCountries()
 
   return (
     <>
@@ -24,7 +23,7 @@ export default async function LawyersDirectoryPage() {
       <section className="bg-cream-100 py-12">
         <Container>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {Object.values(SUPPORTED_COUNTRIES).map((country) => (
+            {countries.map((country) => (
               <Link
                 key={country.slug}
                 href={`/${country.slug}/lawyers`}
@@ -40,7 +39,7 @@ export default async function LawyersDirectoryPage() {
             ))}
           </div>
 
-          {!thailand && (
+          {countries.length === 0 && (
             <p className="mt-8 text-sm text-royal-700/80">
               No countries configured yet.
             </p>

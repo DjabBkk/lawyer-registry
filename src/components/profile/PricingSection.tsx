@@ -1,6 +1,6 @@
 import type { Business } from '@/payload-types'
 
-import { formatCurrencyAmount, formatFeeRange } from './profile-helpers'
+import { formatCurrencyAmount, formatFeeRange, type CurrencyLike } from './profile-helpers'
 
 interface PricingSectionProps {
   firm: Business
@@ -11,7 +11,7 @@ type PricingEntry = {
   priceMin?: number
   priceMax?: number
   priceNote?: string
-  currency?: string
+  currency?: CurrencyLike
 }
 
 const formatPricingLabel = (entry: PricingEntry) => {
@@ -19,15 +19,15 @@ const formatPricingLabel = (entry: PricingEntry) => {
   if (note.includes('free')) return 'Free'
 
   if (typeof entry.priceMin === 'number' && typeof entry.priceMax === 'number') {
-    return `${formatCurrencyAmount(entry.priceMin, entry.currency || 'THB')} - ${formatCurrencyAmount(entry.priceMax, entry.currency || 'THB')}`
+    return `${formatCurrencyAmount(entry.priceMin, entry.currency)} - ${formatCurrencyAmount(entry.priceMax, entry.currency)}`
   }
 
   if (typeof entry.priceMin === 'number') {
-    return `From ${formatCurrencyAmount(entry.priceMin, entry.currency || 'THB')}`
+    return `From ${formatCurrencyAmount(entry.priceMin, entry.currency)}`
   }
 
   if (typeof entry.priceMax === 'number') {
-    return `Up to ${formatCurrencyAmount(entry.priceMax, entry.currency || 'THB')}`
+    return `Up to ${formatCurrencyAmount(entry.priceMax, entry.currency)}`
   }
 
   return 'Contact for quote'
@@ -46,7 +46,7 @@ export function PricingSection({ firm }: PricingSectionProps) {
     priceMin: item.priceMin as number | undefined,
     priceMax: item.priceMax as number | undefined,
     priceNote: item.priceNote as string | undefined,
-    currency: item.currency as string | undefined,
+    currency: item.currency as CurrencyLike,
   }))
 
   const includesConsultation = servicePricing.some((item) =>
@@ -59,7 +59,7 @@ export function PricingSection({ firm }: PricingSectionProps) {
       priceMin: firm.feeRangeMin || undefined,
       priceMax: firm.feeRangeMax || undefined,
       priceNote: 'indicative range',
-      currency: firm.feeCurrency || 'THB',
+      currency: firm.feeCurrency,
     })
   }
 

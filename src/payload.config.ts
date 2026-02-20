@@ -6,6 +6,9 @@ import { fileURLToPath } from 'url'
 
 import { Categories } from './collections/Categories'
 import { Businesses } from './collections/Businesses'
+import { Countries } from './collections/Countries'
+import { Currencies } from './collections/Currencies'
+import { Languages } from './collections/Languages'
 import { Locations } from './collections/Locations'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
@@ -15,6 +18,7 @@ import { Services } from './collections/Services'
 import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
+import { SiteSettings } from './globals/SiteSettings'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -99,10 +103,23 @@ export default buildConfig({
     defaultLocale: 'en',
     fallback: true,
   },
-  collections: [Pages, Posts, Categories, Businesses, PracticeAreas, Services, Locations, Media, Users],
+  collections: [
+    Pages,
+    Posts,
+    Categories,
+    Countries,
+    Currencies,
+    Languages,
+    Businesses,
+    PracticeAreas,
+    Services,
+    Locations,
+    Media,
+    Users,
+  ],
   cors: [getServerSideURL()].filter(Boolean),
   endpoints: [seedStatusEndpoint, seedEndpoint, clearSeedEndpoint, createFirstUserEndpoint, resetUserPasswordEndpoint, listUsersEndpoint, updateUserEndpoint, unlockUserEndpoint, importBusinessRowEndpoint],
-  globals: [Header, Footer],
+  globals: [Header, Footer, SiteSettings],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,

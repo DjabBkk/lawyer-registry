@@ -70,6 +70,9 @@ export interface Config {
     pages: Page;
     posts: Post;
     categories: Category;
+    countries: Country;
+    currencies: Currency;
+    languages: Language;
     businesses: Business;
     'practice-areas': PracticeArea;
     services: Service;
@@ -96,6 +99,9 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    countries: CountriesSelect<false> | CountriesSelect<true>;
+    currencies: CurrenciesSelect<false> | CurrenciesSelect<true>;
+    languages: LanguagesSelect<false> | LanguagesSelect<true>;
     businesses: BusinessesSelect<false> | BusinessesSelect<true>;
     'practice-areas': PracticeAreasSelect<false> | PracticeAreasSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
@@ -120,10 +126,12 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'site-settings': SiteSetting;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
   };
   locale: 'en' | 'th' | 'zh';
   user: User & {
@@ -402,10 +410,54 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "countries".
+ */
+export interface Country {
+  id: number;
+  name: string;
+  slug: string;
+  active?: boolean | null;
+  defaultCurrency?: (number | null) | Currency;
+  defaultLanguage?: (number | null) | Language;
+  flagEmoji?: string | null;
+  seoTitleTemplate?: string | null;
+  seoDescriptionTemplate?: string | null;
+  shortDescription?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "currencies".
+ */
+export interface Currency {
+  id: number;
+  code: string;
+  name: string;
+  symbol: string;
+  symbolPosition?: ('before' | 'after') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "languages".
+ */
+export interface Language {
+  id: number;
+  code: string;
+  name: string;
+  nativeName: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "businesses".
  */
 export interface Business {
   id: number;
+  country: number | Country;
   name: string;
   slug: string;
   logo?: (number | null) | Media;
@@ -461,15 +513,13 @@ export interface Business {
   nearestTransit?: string | null;
   foundingYear?: number | null;
   companySize?: ('1-5' | '6-10' | '11-25' | '26-50' | '51-100' | '100+') | null;
-  languages?:
-    | ('English' | 'Thai' | 'Chinese' | 'Japanese' | 'German' | 'French' | 'Spanish' | 'Russian' | 'Arabic')[]
-    | null;
+  languages?: (number | Language)[] | null;
   feeRangeMin?: number | null;
   feeRangeMax?: number | null;
-  feeCurrency?: ('THB' | 'USD' | 'EUR') | null;
+  feeCurrency?: (number | null) | Currency;
   hourlyFeeMin?: number | null;
   hourlyFeeMax?: number | null;
-  hourlyFeeCurrency?: ('THB' | 'USD' | 'EUR') | null;
+  hourlyFeeCurrency?: (number | null) | Currency;
   /**
    * Optional note shown with hourly fees. E.g. 'partner rate', 'blended team rate', 'minimum 2 hours'
    */
@@ -493,7 +543,7 @@ export interface Business {
         description?: string | null;
         priceMin?: number | null;
         priceMax?: number | null;
-        priceCurrency?: ('THB' | 'USD' | 'EUR') | null;
+        priceCurrency?: (number | null) | Currency;
         /**
          * E.g. 'per hour', 'fixed fee', 'starting from', 'free initial consultation'
          */
@@ -515,7 +565,7 @@ export interface Business {
         priceMin?: number | null;
         priceMax?: number | null;
         priceNote?: string | null;
-        currency?: ('THB' | 'USD' | 'EUR') | null;
+        currency?: (number | null) | Currency;
         id?: string | null;
       }[]
     | null;
@@ -773,8 +823,12 @@ export interface Service {
 export interface Location {
   id: number;
   name: string;
+  country: number | Country;
   slug: string;
-  region: 'Central' | 'North' | 'Northeast' | 'East' | 'South';
+  region: string;
+  locationType: 'city' | 'district' | 'province';
+  parent?: (number | null) | Location;
+  zipCodes?: string | null;
   description?: {
     root: {
       type: string;
@@ -1170,6 +1224,18 @@ export interface PayloadLockedDocument {
         value: number | Category;
       } | null)
     | ({
+        relationTo: 'countries';
+        value: number | Country;
+      } | null)
+    | ({
+        relationTo: 'currencies';
+        value: number | Currency;
+      } | null)
+    | ({
+        relationTo: 'languages';
+        value: number | Language;
+      } | null)
+    | ({
         relationTo: 'businesses';
         value: number | Business;
       } | null)
@@ -1321,9 +1387,50 @@ export interface CategoriesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "countries_select".
+ */
+export interface CountriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  active?: T;
+  defaultCurrency?: T;
+  defaultLanguage?: T;
+  flagEmoji?: T;
+  seoTitleTemplate?: T;
+  seoDescriptionTemplate?: T;
+  shortDescription?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "currencies_select".
+ */
+export interface CurrenciesSelect<T extends boolean = true> {
+  code?: T;
+  name?: T;
+  symbol?: T;
+  symbolPosition?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "languages_select".
+ */
+export interface LanguagesSelect<T extends boolean = true> {
+  code?: T;
+  name?: T;
+  nativeName?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "businesses_select".
  */
 export interface BusinessesSelect<T extends boolean = true> {
+  country?: T;
   name?: T;
   slug?: T;
   logo?: T;
@@ -1554,8 +1661,12 @@ export interface ServicesSelect<T extends boolean = true> {
  */
 export interface LocationsSelect<T extends boolean = true> {
   name?: T;
+  country?: T;
   slug?: T;
   region?: T;
+  locationType?: T;
+  parent?: T;
+  zipCodes?: T;
   description?: T;
   shortDescription?: T;
   featured?: T;
@@ -2026,6 +2137,34 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  siteName: string;
+  defaultCountry?: (number | null) | Country;
+  supportEmail?: string | null;
+  socialLinks?: {
+    facebook?: string | null;
+    linkedin?: string | null;
+    twitter?: string | null;
+    instagram?: string | null;
+    youtube?: string | null;
+  };
+  seoDefaults?: {
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+    ogImage?: (number | null) | Media;
+  };
+  analyticsIds?: {
+    googleTagManager?: string | null;
+    googleAnalytics?: string | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -2065,6 +2204,40 @@ export interface FooterSelect<T extends boolean = true> {
               label?: T;
             };
         id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  siteName?: T;
+  defaultCountry?: T;
+  supportEmail?: T;
+  socialLinks?:
+    | T
+    | {
+        facebook?: T;
+        linkedin?: T;
+        twitter?: T;
+        instagram?: T;
+        youtube?: T;
+      };
+  seoDefaults?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+        ogImage?: T;
+      };
+  analyticsIds?:
+    | T
+    | {
+        googleTagManager?: T;
+        googleAnalytics?: T;
       };
   updatedAt?: T;
   createdAt?: T;

@@ -136,12 +136,27 @@ function slugToQuery(slug: string) {
   return slug.replace(/-lawyers?$/i, '').replace(/-/g, ' ').trim()
 }
 
+const getCurrencyCode = (currency: unknown): string => {
+  if (typeof currency === 'string' && currency) {
+    return currency
+  }
+
+  if (currency && typeof currency === 'object' && 'code' in currency) {
+    const code = (currency as { code?: unknown }).code
+    if (typeof code === 'string' && code) {
+      return code
+    }
+  }
+
+  return 'THB'
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug: slugOrLocale, segments: rawSegments = [] } = await params
   const { locale, countrySlug, segments } = resolveRouteContext(slugOrLocale, rawSegments)
   if (!countrySlug) return { title: 'Not Found' }
 
-  const country = getSupportedCountry(countrySlug)
+  const country = await getSupportedCountry(countrySlug)
   if (!country) return { title: 'Not Found' }
 
   const applyTemplate = (template: string, variables: Record<string, string | undefined> = {}) =>
@@ -320,7 +335,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
 
   const resolvedSearchParams = await searchParams
 
-  const country = getSupportedCountry(countrySlug)
+  const country = await getSupportedCountry(countrySlug)
   if (!country) notFound()
 
   const applyTemplate = (template: string, variables: Record<string, string | undefined> = {}) =>
@@ -596,7 +611,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
             }
           : undefined
 
-      const currency = firm.feeCurrency || 'THB'
+      const currency = getCurrencyCode(firm.feeCurrency)
       const priceRange =
         typeof firm.feeRangeMin === 'number' && typeof firm.feeRangeMax === 'number'
           ? `${currency} ${firm.feeRangeMin}-${firm.feeRangeMax}`
