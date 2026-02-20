@@ -30,6 +30,11 @@ const nextConfig = {
     return webpackConfig
   },
   reactStrictMode: true,
+  i18n: {
+    locales: ['en', 'th', 'zh'],
+    defaultLocale: 'en',
+    localeDetection: false,
+  },
   redirects,
 }
 

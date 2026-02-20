@@ -33,6 +33,8 @@ import {
   getPracticeAreaBySlug,
   type DirectorySearchParams,
 } from '@/utilities/directoryQueries'
+import { DEFAULT_LOCALE, getAlternateUrls, isValidLocalePrefix } from '@/utilities/locales'
+import { replaceTemplateVars } from '@/utilities/templateReplace'
 import type { Business, Media, PracticeArea } from '@/payload-types'
 
 interface PageProps {
@@ -41,10 +43,59 @@ interface PageProps {
 }
 
 const LAWYER_BUSINESS_TYPES: BusinessType[] = ['law-firm', 'lawyer']
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '')
 
 const getPayloadClient = cache(async () => getPayload({ config }))
 
-async function getRelatedFirms(firm: Business) {
+type ResolvedRouteContext = {
+  locale: string
+  countrySlug: string | undefined
+  segments: string[]
+}
+
+const toAbsoluteUrl = (path: string): string => (SITE_URL ? `${SITE_URL}${path}` : path)
+
+const resolveRouteContext = (slugOrLocale: string, rawSegments: string[] = []): ResolvedRouteContext => {
+  if (isValidLocalePrefix(slugOrLocale)) {
+    const [countrySlug, ...segments] = rawSegments
+
+    return {
+      locale: slugOrLocale,
+      countrySlug,
+      segments,
+    }
+  }
+
+  return {
+    locale: DEFAULT_LOCALE.code,
+    countrySlug: slugOrLocale,
+    segments: rawSegments,
+  }
+}
+
+const buildAlternateMetadata = (pathWithoutLocale: string, locale: string): Metadata['alternates'] => {
+  const alternateUrls = getAlternateUrls(pathWithoutLocale)
+  const languages = alternateUrls.reduce<Record<string, string>>((acc, alternateUrl) => {
+    acc[alternateUrl.hreflang] = toAbsoluteUrl(alternateUrl.href)
+    return acc
+  }, {})
+
+  const defaultHref =
+    alternateUrls.find((alternateUrl) => alternateUrl.hreflang === DEFAULT_LOCALE.hreflang)?.href ||
+    pathWithoutLocale
+
+  languages['x-default'] = toAbsoluteUrl(defaultHref)
+
+  const currentHref =
+    alternateUrls.find((alternateUrl) => alternateUrl.hreflang === locale)?.href || defaultHref
+
+  return {
+    canonical: toAbsoluteUrl(currentHref),
+    languages,
+  }
+}
+
+async function getRelatedFirms(firm: Business, locale: string) {
   const payload = await getPayloadClient()
 
   const practiceAreaIds =
@@ -75,6 +126,7 @@ async function getRelatedFirms(firm: Business) {
     },
     limit: 3,
     depth: 1,
+    locale: locale === 'th' || locale === 'zh' ? locale : 'en',
   })
 
   return docs
@@ -85,42 +137,62 @@ function slugToQuery(slug: string) {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug: countrySlug, segments = [] } = await params
+  const { slug: slugOrLocale, segments: rawSegments = [] } = await params
+  const { locale, countrySlug, segments } = resolveRouteContext(slugOrLocale, rawSegments)
+  if (!countrySlug) return { title: 'Not Found' }
+
   const country = getSupportedCountry(countrySlug)
   if (!country) return { title: 'Not Found' }
+
+  const applyTemplate = (template: string, variables: Record<string, string | undefined> = {}) =>
+    replaceTemplateVars(template, { ...variables, locale })
+
   const canonicalFor = (suffix: string = '') => `/${country.slug}/lawyers${suffix}`
   const withCanonical = (metadata: Metadata, suffix: string = ''): Metadata => ({
     ...metadata,
-    alternates: {
-      canonical: canonicalFor(suffix),
-    },
+    alternates: buildAlternateMetadata(canonicalFor(suffix), locale),
   })
 
   if (segments.length === 0) {
     return withCanonical({
-      title: `Lawyers in ${country.name}`,
-      description: `Browse law firms and lawyers in ${country.name}. Filter by location and practice area.`,
+      title: applyTemplate('Lawyers in {country}', { country: country.name }),
+      description: applyTemplate(
+        'Browse law firms and lawyers in {country}. Filter by location and practice area.',
+        { country: country.name },
+      ),
     })
   }
 
   if (segments.length === 1) {
     const [s1] = segments
     const [location, practiceArea, firm] = await Promise.all([
-      getLocationBySlug(s1),
-      getPracticeAreaBySlug(s1),
-      getBusinessBySlug(s1, { businessTypes: LAWYER_BUSINESS_TYPES }),
+      getLocationBySlug(s1, locale),
+      getPracticeAreaBySlug(s1, locale),
+      getBusinessBySlug(s1, { businessTypes: LAWYER_BUSINESS_TYPES, locale }),
     ])
 
     if (location) {
       return withCanonical({
-        title: `Lawyers in ${location.name}, ${country.name}`,
-        description: `Find law firms and lawyers in ${location.name}, ${country.name}.`,
+        title: applyTemplate('Lawyers in {city}, {country}', {
+          city: location.name,
+          country: country.name,
+        }),
+        description: applyTemplate('Find law firms and lawyers in {city}, {country}.', {
+          city: location.name,
+          country: country.name,
+        }),
       }, `/${location.slug}`)
     }
     if (practiceArea) {
       return withCanonical({
-        title: `${practiceArea.name} Lawyers in ${country.name}`,
-        description: `Find experienced ${practiceArea.name.toLowerCase()} lawyers in ${country.name}.`,
+        title: applyTemplate('{practiceArea} Lawyers in {country}', {
+          practiceArea: practiceArea.name,
+          country: country.name,
+        }),
+        description: applyTemplate('Find experienced {practiceArea} lawyers in {country}.', {
+          practiceArea: practiceArea.name?.toLowerCase(),
+          country: country.name,
+        }),
       }, `/${practiceArea.slug}`)
     }
     if (firm) {
@@ -132,11 +204,37 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       const areaSummary = areaNames.length ? `Specialties include ${areaNames.join(', ')}.` : ''
       const businessTypeLabel = getBusinessTypeLabel(firm.businessType)
       return withCanonical({
-        title: firm.meta?.title || `${firm.name} | ${businessTypeLabel} in ${loc?.name || country.name}`,
+        title:
+          (firm.meta?.title &&
+            replaceTemplateVars(firm.meta.title, {
+              locale,
+              country: country.name,
+              city: loc?.name || country.name,
+              practiceArea: areaNames[0],
+            })) ||
+          applyTemplate('{name} | {businessType} in {city}', {
+            name: firm.name,
+            businessType: businessTypeLabel,
+            city: loc?.name || country.name,
+          }),
         description:
-          firm.meta?.description ||
+          (firm.meta?.description &&
+            replaceTemplateVars(firm.meta.description, {
+              locale,
+              country: country.name,
+              city: loc?.name || country.name,
+              practiceArea: areaNames[0],
+            })) ||
           firm.shortDescription ||
-          `${firm.name} is a ${businessTypeLabel.toLowerCase()} based in ${loc?.name || country.name}. ${areaSummary} Learn more about their services, team, fees, and client FAQs.`,
+          applyTemplate(
+            '{name} is a {businessType} based in {city}. {areaSummary} Learn more about their services, team, fees, and client FAQs.',
+            {
+              name: firm.name,
+              businessType: businessTypeLabel.toLowerCase(),
+              city: loc?.name || country.name,
+              areaSummary,
+            },
+          ),
       }, `/${firm.slug}`)
     }
   }
@@ -144,24 +242,43 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (segments.length === 2) {
     const [s1, s2] = segments
     const [location, practiceArea] = await Promise.all([
-      getLocationBySlug(s1),
-      getPracticeAreaBySlug(s1),
+      getLocationBySlug(s1, locale),
+      getPracticeAreaBySlug(s1, locale),
     ])
 
     if (location) {
-      const pa = await getPracticeAreaBySlug(s2)
+      const pa = await getPracticeAreaBySlug(s2, locale)
       if (!pa) return { title: 'Not Found' }
       return withCanonical({
-        title: `${pa.name} Lawyers in ${location.name} | ${country.name}`,
-        description: `Find ${pa.name.toLowerCase()} lawyers in ${location.name}, ${country.name}.`,
+        title: applyTemplate('{practiceArea} Lawyers in {city} | {country}', {
+          practiceArea: pa.name,
+          city: location.name,
+          country: country.name,
+        }),
+        description: applyTemplate('Find {practiceArea} lawyers in {city}, {country}.', {
+          practiceArea: pa.name?.toLowerCase(),
+          city: location.name,
+          country: country.name,
+        }),
       }, `/${location.slug}/${pa.slug}`)
     }
 
     if (practiceArea) {
       const q = slugToQuery(s2)
       return withCanonical({
-        title: `${q} | ${practiceArea.name} Lawyers in ${country.name}`,
-        description: `Browse ${practiceArea.name.toLowerCase()} lawyers in ${country.name} focused on ${q}.`,
+        title: applyTemplate('{service} | {practiceArea} Lawyers in {country}', {
+          service: q,
+          practiceArea: practiceArea.name,
+          country: country.name,
+        }),
+        description: applyTemplate(
+          'Browse {practiceArea} lawyers in {country} focused on {service}.',
+          {
+            practiceArea: practiceArea.name?.toLowerCase(),
+            country: country.name,
+            service: q,
+          },
+        ),
       }, `/${practiceArea.slug}/${s2}`)
     }
   }
@@ -169,15 +286,27 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (segments.length === 3) {
     const [citySlug, practiceAreaSlug, specSlug] = segments
     const [location, practiceArea] = await Promise.all([
-      getLocationBySlug(citySlug),
-      getPracticeAreaBySlug(practiceAreaSlug),
+      getLocationBySlug(citySlug, locale),
+      getPracticeAreaBySlug(practiceAreaSlug, locale),
     ])
     if (!location || !practiceArea) return { title: 'Not Found' }
 
     const q = slugToQuery(specSlug)
     return withCanonical({
-      title: `${q} | ${practiceArea.name} Lawyers in ${location.name}`,
-      description: `Browse ${practiceArea.name.toLowerCase()} lawyers in ${location.name}, ${country.name} focused on ${q}.`,
+      title: applyTemplate('{service} | {practiceArea} Lawyers in {city}', {
+        service: q,
+        practiceArea: practiceArea.name,
+        city: location.name,
+      }),
+      description: applyTemplate(
+        'Browse {practiceArea} lawyers in {city}, {country} focused on {service}.',
+        {
+          practiceArea: practiceArea.name?.toLowerCase(),
+          city: location.name,
+          country: country.name,
+          service: q,
+        },
+      ),
     }, `/${location.slug}/${practiceArea.slug}/${specSlug}`)
   }
 
@@ -185,11 +314,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function CountryLawyersPage({ params, searchParams }: PageProps) {
-  const { slug: countrySlug, segments = [] } = await params
+  const { slug: slugOrLocale, segments: rawSegments = [] } = await params
+  const { locale, countrySlug, segments } = resolveRouteContext(slugOrLocale, rawSegments)
+  if (!countrySlug) notFound()
+
   const resolvedSearchParams = await searchParams
 
   const country = getSupportedCountry(countrySlug)
   if (!country) notFound()
+
+  const applyTemplate = (template: string, variables: Record<string, string | undefined> = {}) =>
+    replaceTemplateVars(template, { ...variables, locale })
 
   if (segments.length > 3) notFound()
 
@@ -197,15 +332,21 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
 
   if (segments.length === 0) {
     const [{ firms, totalPages, currentPage, totalDocs, languageCounts, sortParam }, filterOptions] = await Promise.all([
-      getBusinesses({ searchParams: resolvedSearchParams, businessTypes: LAWYER_BUSINESS_TYPES }),
-      getFilterOptions(),
+      getBusinesses({
+        searchParams: resolvedSearchParams,
+        businessTypes: LAWYER_BUSINESS_TYPES,
+        locale,
+      }),
+      getFilterOptions(locale),
     ])
 
     return (
       <>
         <DarkHero
-          title={`Lawyers in ${country.name}`}
-          description="Browse our directory of law firms. Filter by practice area, location, and more."
+          title={applyTemplate('Lawyers in {country}', { country: country.name })}
+          description={applyTemplate(
+            'Browse our directory of law firms. Filter by practice area, location, and more.',
+          )}
           meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
           breadcrumbs={[
             { label: 'Home', href: '/' },
@@ -254,9 +395,9 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
 
   if (segments.length === 1) {
     const [location, practiceArea, firm] = await Promise.all([
-      getLocationBySlug(s1),
-      getPracticeAreaBySlug(s1),
-      getBusinessBySlug(s1, { businessTypes: LAWYER_BUSINESS_TYPES }),
+      getLocationBySlug(s1, locale),
+      getPracticeAreaBySlug(s1, locale),
+      getBusinessBySlug(s1, { businessTypes: LAWYER_BUSINESS_TYPES, locale }),
     ])
 
     if (location) {
@@ -265,15 +406,19 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
           locationId: location.id,
           searchParams: resolvedSearchParams,
           businessTypes: LAWYER_BUSINESS_TYPES,
+          locale,
         }),
-        getFilterOptions(),
+        getFilterOptions(locale),
       ])
 
       return (
         <>
           <DarkHero
-            title={`Lawyers in ${location.name}`}
-            description={`Browse law firms in ${location.name}, ${country.name}. Filter by practice area and more.`}
+            title={applyTemplate('Lawyers in {city}', { city: location.name })}
+            description={applyTemplate(
+              'Browse law firms in {city}, {country}. Filter by practice area and more.',
+              { city: location.name, country: country.name },
+            )}
             meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
             breadcrumbs={[
               { label: 'Home', href: '/' },
@@ -326,17 +471,24 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
           practiceAreaId: practiceArea.id,
           searchParams: resolvedSearchParams,
           businessTypes: LAWYER_BUSINESS_TYPES,
+          locale,
         }),
-        getFilterOptions(),
+        getFilterOptions(locale),
       ])
 
       return (
         <>
           <DarkHero
-            title={`${practiceArea.name} Lawyers in ${country.name}`}
+            title={applyTemplate('{practiceArea} Lawyers in {country}', {
+              practiceArea: practiceArea.name,
+              country: country.name,
+            })}
             description={
               practiceArea.shortDescription ||
-              `Find qualified ${practiceArea.name.toLowerCase()} lawyers across ${country.name}.`
+              applyTemplate('Find qualified {practiceArea} lawyers across {country}.', {
+                practiceArea: practiceArea.name?.toLowerCase(),
+                country: country.name,
+              })
             }
             meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
             breadcrumbs={[
@@ -386,7 +538,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
 
     // profile page
     if (firm) {
-      const relatedFirms = await getRelatedFirms(firm)
+      const relatedFirms = await getRelatedFirms(firm, locale)
       const relatedEntityLabel = getBusinessTypeLabel(firm.businessType)
       const relatedHeading = relatedEntityLabel === 'Law Firm' ? 'Related Law Firms' : 'Related Lawyers'
       const practiceAreas =
@@ -566,9 +718,9 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
   }
 
   if (segments.length === 2) {
-    const location = await getLocationBySlug(s1)
+    const location = await getLocationBySlug(s1, locale)
     if (location) {
-      const practiceArea = await getPracticeAreaBySlug(s2)
+      const practiceArea = await getPracticeAreaBySlug(s2, locale)
       if (!practiceArea) notFound()
 
       const [{ firms, totalPages, currentPage, totalDocs, languageCounts, sortParam }] = await Promise.all([
@@ -577,14 +729,25 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
           practiceAreaId: practiceArea.id,
           searchParams: resolvedSearchParams,
           businessTypes: LAWYER_BUSINESS_TYPES,
+          locale,
         }),
       ])
 
       return (
         <>
           <DarkHero
-            title={`${practiceArea.name} Lawyers in ${location.name}`}
-            description={`Find qualified ${practiceArea.name.toLowerCase()} lawyers in ${location.name}, ${country.name}.`}
+            title={applyTemplate('{practiceArea} Lawyers in {city}', {
+              practiceArea: practiceArea.name,
+              city: location.name,
+            })}
+            description={applyTemplate(
+              'Find qualified {practiceArea} lawyers in {city}, {country}.',
+              {
+                practiceArea: practiceArea.name?.toLowerCase(),
+                city: location.name,
+                country: country.name,
+              },
+            )}
             meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
             breadcrumbs={[
               { label: 'Home', href: '/' },
@@ -627,7 +790,7 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
       )
     }
 
-    const practiceArea = await getPracticeAreaBySlug(s1)
+    const practiceArea = await getPracticeAreaBySlug(s1, locale)
     if (!practiceArea) notFound()
 
     const q = slugToQuery(s2)
@@ -636,13 +799,21 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
       keyword: q,
       searchParams: resolvedSearchParams,
       businessTypes: LAWYER_BUSINESS_TYPES,
+      locale,
     })
 
     return (
       <>
         <DarkHero
-          title={`${q} ${practiceArea.name} Lawyers in ${country.name}`}
-          description={`Browse ${practiceArea.name.toLowerCase()} firms focused on ${q}.`}
+          title={applyTemplate('{service} {practiceArea} Lawyers in {country}', {
+            service: q,
+            practiceArea: practiceArea.name,
+            country: country.name,
+          })}
+          description={applyTemplate('Browse {practiceArea} firms focused on {service}.', {
+            practiceArea: practiceArea.name?.toLowerCase(),
+            service: q,
+          })}
           meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
           breadcrumbs={[
             { label: 'Home', href: '/' },
@@ -685,8 +856,8 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
 
   if (segments.length === 3) {
     const [location, practiceArea] = await Promise.all([
-      getLocationBySlug(s1),
-      getPracticeAreaBySlug(s2),
+      getLocationBySlug(s1, locale),
+      getPracticeAreaBySlug(s2, locale),
     ])
     if (!location || !practiceArea) notFound()
 
@@ -697,13 +868,22 @@ export default async function CountryLawyersPage({ params, searchParams }: PageP
       keyword: q,
       searchParams: resolvedSearchParams,
       businessTypes: LAWYER_BUSINESS_TYPES,
+      locale,
     })
 
     return (
       <>
         <DarkHero
-          title={`${q} ${practiceArea.name} Lawyers in ${location.name}`}
-          description={`Browse ${practiceArea.name.toLowerCase()} firms in ${location.name} focused on ${q}.`}
+          title={applyTemplate('{service} {practiceArea} Lawyers in {city}', {
+            service: q,
+            practiceArea: practiceArea.name,
+            city: location.name,
+          })}
+          description={applyTemplate('Browse {practiceArea} firms in {city} focused on {service}.', {
+            practiceArea: practiceArea.name?.toLowerCase(),
+            city: location.name,
+            service: q,
+          })}
           meta={`${totalDocs} law firm${totalDocs !== 1 ? 's' : ''} found`}
           breadcrumbs={[
             { label: 'Home', href: '/' },

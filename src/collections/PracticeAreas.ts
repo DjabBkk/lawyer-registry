@@ -21,6 +21,7 @@ export const PracticeAreas: CollectionConfig = {
     {
       name: 'name',
       type: 'text',
+      localized: true,
       required: true,
     },
     {
@@ -74,10 +75,12 @@ export const PracticeAreas: CollectionConfig = {
     {
       name: 'description',
       type: 'richText',
+      localized: true,
     },
     {
       name: 'shortDescription',
       type: 'textarea',
+      localized: true,
       maxLength: 200,
     },
     {
@@ -92,10 +95,12 @@ export const PracticeAreas: CollectionConfig = {
     {
       name: 'seoTitle',
       type: 'text',
+      localized: true,
     },
     {
       name: 'seoDescription',
       type: 'textarea',
+      localized: true,
     },
   ],
   timestamps: true,

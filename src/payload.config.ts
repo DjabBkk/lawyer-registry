@@ -81,6 +81,24 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URL || '',
     },
   }),
+  localization: {
+    locales: [
+      {
+        code: 'en',
+        label: 'English',
+      },
+      {
+        code: 'th',
+        label: 'Thai',
+      },
+      {
+        code: 'zh',
+        label: 'Mandarin',
+      },
+    ],
+    defaultLocale: 'en',
+    fallback: true,
+  },
   collections: [Pages, Posts, Categories, Businesses, PracticeAreas, Services, Locations, Media, Users],
   cors: [getServerSideURL()].filter(Boolean),
   endpoints: [seedStatusEndpoint, seedEndpoint, clearSeedEndpoint, createFirstUserEndpoint, resetUserPasswordEndpoint, listUsersEndpoint, updateUserEndpoint, unlockUserEndpoint, importBusinessRowEndpoint],

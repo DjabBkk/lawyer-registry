@@ -15,6 +15,8 @@ import {
   type ServiceCategory,
 } from '@/utilities/directoryQueries'
 import { getBusinessUrl } from '@/utilities/getBusinessUrl'
+import { DEFAULT_LOCALE, getAlternateUrls, isValidLocalePrefix } from '@/utilities/locales'
+import { replaceTemplateVars } from '@/utilities/templateReplace'
 
 type ServiceCategorySlug =
   | 'visa-services'
@@ -53,6 +55,7 @@ const SERVICE_CATEGORY_CONFIG: Record<
     value: 'accounting',
   },
 }
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '')
 
 interface PageProps {
   params: Promise<{ slug: string; serviceCategory: string; segments?: string[] }>
@@ -77,90 +80,226 @@ function slugToQuery(slug: string) {
   return slug.replace(/-services?$/i, '').replace(/-/g, ' ').trim()
 }
 
+type ResolvedRouteContext = {
+  locale: string
+  countrySlug: string | undefined
+  serviceCategory: string | undefined
+  segments: string[]
+}
+
+const toAbsoluteUrl = (path: string): string => (SITE_URL ? `${SITE_URL}${path}` : path)
+
+const resolveRouteContext = (
+  slugOrLocale: string,
+  serviceCategoryOrCountry: string,
+  rawSegments: string[] = [],
+): ResolvedRouteContext => {
+  if (isValidLocalePrefix(slugOrLocale)) {
+    const [serviceCategory, ...segments] = rawSegments
+
+    return {
+      locale: slugOrLocale,
+      countrySlug: serviceCategoryOrCountry,
+      serviceCategory,
+      segments,
+    }
+  }
+
+  return {
+    locale: DEFAULT_LOCALE.code,
+    countrySlug: slugOrLocale,
+    serviceCategory: serviceCategoryOrCountry,
+    segments: rawSegments,
+  }
+}
+
+const buildAlternateMetadata = (pathWithoutLocale: string, locale: string): Metadata['alternates'] => {
+  const alternateUrls = getAlternateUrls(pathWithoutLocale)
+  const languages = alternateUrls.reduce<Record<string, string>>((acc, alternateUrl) => {
+    acc[alternateUrl.hreflang] = toAbsoluteUrl(alternateUrl.href)
+    return acc
+  }, {})
+
+  const defaultHref =
+    alternateUrls.find((alternateUrl) => alternateUrl.hreflang === DEFAULT_LOCALE.hreflang)?.href ||
+    pathWithoutLocale
+
+  languages['x-default'] = toAbsoluteUrl(defaultHref)
+
+  const currentHref =
+    alternateUrls.find((alternateUrl) => alternateUrl.hreflang === locale)?.href || defaultHref
+
+  return {
+    canonical: toAbsoluteUrl(currentHref),
+    languages,
+  }
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug: countrySlug, serviceCategory, segments = [] } = await params
+  const { slug: slugOrLocale, serviceCategory: serviceCategoryOrCountry, segments: rawSegments = [] } =
+    await params
+  const { locale, countrySlug, serviceCategory, segments } = resolveRouteContext(
+    slugOrLocale,
+    serviceCategoryOrCountry,
+    rawSegments,
+  )
+  if (!countrySlug || !serviceCategory) return { title: 'Not Found' }
+
   const serviceConfig = getServiceCategoryConfig(serviceCategory)
   if (!serviceConfig) return { title: 'Not Found' }
 
   const country = getSupportedCountry(countrySlug)
   if (!country) return { title: 'Not Found' }
 
+  const applyTemplate = (template: string, variables: Record<string, string | undefined> = {}) =>
+    replaceTemplateVars(template, { ...variables, locale })
+
   const canonicalFor = (suffix: string = '') => `/${country.slug}/${serviceConfig.slug}${suffix}`
+  const withCanonical = (metadata: Metadata, suffix: string = ''): Metadata => ({
+    ...metadata,
+    alternates: buildAlternateMetadata(canonicalFor(suffix), locale),
+  })
 
   if (segments.length === 0) {
-    return {
-      title: `${serviceConfig.label} in ${country.name}`,
-      description: `Browse ${serviceConfig.label.toLowerCase()} providers in ${country.name}.`,
-      alternates: { canonical: canonicalFor() },
-    }
+    return withCanonical({
+      title: applyTemplate('{service} in {country}', {
+        service: serviceConfig.label,
+        country: country.name,
+      }),
+      description: applyTemplate('Browse {service} providers in {country}.', {
+        service: serviceConfig.label.toLowerCase(),
+        country: country.name,
+      }),
+    })
   }
 
   if (segments.length === 1) {
     const [s1] = segments
-    const [location, practiceArea] = await Promise.all([getLocationBySlug(s1), getPracticeAreaBySlug(s1)])
+    const [location, practiceArea] = await Promise.all([
+      getLocationBySlug(s1, locale),
+      getPracticeAreaBySlug(s1, locale),
+    ])
 
     if (location) {
-      return {
-        title: `${serviceConfig.label} in ${location.name}, ${country.name}`,
-        description: `Find ${serviceConfig.label.toLowerCase()} providers in ${location.name}, ${country.name}.`,
-        alternates: { canonical: canonicalFor(`/${location.slug}`) },
-      }
+      return withCanonical({
+        title: applyTemplate('{service} in {city}, {country}', {
+          service: serviceConfig.label,
+          city: location.name,
+          country: country.name,
+        }),
+        description: applyTemplate('Find {service} providers in {city}, {country}.', {
+          service: serviceConfig.label.toLowerCase(),
+          city: location.name,
+          country: country.name,
+        }),
+      }, `/${location.slug}`)
     }
 
     if (practiceArea) {
-      return {
-        title: `${practiceArea.name} ${serviceConfig.label} in ${country.name}`,
-        description: `Find ${practiceArea.name.toLowerCase()} providers in ${country.name} offering ${serviceConfig.label.toLowerCase()}.`,
-        alternates: { canonical: canonicalFor(`/${practiceArea.slug}`) },
-      }
+      return withCanonical({
+        title: applyTemplate('{practiceArea} {service} in {country}', {
+          practiceArea: practiceArea.name,
+          service: serviceConfig.label,
+          country: country.name,
+        }),
+        description: applyTemplate(
+          'Find {practiceArea} providers in {country} offering {service}.',
+          {
+            practiceArea: practiceArea.name?.toLowerCase(),
+            country: country.name,
+            service: serviceConfig.label.toLowerCase(),
+          },
+        ),
+      }, `/${practiceArea.slug}`)
     }
   }
 
   if (segments.length === 2) {
     const [s1, s2] = segments
-    const location = await getLocationBySlug(s1)
+    const location = await getLocationBySlug(s1, locale)
     if (location) {
-      const practiceArea = await getPracticeAreaBySlug(s2)
+      const practiceArea = await getPracticeAreaBySlug(s2, locale)
       if (!practiceArea) return { title: 'Not Found' }
-      return {
-        title: `${practiceArea.name} ${serviceConfig.label} in ${location.name}`,
-        description: `Find ${practiceArea.name.toLowerCase()} providers in ${location.name} offering ${serviceConfig.label.toLowerCase()}.`,
-        alternates: { canonical: canonicalFor(`/${location.slug}/${practiceArea.slug}`) },
-      }
+      return withCanonical({
+        title: applyTemplate('{practiceArea} {service} in {city}', {
+          practiceArea: practiceArea.name,
+          service: serviceConfig.label,
+          city: location.name,
+        }),
+        description: applyTemplate(
+          'Find {practiceArea} providers in {city} offering {service}.',
+          {
+            practiceArea: practiceArea.name?.toLowerCase(),
+            city: location.name,
+            service: serviceConfig.label.toLowerCase(),
+          },
+        ),
+      }, `/${location.slug}/${practiceArea.slug}`)
     }
 
-    const practiceArea = await getPracticeAreaBySlug(s1)
+    const practiceArea = await getPracticeAreaBySlug(s1, locale)
     if (!practiceArea) return { title: 'Not Found' }
     const q = slugToQuery(s2)
 
-    return {
-      title: `${q} ${practiceArea.name} ${serviceConfig.label} in ${country.name}`,
-      description: `Browse ${practiceArea.name.toLowerCase()} providers in ${country.name} offering ${serviceConfig.label.toLowerCase()} for ${q}.`,
-      alternates: { canonical: canonicalFor(`/${practiceArea.slug}/${s2}`) },
-    }
+    return withCanonical({
+      title: applyTemplate('{service} {practiceArea} {category} in {country}', {
+        service: q,
+        practiceArea: practiceArea.name,
+        category: serviceConfig.label,
+        country: country.name,
+      }),
+      description: applyTemplate(
+        'Browse {practiceArea} providers in {country} offering {category} for {service}.',
+        {
+          practiceArea: practiceArea.name?.toLowerCase(),
+          country: country.name,
+          category: serviceConfig.label.toLowerCase(),
+          service: q,
+        },
+      ),
+    }, `/${practiceArea.slug}/${s2}`)
   }
 
   if (segments.length === 3) {
     const [locationSlug, practiceAreaSlug, keywordSlug] = segments
     const [location, practiceArea] = await Promise.all([
-      getLocationBySlug(locationSlug),
-      getPracticeAreaBySlug(practiceAreaSlug),
+      getLocationBySlug(locationSlug, locale),
+      getPracticeAreaBySlug(practiceAreaSlug, locale),
     ])
     if (!location || !practiceArea) return { title: 'Not Found' }
     const q = slugToQuery(keywordSlug)
 
-    return {
-      title: `${q} ${practiceArea.name} ${serviceConfig.label} in ${location.name}`,
-      description: `Browse ${practiceArea.name.toLowerCase()} providers in ${location.name} offering ${serviceConfig.label.toLowerCase()} for ${q}.`,
-      alternates: { canonical: canonicalFor(`/${location.slug}/${practiceArea.slug}/${keywordSlug}`) },
-    }
+    return withCanonical({
+      title: applyTemplate('{service} {practiceArea} {category} in {city}', {
+        service: q,
+        practiceArea: practiceArea.name,
+        category: serviceConfig.label,
+        city: location.name,
+      }),
+      description: applyTemplate(
+        'Browse {practiceArea} providers in {city} offering {category} for {service}.',
+        {
+          practiceArea: practiceArea.name?.toLowerCase(),
+          city: location.name,
+          category: serviceConfig.label.toLowerCase(),
+          service: q,
+        },
+      ),
+    }, `/${location.slug}/${practiceArea.slug}/${keywordSlug}`)
   }
 
   return { title: 'Not Found' }
 }
 
 export default async function CountryServiceCategoryPage({ params, searchParams }: PageProps) {
-  const { slug: countrySlug, serviceCategory, segments = [] } = await params
+  const { slug: slugOrLocale, serviceCategory: serviceCategoryOrCountry, segments: rawSegments = [] } =
+    await params
+  const { locale, countrySlug, serviceCategory, segments } = resolveRouteContext(
+    slugOrLocale,
+    serviceCategoryOrCountry,
+    rawSegments,
+  )
+  if (!countrySlug || !serviceCategory) notFound()
 
   const serviceConfig = getServiceCategoryConfig(serviceCategory)
   if (!serviceConfig) {
@@ -170,6 +309,9 @@ export default async function CountryServiceCategoryPage({ params, searchParams 
   const resolvedSearchParams = await searchParams
   const country = getSupportedCountry(countrySlug)
   if (!country) notFound()
+
+  const applyTemplate = (template: string, variables: Record<string, string | undefined> = {}) =>
+    replaceTemplateVars(template, { ...variables, locale })
 
   if (segments.length > 3) notFound()
 
@@ -182,15 +324,22 @@ export default async function CountryServiceCategoryPage({ params, searchParams 
         getBusinesses({
           searchParams: resolvedSearchParams,
           serviceCategory: serviceConfig.value,
+          locale,
         }),
-        getFilterOptions(),
+        getFilterOptions(locale),
       ])
 
     return (
       <>
         <DarkHero
-          title={`${serviceConfig.label} in ${country.name}`}
-          description={`Browse providers offering ${serviceConfig.label.toLowerCase()} in ${country.name}.`}
+          title={applyTemplate('{service} in {country}', {
+            service: serviceConfig.label,
+            country: country.name,
+          })}
+          description={applyTemplate('Browse providers offering {service} in {country}.', {
+            service: serviceConfig.label.toLowerCase(),
+            country: country.name,
+          })}
           meta={`${totalDocs} provider${totalDocs !== 1 ? 's' : ''} found`}
           breadcrumbs={[
             { label: 'Home', href: '/' },
@@ -243,9 +392,9 @@ export default async function CountryServiceCategoryPage({ params, searchParams 
 
   if (segments.length === 1) {
     const [location, practiceArea, business] = await Promise.all([
-      getLocationBySlug(s1),
-      getPracticeAreaBySlug(s1),
-      getBusinessBySlug(s1),
+      getLocationBySlug(s1, locale),
+      getPracticeAreaBySlug(s1, locale),
+      getBusinessBySlug(s1, { locale }),
     ])
 
     if (location) {
@@ -255,15 +404,26 @@ export default async function CountryServiceCategoryPage({ params, searchParams 
             locationId: location.id,
             searchParams: resolvedSearchParams,
             serviceCategory: serviceConfig.value,
+            locale,
           }),
-          getFilterOptions(),
+          getFilterOptions(locale),
         ])
 
       return (
         <>
           <DarkHero
-            title={`${serviceConfig.label} in ${location.name}`}
-            description={`Browse ${serviceConfig.label.toLowerCase()} providers in ${location.name}, ${country.name}.`}
+            title={applyTemplate('{service} in {city}', {
+              service: serviceConfig.label,
+              city: location.name,
+            })}
+            description={applyTemplate(
+              'Browse {service} providers in {city}, {country}.',
+              {
+                service: serviceConfig.label.toLowerCase(),
+                city: location.name,
+                country: country.name,
+              },
+            )}
             meta={`${totalDocs} provider${totalDocs !== 1 ? 's' : ''} found`}
             breadcrumbs={[
               { label: 'Home', href: '/' },
@@ -325,15 +485,27 @@ export default async function CountryServiceCategoryPage({ params, searchParams 
             practiceAreaId: practiceArea.id,
             searchParams: resolvedSearchParams,
             serviceCategory: serviceConfig.value,
+            locale,
           }),
-          getFilterOptions(),
+          getFilterOptions(locale),
         ])
 
       return (
         <>
           <DarkHero
-            title={`${practiceArea.name} ${serviceConfig.label} in ${country.name}`}
-            description={`Find providers in ${country.name} offering ${serviceConfig.label.toLowerCase()} for ${practiceArea.name.toLowerCase()}.`}
+            title={applyTemplate('{practiceArea} {service} in {country}', {
+              practiceArea: practiceArea.name,
+              service: serviceConfig.label,
+              country: country.name,
+            })}
+            description={applyTemplate(
+              'Find providers in {country} offering {service} for {practiceArea}.',
+              {
+                country: country.name,
+                service: serviceConfig.label.toLowerCase(),
+                practiceArea: practiceArea.name.toLowerCase(),
+              },
+            )}
             meta={`${totalDocs} provider${totalDocs !== 1 ? 's' : ''} found`}
             breadcrumbs={[
               { label: 'Home', href: '/' },
@@ -396,9 +568,9 @@ export default async function CountryServiceCategoryPage({ params, searchParams 
   }
 
   if (segments.length === 2) {
-    const location = await getLocationBySlug(s1)
+    const location = await getLocationBySlug(s1, locale)
     if (location) {
-      const practiceArea = await getPracticeAreaBySlug(s2)
+      const practiceArea = await getPracticeAreaBySlug(s2, locale)
       if (!practiceArea) notFound()
 
       const { firms, totalPages, currentPage, totalDocs, languageCounts, sortParam } =
@@ -407,13 +579,26 @@ export default async function CountryServiceCategoryPage({ params, searchParams 
           practiceAreaId: practiceArea.id,
           searchParams: resolvedSearchParams,
           serviceCategory: serviceConfig.value,
+          locale,
         })
 
       return (
         <>
           <DarkHero
-            title={`${practiceArea.name} ${serviceConfig.label} in ${location.name}`}
-            description={`Find providers in ${location.name}, ${country.name} offering ${serviceConfig.label.toLowerCase()} for ${practiceArea.name.toLowerCase()}.`}
+            title={applyTemplate('{practiceArea} {service} in {city}', {
+              practiceArea: practiceArea.name,
+              service: serviceConfig.label,
+              city: location.name,
+            })}
+            description={applyTemplate(
+              'Find providers in {city}, {country} offering {service} for {practiceArea}.',
+              {
+                city: location.name,
+                country: country.name,
+                service: serviceConfig.label.toLowerCase(),
+                practiceArea: practiceArea.name.toLowerCase(),
+              },
+            )}
             meta={`${totalDocs} provider${totalDocs !== 1 ? 's' : ''} found`}
             breadcrumbs={[
               { label: 'Home', href: '/' },
@@ -460,7 +645,7 @@ export default async function CountryServiceCategoryPage({ params, searchParams 
       )
     }
 
-    const practiceArea = await getPracticeAreaBySlug(s1)
+    const practiceArea = await getPracticeAreaBySlug(s1, locale)
     if (!practiceArea) notFound()
 
     const q = slugToQuery(s2)
@@ -470,14 +655,28 @@ export default async function CountryServiceCategoryPage({ params, searchParams 
         keyword: q,
         searchParams: resolvedSearchParams,
         serviceCategory: serviceConfig.value,
+        locale,
       },
     )
 
     return (
       <>
         <DarkHero
-          title={`${q} ${practiceArea.name} ${serviceConfig.label} in ${country.name}`}
-          description={`Browse providers in ${country.name} offering ${serviceConfig.label.toLowerCase()} for ${practiceArea.name.toLowerCase()} and ${q}.`}
+          title={applyTemplate('{service} {practiceArea} {category} in {country}', {
+            service: q,
+            practiceArea: practiceArea.name,
+            category: serviceConfig.label,
+            country: country.name,
+          })}
+          description={applyTemplate(
+            'Browse providers in {country} offering {category} for {practiceArea} and {service}.',
+            {
+              country: country.name,
+              category: serviceConfig.label.toLowerCase(),
+              practiceArea: practiceArea.name.toLowerCase(),
+              service: q,
+            },
+          )}
           meta={`${totalDocs} provider${totalDocs !== 1 ? 's' : ''} found`}
           breadcrumbs={[
             { label: 'Home', href: '/' },
@@ -519,7 +718,10 @@ export default async function CountryServiceCategoryPage({ params, searchParams 
   }
 
   if (segments.length === 3) {
-    const [location, practiceArea] = await Promise.all([getLocationBySlug(s1), getPracticeAreaBySlug(s2)])
+    const [location, practiceArea] = await Promise.all([
+      getLocationBySlug(s1, locale),
+      getPracticeAreaBySlug(s2, locale),
+    ])
     if (!location || !practiceArea) notFound()
 
     const q = slugToQuery(s3)
@@ -530,14 +732,28 @@ export default async function CountryServiceCategoryPage({ params, searchParams 
         keyword: q,
         searchParams: resolvedSearchParams,
         serviceCategory: serviceConfig.value,
+        locale,
       },
     )
 
     return (
       <>
         <DarkHero
-          title={`${q} ${practiceArea.name} ${serviceConfig.label} in ${location.name}`}
-          description={`Browse providers in ${location.name} offering ${serviceConfig.label.toLowerCase()} for ${practiceArea.name.toLowerCase()} and ${q}.`}
+          title={applyTemplate('{service} {practiceArea} {category} in {city}', {
+            service: q,
+            practiceArea: practiceArea.name,
+            category: serviceConfig.label,
+            city: location.name,
+          })}
+          description={applyTemplate(
+            'Browse providers in {city} offering {category} for {practiceArea} and {service}.',
+            {
+              city: location.name,
+              category: serviceConfig.label.toLowerCase(),
+              practiceArea: practiceArea.name.toLowerCase(),
+              service: q,
+            },
+          )}
           meta={`${totalDocs} provider${totalDocs !== 1 ? 's' : ''} found`}
           breadcrumbs={[
             { label: 'Home', href: '/' },

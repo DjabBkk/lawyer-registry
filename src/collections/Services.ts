@@ -21,6 +21,7 @@ export const Services: CollectionConfig = {
     {
       name: 'name',
       type: 'text',
+      localized: true,
       required: true,
     },
     {
@@ -61,15 +62,18 @@ export const Services: CollectionConfig = {
     {
       name: 'shortDescription',
       type: 'textarea',
+      localized: true,
       maxLength: 200,
     },
     {
       name: 'seoTitleTemplate',
       type: 'text',
+      localized: true,
     },
     {
       name: 'seoDescriptionTemplate',
       type: 'textarea',
+      localized: true,
       maxLength: 160,
     },
     {

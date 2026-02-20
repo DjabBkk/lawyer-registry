@@ -53,14 +53,24 @@ const appendAndCondition = (where: Record<string, unknown>, condition: Record<st
   where.and = [...existing, condition]
 }
 
-export async function getPracticeAreaBySlug(slug: string) {
+const normalizeLocale = (locale?: string): 'en' | 'th' | 'zh' => {
+  if (locale === 'en' || locale === 'th' || locale === 'zh') {
+    return locale
+  }
+
+  return 'en'
+}
+
+export async function getPracticeAreaBySlug(slug: string, locale?: string) {
   try {
     const payload = await getPayloadClient()
+    const queryLocale = normalizeLocale(locale)
     const { docs } = await payload.find({
       collection: 'practice-areas',
       where: { slug: { equals: slug } },
       limit: 1,
       depth: 0,
+      locale: queryLocale,
     })
 
     return docs[0] || null
@@ -70,14 +80,16 @@ export async function getPracticeAreaBySlug(slug: string) {
   }
 }
 
-export async function getLocationBySlug(slug: string) {
+export async function getLocationBySlug(slug: string, locale?: string) {
   try {
     const payload = await getPayloadClient()
+    const queryLocale = normalizeLocale(locale)
     const { docs } = await payload.find({
       collection: 'locations',
       where: { slug: { equals: slug } },
       limit: 1,
       depth: 0,
+      locale: queryLocale,
     })
 
     return docs[0] || null
@@ -89,10 +101,11 @@ export async function getLocationBySlug(slug: string) {
 
 export async function getBusinessBySlug(
   slug: string,
-  options: { businessTypes?: BusinessType[] } = {},
+  options: { businessTypes?: BusinessType[]; locale?: string } = {},
 ) {
   try {
     const payload = await getPayloadClient()
+    const queryLocale = normalizeLocale(options.locale)
     const where: Record<string, unknown> = {}
 
     appendAndCondition(where, { slug: { equals: slug } })
@@ -107,6 +120,7 @@ export async function getBusinessBySlug(
       where: where as any,
       limit: 1,
       depth: 1,
+      locale: queryLocale,
     })
 
     return docs[0] || null
@@ -116,13 +130,14 @@ export async function getBusinessBySlug(
   }
 }
 
-export async function getFilterOptions() {
+export async function getFilterOptions(locale?: string) {
   try {
     const payload = await getPayloadClient()
+    const queryLocale = normalizeLocale(locale)
 
     const [practiceAreas, locations] = await Promise.all([
-      payload.find({ collection: 'practice-areas', limit: 200, sort: 'name' }),
-      payload.find({ collection: 'locations', limit: 200, sort: 'name' }),
+      payload.find({ collection: 'practice-areas', limit: 200, sort: 'name', locale: queryLocale }),
+      payload.find({ collection: 'locations', limit: 200, sort: 'name', locale: queryLocale }),
     ])
 
     return {
@@ -145,6 +160,7 @@ export async function getBusinesses({
   searchParams,
   businessTypes,
   serviceCategory,
+  locale,
 }: {
   practiceAreaId?: number
   locationId?: number
@@ -152,8 +168,10 @@ export async function getBusinesses({
   searchParams: DirectorySearchParams
   businessTypes?: BusinessType[]
   serviceCategory?: ServiceCategory
+  locale?: string
 }) {
   const payload = await getPayloadClient()
+  const queryLocale = normalizeLocale(locale)
 
   const page = Number(searchParams.page) || 1
   const limit = 12
@@ -174,6 +192,7 @@ export async function getBusinesses({
           where: { slug: { in: selectedPracticeAreaSlugs } },
           limit: selectedPracticeAreaSlugs.length,
           depth: 0,
+          locale: queryLocale,
         })
       : Promise.resolve({ docs: [] as Array<{ id: number }> }),
     selectedLocationSlugs.length
@@ -182,6 +201,7 @@ export async function getBusinesses({
           where: { slug: { in: selectedLocationSlugs } },
           limit: selectedLocationSlugs.length,
           depth: 0,
+          locale: queryLocale,
         })
       : Promise.resolve({ docs: [] as Array<{ id: number }> }),
   ])
@@ -311,6 +331,7 @@ export async function getBusinesses({
     page: 1,
     depth: 0,
     sort: '-featured',
+    locale: queryLocale,
     select: {
       languages: true,
     } as any,
@@ -347,6 +368,7 @@ export async function getBusinesses({
     page,
     depth: 1,
     sort,
+    locale: queryLocale,
   })
 
   return {

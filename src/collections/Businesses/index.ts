@@ -53,6 +53,7 @@ export const Businesses: CollectionConfig = {
             {
               name: 'name',
               type: 'text',
+              localized: true,
               required: true,
             },
             {
@@ -104,15 +105,18 @@ export const Businesses: CollectionConfig = {
             {
               name: 'description',
               type: 'richText',
+              localized: true,
             },
             {
               name: 'shortDescription',
               type: 'textarea',
+              localized: true,
               maxLength: 200,
             },
             {
               name: 'tagline',
               type: 'text',
+              localized: true,
               maxLength: 150,
               admin: {
                 description:
@@ -159,11 +163,13 @@ export const Businesses: CollectionConfig = {
                 {
                   name: 'label',
                   type: 'text',
+                  localized: true,
                   required: true,
                 },
                 {
                   name: 'value',
                   type: 'text',
+                  localized: true,
                   required: true,
                 },
               ],
@@ -199,6 +205,7 @@ export const Businesses: CollectionConfig = {
             {
               name: 'address',
               type: 'textarea',
+              localized: true,
             },
             {
               name: 'googleMapsUrl',
@@ -509,11 +516,13 @@ export const Businesses: CollectionConfig = {
                 {
                   name: 'question',
                   type: 'text',
+                  localized: true,
                   required: true,
                 },
                 {
                   name: 'answer',
                   type: 'textarea',
+                  localized: true,
                   required: true,
                 },
               ],
@@ -854,6 +863,7 @@ export const Businesses: CollectionConfig = {
                 {
                   name: 'bio',
                   type: 'textarea',
+                  localized: true,
                 },
                 {
                   name: 'email',
