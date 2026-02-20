@@ -4,6 +4,7 @@ import type { Endpoint } from 'payload'
 import { businesses } from './data/businesses'
 import { locations } from './data/locations'
 import { practiceAreas } from './data/practiceAreas'
+import { services } from './data/services'
 import { toKebabCase } from '@/utilities/toKebabCase'
 
 const ensureAuthenticated = (user: unknown) => {
@@ -13,9 +14,14 @@ const ensureAuthenticated = (user: unknown) => {
 }
 
 const getCounts = async (req: Parameters<Endpoint['handler']>[0]) => {
-  const [practiceAreasResult, locationsResult, businessesResult] = await Promise.all([
+  const [practiceAreasResult, servicesResult, locationsResult, businessesResult] = await Promise.all([
     req.payload.find({
       collection: 'practice-areas',
+      depth: 0,
+      limit: 0,
+    }),
+    req.payload.find({
+      collection: 'services',
       depth: 0,
       limit: 0,
     }),
@@ -33,9 +39,23 @@ const getCounts = async (req: Parameters<Endpoint['handler']>[0]) => {
 
   return {
     practiceAreas: practiceAreasResult.totalDocs,
+    services: servicesResult.totalDocs,
     locations: locationsResult.totalDocs,
     businesses: businessesResult.totalDocs,
   }
+}
+
+const practiceAreaAliases: Record<string, string> = {
+  'Corporate Law': 'Corporate & Business Law',
+  'Mergers & Acquisitions': 'Corporate & Business Law',
+  'Employment Law': 'Employment & Labor Law',
+  'Wills & Estate Planning': 'Estate Planning & Probate',
+  'Contract Law': 'Civil Litigation & Dispute Resolution',
+  'International Trade': 'International Trade Law',
+  'Entertainment Law': 'Entertainment & Media Law',
+  'Intellectual Property': 'Intellectual Property Law',
+  'Personal Injury': 'Personal Injury Law',
+  'Banking & Finance': 'Banking & Finance Law',
 }
 
 const responseTimeOptions = [
@@ -438,7 +458,7 @@ export const seedStatusEndpoint: Endpoint = {
     const counts = await getCounts(req)
 
     return Response.json({
-      seeded: counts.practiceAreas > 0 || counts.locations > 0 || counts.businesses > 0,
+      seeded: counts.practiceAreas > 0 || counts.services > 0 || counts.locations > 0 || counts.businesses > 0,
       counts,
     })
   },
@@ -451,7 +471,7 @@ export const seedEndpoint: Endpoint = {
     ensureAuthenticated(req.user)
 
     const counts = await getCounts(req)
-    if (counts.practiceAreas > 0 || counts.locations > 0 || counts.businesses > 0) {
+    if (counts.practiceAreas > 0 || counts.services > 0 || counts.locations > 0 || counts.businesses > 0) {
       return Response.json(
         {
           error: 'Seed data already exists. Clear the database before seeding again.',
@@ -473,6 +493,7 @@ export const seedEndpoint: Endpoint = {
           icon: item.icon,
           featured: item.featured,
           featuredOrder: item.featuredOrder,
+          tier: item.tier,
           seoTitle: item.seoTitle,
           seoDescription: item.seoDescription,
         },
@@ -504,19 +525,48 @@ export const seedEndpoint: Endpoint = {
     const practiceAreaIdByName = new Map(createdPracticeAreas.map((doc) => [doc.name, doc.id]))
     const locationIdByName = new Map(createdLocations.map((doc) => [doc.name, doc.id]))
 
+    const createdServices = []
+    for (const item of services) {
+      const practiceAreaId = practiceAreaIdByName.get(item.practiceAreaName)
+      if (!practiceAreaId) {
+        throw new APIError(
+          `Practice area not found for service "${item.name}" (${item.slug}): ${item.practiceAreaName}`,
+          400,
+        )
+      }
+
+      const created = await req.payload.create({
+        collection: 'services',
+        draft: false,
+        data: {
+          name: item.name,
+          slug: item.slug,
+          practiceArea: practiceAreaId,
+          shortDescription: item.shortDescription,
+          seoTitleTemplate: item.seoTitleTemplate,
+          tier: item.tier,
+          featured: false,
+        },
+        req,
+      })
+      createdServices.push(created)
+    }
+
     const getPracticeAreaIds = (names: string[]) =>
       names.map((name) => {
-        const id = practiceAreaIdByName.get(name)
+        const canonicalName = practiceAreaAliases[name] || name
+        const id = practiceAreaIdByName.get(canonicalName)
         if (!id) {
-          throw new APIError(`Practice area not found: ${name}`, 400)
+          throw new APIError(`Practice area not found: ${name} (mapped as ${canonicalName})`, 400)
         }
         return id
       })
 
     const getPracticeAreaId = (name: string) => {
-      const id = practiceAreaIdByName.get(name)
+      const canonicalName = practiceAreaAliases[name] || name
+      const id = practiceAreaIdByName.get(canonicalName)
       if (!id) {
-        throw new APIError(`Practice area not found: ${name}`, 400)
+        throw new APIError(`Practice area not found: ${name} (mapped as ${canonicalName})`, 400)
       }
       return id
     }
@@ -667,6 +717,7 @@ export const seedEndpoint: Endpoint = {
       counts: updatedCounts,
       created: {
         practiceAreas: createdPracticeAreas.length,
+        services: createdServices.length,
         locations: createdLocations.length,
         businesses: createdBusinesses.length,
       },

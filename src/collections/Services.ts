@@ -4,8 +4,8 @@ import { toKebabCase } from '@/utilities/toKebabCase'
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 
-export const PracticeAreas: CollectionConfig = {
-  slug: 'practice-areas',
+export const Services: CollectionConfig = {
+  slug: 'services',
   access: {
     create: authenticated,
     delete: authenticated,
@@ -15,7 +15,7 @@ export const PracticeAreas: CollectionConfig = {
   admin: {
     group: 'Law Firm Registry',
     useAsTitle: 'name',
-    defaultColumns: ['name', 'slug', 'featured', 'updatedAt'],
+    defaultColumns: ['name', 'practiceArea', 'slug', 'tier', 'updatedAt'],
   },
   fields: [
     {
@@ -50,30 +50,13 @@ export const PracticeAreas: CollectionConfig = {
       unique: true,
     },
     {
-      name: 'tier',
-      type: 'select',
-      defaultValue: 'tier-2',
+      name: 'practiceArea',
+      type: 'relationship',
+      relationTo: 'practice-areas',
+      required: true,
       admin: {
         position: 'sidebar',
       },
-      options: [
-        {
-          value: 'tier-1',
-          label: 'Tier 1 — Featured (homepage)',
-        },
-        {
-          value: 'tier-2',
-          label: 'Tier 2 — Secondary',
-        },
-        {
-          value: 'tier-3',
-          label: 'Tier 3 — Specialist',
-        },
-      ],
-    },
-    {
-      name: 'description',
-      type: 'richText',
     },
     {
       name: 'shortDescription',
@@ -81,26 +64,33 @@ export const PracticeAreas: CollectionConfig = {
       maxLength: 200,
     },
     {
-      name: 'icon',
+      name: 'seoTitleTemplate',
       type: 'text',
+    },
+    {
+      name: 'seoDescriptionTemplate',
+      type: 'textarea',
+      maxLength: 160,
+    },
+    {
+      name: 'tier',
+      type: 'select',
+      defaultValue: 'primary',
+      options: [
+        {
+          value: 'primary',
+          label: 'Primary — shown prominently in firm profile',
+        },
+        {
+          value: 'secondary',
+          label: 'Secondary — shown in full service list',
+        },
+      ],
     },
     {
       name: 'featured',
       type: 'checkbox',
       defaultValue: false,
-    },
-    {
-      name: 'featuredOrder',
-      type: 'number',
-      min: 0,
-    },
-    {
-      name: 'seoTitle',
-      type: 'text',
-    },
-    {
-      name: 'seoDescription',
-      type: 'textarea',
     },
   ],
   timestamps: true,

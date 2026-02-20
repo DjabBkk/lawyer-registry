@@ -11,6 +11,7 @@ import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { PracticeAreas } from './collections/PracticeAreas'
+import { Services } from './collections/Services'
 import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
@@ -80,7 +81,7 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URL || '',
     },
   }),
-  collections: [Pages, Posts, Categories, Businesses, PracticeAreas, Locations, Media, Users],
+  collections: [Pages, Posts, Categories, Businesses, PracticeAreas, Services, Locations, Media, Users],
   cors: [getServerSideURL()].filter(Boolean),
   endpoints: [seedStatusEndpoint, seedEndpoint, clearSeedEndpoint, createFirstUserEndpoint, resetUserPasswordEndpoint, listUsersEndpoint, updateUserEndpoint, unlockUserEndpoint, importBusinessRowEndpoint],
   globals: [Header, Footer],

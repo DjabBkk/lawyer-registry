@@ -6,6 +6,7 @@ import './index.scss'
 
 type SeedCounts = {
   practiceAreas: number
+  services: number
   locations: number
   businesses: number
 }
@@ -17,6 +18,7 @@ type SeedStatus = {
 
 const emptyCounts: SeedCounts = {
   practiceAreas: 0,
+  services: 0,
   locations: 0,
   businesses: 0,
 }
@@ -73,7 +75,7 @@ const SeedButton: React.FC = () => {
   }
 
   const handleClear = async () => {
-    if (!window.confirm('This will remove all law firm, location, and practice area data. Continue?')) {
+    if (!window.confirm('This will remove all law firm, service, location, and practice area data. Continue?')) {
       return
     }
 
@@ -137,7 +139,7 @@ const SeedButton: React.FC = () => {
       <p>
         {status.seeded ? 'Database contains seed data.' : 'Database is empty.'} Count:{' '}
         {status.counts.businesses} Law Firms, {status.counts.practiceAreas} Practice Areas,{' '}
-        {status.counts.locations} Locations.
+        {status.counts.services} Services, {status.counts.locations} Locations.
       </p>
       <div className="seed-panel__actions">
         <button className="seedButton" disabled={isBusy} onClick={handleSeed} type="button">

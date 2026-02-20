@@ -72,6 +72,7 @@ export interface Config {
     categories: Category;
     businesses: Business;
     'practice-areas': PracticeArea;
+    services: Service;
     locations: Location;
     media: Media;
     users: User;
@@ -97,6 +98,7 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     businesses: BusinessesSelect<false> | BusinessesSelect<true>;
     'practice-areas': PracticeAreasSelect<false> | PracticeAreasSelect<true>;
+    services: ServicesSelect<false> | ServicesSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -482,6 +484,10 @@ export interface Business {
          */
         practiceArea: number | PracticeArea;
         /**
+         * Select the specific services your firm offers within this practice area. Users can click these services to find other firms offering the same service.
+         */
+        offeredServices?: (number | Service)[] | null;
+        /**
          * Brief description of what your firm does in this area. 1-2 sentences.
          */
         description?: string | null;
@@ -693,6 +699,10 @@ export interface Business {
     image?: (number | null) | Media;
     description?: string | null;
   };
+  /**
+   * Auto-populated from practice area details. Used for filtering.
+   */
+  allOfferedServices?: (number | Service)[] | null;
   businessType: 'law-firm' | 'lawyer' | 'accounting-firm' | 'accountant';
   serviceCategories?: ('legal' | 'accounting' | 'visa-services' | 'company-registration' | 'tax' | 'audit')[] | null;
   claimToken?: string | null;
@@ -715,6 +725,7 @@ export interface PracticeArea {
   id: number;
   name: string;
   slug: string;
+  tier?: ('tier-1' | 'tier-2' | 'tier-3') | null;
   description?: {
     root: {
       type: string;
@@ -736,6 +747,23 @@ export interface PracticeArea {
   featuredOrder?: number | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services".
+ */
+export interface Service {
+  id: number;
+  name: string;
+  slug: string;
+  practiceArea: number | PracticeArea;
+  shortDescription?: string | null;
+  seoTitleTemplate?: string | null;
+  seoDescriptionTemplate?: string | null;
+  tier?: ('primary' | 'secondary') | null;
+  featured?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1151,6 +1179,10 @@ export interface PayloadLockedDocument {
         value: number | PracticeArea;
       } | null)
     | ({
+        relationTo: 'services';
+        value: number | Service;
+      } | null)
+    | ({
         relationTo: 'locations';
         value: number | Location;
       } | null)
@@ -1331,6 +1363,7 @@ export interface BusinessesSelect<T extends boolean = true> {
     | T
     | {
         practiceArea?: T;
+        offeredServices?: T;
         description?: T;
         priceMin?: T;
         priceMax?: T;
@@ -1471,6 +1504,7 @@ export interface BusinessesSelect<T extends boolean = true> {
         image?: T;
         description?: T;
       };
+  allOfferedServices?: T;
   businessType?: T;
   serviceCategories?: T;
   claimToken?: T;
@@ -1489,6 +1523,7 @@ export interface BusinessesSelect<T extends boolean = true> {
 export interface PracticeAreasSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
+  tier?: T;
   description?: T;
   shortDescription?: T;
   icon?: T;
@@ -1496,6 +1531,22 @@ export interface PracticeAreasSelect<T extends boolean = true> {
   featuredOrder?: T;
   seoTitle?: T;
   seoDescription?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services_select".
+ */
+export interface ServicesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  practiceArea?: T;
+  shortDescription?: T;
+  seoTitleTemplate?: T;
+  seoDescriptionTemplate?: T;
+  tier?: T;
+  featured?: T;
   updatedAt?: T;
   createdAt?: T;
 }

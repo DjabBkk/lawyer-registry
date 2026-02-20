@@ -303,6 +303,16 @@ export const Businesses: CollectionConfig = {
                   },
                 },
                 {
+                  name: 'offeredServices',
+                  type: 'relationship',
+                  relationTo: 'services',
+                  hasMany: true,
+                  admin: {
+                    description:
+                      'Select the specific services your firm offers within this practice area. Users can click these services to find other firms offering the same service.',
+                  },
+                },
+                {
                   name: 'description',
                   type: 'textarea',
                   maxLength: 500,
@@ -881,6 +891,17 @@ export const Businesses: CollectionConfig = {
           ],
         },
       ],
+    },
+    {
+      name: 'allOfferedServices',
+      type: 'relationship',
+      relationTo: 'services',
+      hasMany: true,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Auto-populated from practice area details. Used for filtering.',
+      },
     },
     {
       name: 'businessType',

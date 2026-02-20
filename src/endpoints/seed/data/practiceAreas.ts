@@ -4,215 +4,286 @@ export type PracticeAreaSeed = {
   icon: string
   featured: boolean
   featuredOrder?: number
+  tier: 'tier-1' | 'tier-2' | 'tier-3'
   seoTitle?: string
   seoDescription?: string
 }
 
 export const practiceAreas: PracticeAreaSeed[] = [
   {
-    name: 'Criminal Law',
-    shortDescription: 'Defense, investigations, and criminal litigation support.',
-    icon: 'scale',
-    featured: true,
-    featuredOrder: 1,
-    seoTitle: 'Criminal Lawyers in Thailand',
-    seoDescription: 'Find trusted criminal defense lawyers across Thailand.',
-  },
-  {
     name: 'Family Law',
-    shortDescription: 'Divorce, custody, and family-related legal matters.',
+    shortDescription:
+      'Guidance for divorce, custody, child support, adoption, and family rights matters in Thailand.',
     icon: 'users',
     featured: true,
-    featuredOrder: 2,
-    seoTitle: 'Family Lawyers in Thailand',
-    seoDescription: 'Experienced family law attorneys in Thailand.',
+    featuredOrder: 1,
+    tier: 'tier-1',
+    seoTitle: 'Family Law Lawyers in Thailand | Find a Family Law Attorney',
+    seoDescription:
+      'Find trusted family law lawyers in Thailand for divorce, custody, support, and adoption matters with clear, practical legal guidance.',
   },
   {
     name: 'Immigration Law',
-    shortDescription: 'Visas, work permits, residency, and citizenship guidance.',
+    shortDescription:
+      'Support for visas, work permits, residency, citizenship, and immigration compliance across Thailand.',
     icon: 'passport',
     featured: true,
-    featuredOrder: 3,
-    seoTitle: 'Immigration Lawyers in Thailand',
-    seoDescription: 'Expert immigration lawyers for visas and permits.',
+    featuredOrder: 2,
+    tier: 'tier-1',
+    seoTitle: 'Immigration Law Lawyers in Thailand | Find a Immigration Law Attorney',
+    seoDescription:
+      'Compare immigration law lawyers in Thailand for visa applications, work permits, residency pathways, and compliance support.',
   },
   {
     name: 'Real Estate Law',
-    shortDescription: 'Property transactions, leases, and due diligence.',
+    shortDescription:
+      'Legal help with purchases, leases, title checks, ownership structures, and property disputes.',
     icon: 'building',
     featured: true,
-    featuredOrder: 4,
-    seoTitle: 'Real Estate Lawyers in Thailand',
-    seoDescription: 'Property and real estate legal services across Thailand.',
+    featuredOrder: 3,
+    tier: 'tier-1',
+    seoTitle: 'Real Estate Law Lawyers in Thailand | Find a Real Estate Law Attorney',
+    seoDescription:
+      'Find real estate law lawyers in Thailand for property purchases, lease contracts, due diligence, and ownership structuring advice.',
   },
   {
-    name: 'Corporate Law',
-    shortDescription: 'Company formation, governance, and compliance.',
+    name: 'Corporate & Business Law',
+    shortDescription:
+      'Company setup, governance, compliance, contracts, and strategic legal support for business growth.',
     icon: 'briefcase',
     featured: true,
+    featuredOrder: 4,
+    tier: 'tier-1',
+    seoTitle: 'Corporate & Business Law Lawyers in Thailand | Find a Corporate & Business Law Attorney',
+    seoDescription:
+      'Connect with corporate and business law lawyers in Thailand for incorporation, compliance, contracts, and strategic transactions.',
+  },
+  {
+    name: 'Criminal Law',
+    shortDescription:
+      'Defense representation for investigations, charges, bail, trial proceedings, and criminal appeals.',
+    icon: 'shield',
+    featured: true,
     featuredOrder: 5,
-    seoTitle: 'Corporate Lawyers in Thailand',
-    seoDescription: 'Corporate and business law firms in Thailand.',
+    tier: 'tier-1',
+    seoTitle: 'Criminal Law Lawyers in Thailand | Find a Criminal Law Attorney',
+    seoDescription:
+      'Find experienced criminal law lawyers in Thailand for police representation, defense strategy, bail applications, and court advocacy.',
   },
   {
-    name: 'Mergers & Acquisitions',
-    shortDescription: 'M&A strategy, structuring, and transaction support.',
-    icon: 'merge',
-    featured: false,
-    seoTitle: 'M&A Lawyers in Thailand',
-    seoDescription: 'Mergers and acquisitions legal advisory services.',
-  },
-  {
-    name: 'Tax Law',
-    shortDescription: 'Tax planning, compliance, and dispute resolution.',
-    icon: 'calculator',
-    featured: false,
-    seoTitle: 'Tax Lawyers in Thailand',
-    seoDescription: 'Tax advisory and dispute resolution lawyers.',
-  },
-  {
-    name: 'Intellectual Property',
-    shortDescription: 'Trademarks, patents, copyrights, and licensing.',
-    icon: 'lightbulb',
+    name: 'Employment & Labor Law',
+    shortDescription:
+      'Advice on employment contracts, termination, compensation, discrimination, and labor court matters.',
+    icon: 'badge-check',
     featured: true,
     featuredOrder: 6,
-    seoTitle: 'Intellectual Property Lawyers in Thailand',
-    seoDescription: 'Protect your IP with trusted legal experts.',
+    tier: 'tier-1',
+    seoTitle: 'Employment & Labor Law Lawyers in Thailand | Find a Employment & Labor Law Attorney',
+    seoDescription:
+      'Compare employment and labor law lawyers in Thailand for workplace disputes, contracts, severance claims, and employer compliance.',
   },
   {
-    name: 'Employment Law',
-    shortDescription: 'Labor disputes, contracts, and compliance.',
-    icon: 'id-card',
-    featured: false,
-    seoTitle: 'Employment Lawyers in Thailand',
-    seoDescription: 'Employment and labor law specialists in Thailand.',
+    name: 'Estate Planning & Probate',
+    shortDescription:
+      'Planning for wills, probate, inheritance, trusts, and long-term asset protection arrangements.',
+    icon: 'file-heart',
+    featured: true,
+    featuredOrder: 7,
+    tier: 'tier-1',
+    seoTitle: 'Estate Planning & Probate Lawyers in Thailand | Find a Estate Planning & Probate Attorney',
+    seoDescription:
+      'Find estate planning and probate lawyers in Thailand for wills, inheritance administration, trust structures, and succession planning.',
   },
   {
-    name: 'Banking & Finance',
-    shortDescription: 'Financing, lending, and regulatory matters.',
-    icon: 'bank',
+    name: 'Civil Litigation & Dispute Resolution',
+    shortDescription:
+      'Representation for civil claims, contract disputes, debt recovery, and courtroom litigation strategy.',
+    icon: 'scale',
     featured: false,
-    seoTitle: 'Banking & Finance Lawyers in Thailand',
-    seoDescription: 'Legal advisory for financial transactions and banking.',
-  },
-  {
-    name: 'Insurance Law',
-    shortDescription: 'Claims, coverage disputes, and policy review.',
-    icon: 'shield',
-    featured: false,
-    seoTitle: 'Insurance Lawyers in Thailand',
-    seoDescription: 'Insurance claims and coverage dispute experts.',
-  },
-  {
-    name: 'Personal Injury',
-    shortDescription: 'Accident claims and compensation recovery.',
-    icon: 'first-aid',
-    featured: false,
-    seoTitle: 'Personal Injury Lawyers in Thailand',
-    seoDescription: 'Personal injury legal support across Thailand.',
-  },
-  {
-    name: 'Medical Malpractice',
-    shortDescription: 'Healthcare negligence and malpractice claims.',
-    icon: 'stethoscope',
-    featured: false,
-    seoTitle: 'Medical Malpractice Lawyers in Thailand',
-    seoDescription: 'Medical malpractice and negligence legal services.',
-  },
-  {
-    name: 'Construction Law',
-    shortDescription: 'Contracts, disputes, and project compliance.',
-    icon: 'hard-hat',
-    featured: false,
-    seoTitle: 'Construction Lawyers in Thailand',
-    seoDescription: 'Construction law and dispute resolution support.',
-  },
-  {
-    name: 'Environmental Law',
-    shortDescription: 'Regulatory compliance and environmental disputes.',
-    icon: 'leaf',
-    featured: false,
-    seoTitle: 'Environmental Lawyers in Thailand',
-    seoDescription: 'Environmental law guidance and compliance advisory.',
-  },
-  {
-    name: 'International Trade',
-    shortDescription: 'Cross-border trade, customs, and compliance.',
-    icon: 'globe',
-    featured: false,
-    seoTitle: 'International Trade Lawyers in Thailand',
-    seoDescription: 'International trade and customs legal support.',
-  },
-  {
-    name: 'Maritime Law',
-    shortDescription: 'Shipping, ports, and maritime disputes.',
-    icon: 'anchor',
-    featured: false,
-    seoTitle: 'Maritime Lawyers in Thailand',
-    seoDescription: 'Maritime and shipping law specialists.',
-  },
-  {
-    name: 'Aviation Law',
-    shortDescription: 'Airline regulation, leasing, and disputes.',
-    icon: 'plane',
-    featured: false,
-    seoTitle: 'Aviation Lawyers in Thailand',
-    seoDescription: 'Aviation law advisory and regulatory support.',
-  },
-  {
-    name: 'Entertainment Law',
-    shortDescription: 'Media contracts, talent agreements, and licensing.',
-    icon: 'film',
-    featured: false,
-    seoTitle: 'Entertainment Lawyers in Thailand',
-    seoDescription: 'Entertainment and media law services.',
-  },
-  {
-    name: 'Sports Law',
-    shortDescription: 'Athlete contracts, sponsorships, and disputes.',
-    icon: 'trophy',
-    featured: false,
-    seoTitle: 'Sports Lawyers in Thailand',
-    seoDescription: 'Sports law representation and advisory.',
+    tier: 'tier-2',
+    seoTitle:
+      'Civil Litigation & Dispute Resolution Lawyers in Thailand | Find a Civil Litigation & Dispute Resolution Attorney',
+    seoDescription:
+      'Find civil litigation and dispute resolution lawyers in Thailand for contract disputes, debt collection, claims management, and trial support.',
   },
   {
     name: 'Bankruptcy & Insolvency',
-    shortDescription: 'Restructuring, insolvency, and creditor support.',
-    icon: 'balance',
+    shortDescription:
+      'Support for restructuring, rehabilitation, liquidation, creditor rights, and insolvency proceedings.',
+    icon: 'landmark',
     featured: false,
-    seoTitle: 'Bankruptcy Lawyers in Thailand',
-    seoDescription: 'Insolvency and restructuring legal services.',
+    tier: 'tier-2',
+    seoTitle: 'Bankruptcy & Insolvency Lawyers in Thailand | Find a Bankruptcy & Insolvency Attorney',
+    seoDescription:
+      'Find bankruptcy and insolvency lawyers in Thailand for debt restructuring, business rehabilitation, liquidation, and creditor representation.',
   },
   {
-    name: 'Arbitration & Mediation',
-    shortDescription: 'Alternative dispute resolution and negotiations.',
-    icon: 'handshake',
+    name: 'Personal Injury Law',
+    shortDescription:
+      'Assistance with accident claims, injury compensation, liability disputes, and damages recovery.',
+    icon: 'heart-pulse',
     featured: false,
-    seoTitle: 'Arbitration & Mediation Lawyers in Thailand',
-    seoDescription: 'Dispute resolution through arbitration and mediation.',
+    tier: 'tier-2',
+    seoTitle: 'Personal Injury Law Lawyers in Thailand | Find a Personal Injury Law Attorney',
+    seoDescription:
+      'Compare personal injury law lawyers in Thailand for accident claims, liability disputes, compensation assessment, and settlement strategy.',
+  },
+  {
+    name: 'Medical Malpractice',
+    shortDescription:
+      'Legal recourse for negligence by healthcare providers, hospitals, and medical professionals.',
+    icon: 'stethoscope',
+    featured: false,
+    tier: 'tier-2',
+    seoTitle: 'Medical Malpractice Lawyers in Thailand | Find a Medical Malpractice Attorney',
+    seoDescription:
+      'Find medical malpractice lawyers in Thailand for misdiagnosis, surgical errors, hospital negligence, and compensation claims support.',
+  },
+  {
+    name: 'Intellectual Property Law',
+    shortDescription:
+      'Protection and enforcement of trademarks, patents, copyrights, trade secrets, and IP licenses.',
+    icon: 'lightbulb',
+    featured: false,
+    tier: 'tier-2',
+    seoTitle: 'Intellectual Property Law Lawyers in Thailand | Find a Intellectual Property Law Attorney',
+    seoDescription:
+      'Find intellectual property law lawyers in Thailand for trademark filing, patent strategy, IP licensing, and infringement enforcement.',
+  },
+  {
+    name: 'Tax Law',
+    shortDescription:
+      'Advisory for personal and corporate tax planning, VAT compliance, and tax disputes.',
+    icon: 'calculator',
+    featured: false,
+    tier: 'tier-2',
+    seoTitle: 'Tax Law Lawyers in Thailand | Find a Tax Law Attorney',
+    seoDescription:
+      'Compare tax law lawyers in Thailand for personal tax issues, corporate planning, VAT compliance, and tax dispute resolution.',
   },
   {
     name: 'Cybersecurity & Data Privacy',
-    shortDescription: 'Data protection, compliance, and breach response.',
-    icon: 'lock',
+    shortDescription:
+      'PDPA compliance, breach response, policy drafting, and data governance legal support.',
+    icon: 'shield-check',
     featured: false,
-    seoTitle: 'Data Privacy Lawyers in Thailand',
-    seoDescription: 'Cybersecurity and privacy law specialists.',
+    tier: 'tier-2',
+    seoTitle:
+      'Cybersecurity & Data Privacy Lawyers in Thailand | Find a Cybersecurity & Data Privacy Attorney',
+    seoDescription:
+      'Find cybersecurity and data privacy lawyers in Thailand for PDPA audits, breach response, and cross-border data transfer compliance.',
   },
   {
-    name: 'Wills & Estate Planning',
-    shortDescription: 'Wills, trusts, and succession planning.',
-    icon: 'file-text',
+    name: 'Notarial & Document Services',
+    shortDescription:
+      'Document notarization, legalization, affidavits, and certified paperwork for local and international use.',
+    icon: 'file-badge',
     featured: false,
-    seoTitle: 'Estate Planning Lawyers in Thailand',
-    seoDescription: 'Wills and estate planning legal services.',
+    tier: 'tier-2',
+    seoTitle:
+      'Notarial & Document Services Lawyers in Thailand | Find a Notarial & Document Services Attorney',
+    seoDescription:
+      'Find notarial and document services lawyers in Thailand for apostille, legalization, affidavits, and certified document preparation.',
   },
   {
-    name: 'Contract Law',
-    shortDescription: 'Drafting, review, and dispute resolution.',
-    icon: 'document',
+    name: 'Banking & Finance Law',
+    shortDescription:
+      'Counsel for lending, security, compliance, debt restructuring, and fintech-related transactions.',
+    icon: 'landmark',
     featured: false,
-    seoTitle: 'Contract Lawyers in Thailand',
-    seoDescription: 'Contract drafting and dispute resolution support.',
+    tier: 'tier-3',
+    seoTitle: 'Banking & Finance Law Lawyers in Thailand | Find a Banking & Finance Law Attorney',
+    seoDescription:
+      'Find banking and finance law lawyers in Thailand for loan agreements, regulatory compliance, restructuring, and fintech matters.',
+  },
+  {
+    name: 'Maritime Law',
+    shortDescription:
+      'Legal support for shipping contracts, cargo claims, vessel disputes, and maritime operations.',
+    icon: 'anchor',
+    featured: false,
+    tier: 'tier-3',
+    seoTitle: 'Maritime Law Lawyers in Thailand | Find a Maritime Law Attorney',
+    seoDescription:
+      'Find maritime law lawyers in Thailand for shipping contracts, cargo claims, vessel disputes, and seafarer rights matters.',
+  },
+  {
+    name: 'Construction Law',
+    shortDescription:
+      'Advisory on construction contracts, defects, project delays, zoning compliance, and disputes.',
+    icon: 'hammer',
+    featured: false,
+    tier: 'tier-3',
+    seoTitle: 'Construction Law Lawyers in Thailand | Find a Construction Law Attorney',
+    seoDescription:
+      'Compare construction law lawyers in Thailand for contract drafting, defect claims, project delays, and contractor dispute resolution.',
+  },
+  {
+    name: 'Insurance Law',
+    shortDescription:
+      'Representation for policy interpretation, claims disputes, and insurance liability matters.',
+    icon: 'shield',
+    featured: false,
+    tier: 'tier-3',
+    seoTitle: 'Insurance Law Lawyers in Thailand | Find a Insurance Law Attorney',
+    seoDescription:
+      'Find insurance law lawyers in Thailand for policy reviews, claims disputes, life insurance conflicts, and business interruption cases.',
+  },
+  {
+    name: 'Arbitration & Mediation',
+    shortDescription:
+      'Alternative dispute resolution for commercial conflicts, mediation, and arbitral enforcement.',
+    icon: 'handshake',
+    featured: false,
+    tier: 'tier-3',
+    seoTitle: 'Arbitration & Mediation Lawyers in Thailand | Find a Arbitration & Mediation Attorney',
+    seoDescription:
+      'Find arbitration and mediation lawyers in Thailand for commercial disputes, negotiated settlements, and arbitral award enforcement.',
+  },
+  {
+    name: 'International Trade Law',
+    shortDescription:
+      'Cross-border trade counsel for customs, agreements, anti-dumping, and sanctions compliance.',
+    icon: 'globe',
+    featured: false,
+    tier: 'tier-3',
+    seoTitle:
+      'International Trade Law Lawyers in Thailand | Find a International Trade Law Attorney',
+    seoDescription:
+      'Compare international trade law lawyers in Thailand for import-export compliance, customs disputes, and sanctions risk management.',
+  },
+  {
+    name: 'Environmental Law',
+    shortDescription:
+      'Counsel for environmental compliance, permitting, liability exposure, and environmental disputes.',
+    icon: 'leaf',
+    featured: false,
+    tier: 'tier-3',
+    seoTitle: 'Environmental Law Lawyers in Thailand | Find a Environmental Law Attorney',
+    seoDescription:
+      'Find environmental law lawyers in Thailand for EIA compliance, pollution liability, permits, and industrial environmental disputes.',
+  },
+  {
+    name: 'Entertainment & Media Law',
+    shortDescription:
+      'Legal support for media contracts, talent deals, licensing, and reputation protection.',
+    icon: 'clapperboard',
+    featured: false,
+    tier: 'tier-3',
+    seoTitle:
+      'Entertainment & Media Law Lawyers in Thailand | Find a Entertainment & Media Law Attorney',
+    seoDescription:
+      'Compare entertainment and media law lawyers in Thailand for publishing, talent agreements, licensing, and defamation management.',
+  },
+  {
+    name: 'Aviation Law',
+    shortDescription:
+      'Advice on aviation regulation, leasing, financing, passenger claims, and sector compliance.',
+    icon: 'plane',
+    featured: false,
+    tier: 'tier-3',
+    seoTitle: 'Aviation Law Lawyers in Thailand | Find a Aviation Law Attorney',
+    seoDescription:
+      'Find aviation law lawyers in Thailand for airline compliance, aircraft finance, leasing arrangements, and aviation insurance matters.',
   },
 ]
