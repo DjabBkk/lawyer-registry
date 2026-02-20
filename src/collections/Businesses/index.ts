@@ -12,6 +12,29 @@ import { toKebabCase } from '@/utilities/toKebabCase'
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 
+const getNameForSlug = (value: unknown): string | undefined => {
+  if (typeof value === 'string') {
+    return value
+  }
+
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const localizedValue = value as Record<string, unknown>
+    const englishValue = localizedValue.en
+
+    if (typeof englishValue === 'string') {
+      return englishValue
+    }
+
+    const firstAvailableValue = Object.values(localizedValue).find(
+      (localizedName): localizedName is string => typeof localizedName === 'string',
+    )
+
+    return firstAvailableValue
+  }
+
+  return undefined
+}
+
 const languageOptions = [
   'English',
   'Thai',
@@ -69,7 +92,7 @@ export const Businesses: CollectionConfig = {
                       return value
                     }
 
-                    const name = data?.name ?? originalDoc?.name
+                    const name = getNameForSlug(data?.name ?? originalDoc?.name)
                     if (!name) {
                       return value
                     }

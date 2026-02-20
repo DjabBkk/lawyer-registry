@@ -4,6 +4,29 @@ import { toKebabCase } from '@/utilities/toKebabCase'
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 
+const getNameForSlug = (value: unknown): string | undefined => {
+  if (typeof value === 'string') {
+    return value
+  }
+
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const localizedValue = value as Record<string, unknown>
+    const englishValue = localizedValue.en
+
+    if (typeof englishValue === 'string') {
+      return englishValue
+    }
+
+    const firstAvailableValue = Object.values(localizedValue).find(
+      (localizedName): localizedName is string => typeof localizedName === 'string',
+    )
+
+    return firstAvailableValue
+  }
+
+  return undefined
+}
+
 export const Services: CollectionConfig = {
   slug: 'services',
   access: {
@@ -37,7 +60,7 @@ export const Services: CollectionConfig = {
               return value
             }
 
-            const name = data?.name ?? originalDoc?.name
+            const name = getNameForSlug(data?.name ?? originalDoc?.name)
             if (!name) {
               return value
             }

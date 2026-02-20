@@ -486,6 +486,7 @@ export const seedEndpoint: Endpoint = {
       const created = await req.payload.create({
         collection: 'practice-areas',
         draft: false,
+        locale: 'en',
         data: {
           name: item.name,
           slug: toKebabCase(item.name),
@@ -506,6 +507,7 @@ export const seedEndpoint: Endpoint = {
       const created = await req.payload.create({
         collection: 'locations',
         draft: false,
+        locale: 'en',
         data: {
           name: item.name,
           slug: toKebabCase(item.name),
@@ -537,6 +539,7 @@ export const seedEndpoint: Endpoint = {
       const created = await req.payload.create({
         collection: 'services',
         draft: false,
+        locale: 'en',
         data: {
           name: item.name,
           slug: item.slug,
@@ -661,6 +664,7 @@ export const seedEndpoint: Endpoint = {
       const created = await req.payload.create({
         collection: 'businesses',
         draft: false,
+        locale: 'en',
         data: {
           name: firm.name,
           slug: toKebabCase(firm.name),
