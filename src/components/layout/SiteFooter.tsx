@@ -18,7 +18,7 @@ async function getPracticeAreas() {
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
     collection: 'practice-areas',
-    where: { featured: { equals: true } },
+    where: { tier: { equals: 'tier-1' } },
     limit: 6,
     sort: 'featuredOrder',
   })

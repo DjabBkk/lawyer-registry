@@ -35,7 +35,7 @@ async function getData() {
 
   // Get featured practice areas for homepage
   const featuredPracticeAreas = practiceAreasResult.docs.filter(
-    (pa) => pa.featured
+    (pa) => pa.tier === 'tier-1'
   ).slice(0, 8)
 
   // Get featured locations for homepage

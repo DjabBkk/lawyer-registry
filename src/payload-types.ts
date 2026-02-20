@@ -743,7 +743,6 @@ export interface PracticeArea {
   } | null;
   shortDescription?: string | null;
   icon?: string | null;
-  featured?: boolean | null;
   featuredOrder?: number | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
@@ -1527,7 +1526,6 @@ export interface PracticeAreasSelect<T extends boolean = true> {
   description?: T;
   shortDescription?: T;
   icon?: T;
-  featured?: T;
   featuredOrder?: T;
   seoTitle?: T;
   seoDescription?: T;

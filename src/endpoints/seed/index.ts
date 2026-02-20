@@ -491,7 +491,6 @@ export const seedEndpoint: Endpoint = {
           slug: toKebabCase(item.name),
           shortDescription: item.shortDescription,
           icon: item.icon,
-          featured: item.featured,
           featuredOrder: item.featuredOrder,
           tier: item.tier,
           seoTitle: item.seoTitle,

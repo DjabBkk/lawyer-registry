@@ -15,7 +15,7 @@ export const PracticeAreas: CollectionConfig = {
   admin: {
     group: 'Law Firm Registry',
     useAsTitle: 'name',
-    defaultColumns: ['name', 'slug', 'featured', 'updatedAt'],
+    defaultColumns: ['name', 'slug', 'tier', 'updatedAt'],
   },
   fields: [
     {
@@ -83,11 +83,6 @@ export const PracticeAreas: CollectionConfig = {
     {
       name: 'icon',
       type: 'text',
-    },
-    {
-      name: 'featured',
-      type: 'checkbox',
-      defaultValue: false,
     },
     {
       name: 'featuredOrder',

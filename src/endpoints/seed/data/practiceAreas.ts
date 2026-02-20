@@ -2,7 +2,6 @@ export type PracticeAreaSeed = {
   name: string
   shortDescription: string
   icon: string
-  featured: boolean
   featuredOrder?: number
   tier: 'tier-1' | 'tier-2' | 'tier-3'
   seoTitle?: string
@@ -15,7 +14,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Guidance for divorce, custody, child support, adoption, and family rights matters in Thailand.',
     icon: 'users',
-    featured: true,
     featuredOrder: 1,
     tier: 'tier-1',
     seoTitle: 'Family Law Lawyers in Thailand | Find a Family Law Attorney',
@@ -27,7 +25,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Support for visas, work permits, residency, citizenship, and immigration compliance across Thailand.',
     icon: 'passport',
-    featured: true,
     featuredOrder: 2,
     tier: 'tier-1',
     seoTitle: 'Immigration Law Lawyers in Thailand | Find a Immigration Law Attorney',
@@ -39,7 +36,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Legal help with purchases, leases, title checks, ownership structures, and property disputes.',
     icon: 'building',
-    featured: true,
     featuredOrder: 3,
     tier: 'tier-1',
     seoTitle: 'Real Estate Law Lawyers in Thailand | Find a Real Estate Law Attorney',
@@ -51,7 +47,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Company setup, governance, compliance, contracts, and strategic legal support for business growth.',
     icon: 'briefcase',
-    featured: true,
     featuredOrder: 4,
     tier: 'tier-1',
     seoTitle: 'Corporate & Business Law Lawyers in Thailand | Find a Corporate & Business Law Attorney',
@@ -63,7 +58,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Defense representation for investigations, charges, bail, trial proceedings, and criminal appeals.',
     icon: 'shield',
-    featured: true,
     featuredOrder: 5,
     tier: 'tier-1',
     seoTitle: 'Criminal Law Lawyers in Thailand | Find a Criminal Law Attorney',
@@ -75,7 +69,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Advice on employment contracts, termination, compensation, discrimination, and labor court matters.',
     icon: 'badge-check',
-    featured: true,
     featuredOrder: 6,
     tier: 'tier-1',
     seoTitle: 'Employment & Labor Law Lawyers in Thailand | Find a Employment & Labor Law Attorney',
@@ -87,7 +80,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Planning for wills, probate, inheritance, trusts, and long-term asset protection arrangements.',
     icon: 'file-heart',
-    featured: true,
     featuredOrder: 7,
     tier: 'tier-1',
     seoTitle: 'Estate Planning & Probate Lawyers in Thailand | Find a Estate Planning & Probate Attorney',
@@ -99,7 +91,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Representation for civil claims, contract disputes, debt recovery, and courtroom litigation strategy.',
     icon: 'scale',
-    featured: false,
     tier: 'tier-2',
     seoTitle:
       'Civil Litigation & Dispute Resolution Lawyers in Thailand | Find a Civil Litigation & Dispute Resolution Attorney',
@@ -111,7 +102,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Support for restructuring, rehabilitation, liquidation, creditor rights, and insolvency proceedings.',
     icon: 'landmark',
-    featured: false,
     tier: 'tier-2',
     seoTitle: 'Bankruptcy & Insolvency Lawyers in Thailand | Find a Bankruptcy & Insolvency Attorney',
     seoDescription:
@@ -122,7 +112,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Assistance with accident claims, injury compensation, liability disputes, and damages recovery.',
     icon: 'heart-pulse',
-    featured: false,
     tier: 'tier-2',
     seoTitle: 'Personal Injury Law Lawyers in Thailand | Find a Personal Injury Law Attorney',
     seoDescription:
@@ -133,7 +122,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Legal recourse for negligence by healthcare providers, hospitals, and medical professionals.',
     icon: 'stethoscope',
-    featured: false,
     tier: 'tier-2',
     seoTitle: 'Medical Malpractice Lawyers in Thailand | Find a Medical Malpractice Attorney',
     seoDescription:
@@ -144,7 +132,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Protection and enforcement of trademarks, patents, copyrights, trade secrets, and IP licenses.',
     icon: 'lightbulb',
-    featured: false,
     tier: 'tier-2',
     seoTitle: 'Intellectual Property Law Lawyers in Thailand | Find a Intellectual Property Law Attorney',
     seoDescription:
@@ -155,7 +142,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Advisory for personal and corporate tax planning, VAT compliance, and tax disputes.',
     icon: 'calculator',
-    featured: false,
     tier: 'tier-2',
     seoTitle: 'Tax Law Lawyers in Thailand | Find a Tax Law Attorney',
     seoDescription:
@@ -166,7 +152,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'PDPA compliance, breach response, policy drafting, and data governance legal support.',
     icon: 'shield-check',
-    featured: false,
     tier: 'tier-2',
     seoTitle:
       'Cybersecurity & Data Privacy Lawyers in Thailand | Find a Cybersecurity & Data Privacy Attorney',
@@ -178,7 +163,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Document notarization, legalization, affidavits, and certified paperwork for local and international use.',
     icon: 'file-badge',
-    featured: false,
     tier: 'tier-2',
     seoTitle:
       'Notarial & Document Services Lawyers in Thailand | Find a Notarial & Document Services Attorney',
@@ -190,7 +174,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Counsel for lending, security, compliance, debt restructuring, and fintech-related transactions.',
     icon: 'landmark',
-    featured: false,
     tier: 'tier-3',
     seoTitle: 'Banking & Finance Law Lawyers in Thailand | Find a Banking & Finance Law Attorney',
     seoDescription:
@@ -201,7 +184,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Legal support for shipping contracts, cargo claims, vessel disputes, and maritime operations.',
     icon: 'anchor',
-    featured: false,
     tier: 'tier-3',
     seoTitle: 'Maritime Law Lawyers in Thailand | Find a Maritime Law Attorney',
     seoDescription:
@@ -212,7 +194,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Advisory on construction contracts, defects, project delays, zoning compliance, and disputes.',
     icon: 'hammer',
-    featured: false,
     tier: 'tier-3',
     seoTitle: 'Construction Law Lawyers in Thailand | Find a Construction Law Attorney',
     seoDescription:
@@ -223,7 +204,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Representation for policy interpretation, claims disputes, and insurance liability matters.',
     icon: 'shield',
-    featured: false,
     tier: 'tier-3',
     seoTitle: 'Insurance Law Lawyers in Thailand | Find a Insurance Law Attorney',
     seoDescription:
@@ -234,7 +214,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Alternative dispute resolution for commercial conflicts, mediation, and arbitral enforcement.',
     icon: 'handshake',
-    featured: false,
     tier: 'tier-3',
     seoTitle: 'Arbitration & Mediation Lawyers in Thailand | Find a Arbitration & Mediation Attorney',
     seoDescription:
@@ -245,7 +224,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Cross-border trade counsel for customs, agreements, anti-dumping, and sanctions compliance.',
     icon: 'globe',
-    featured: false,
     tier: 'tier-3',
     seoTitle:
       'International Trade Law Lawyers in Thailand | Find a International Trade Law Attorney',
@@ -257,7 +235,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Counsel for environmental compliance, permitting, liability exposure, and environmental disputes.',
     icon: 'leaf',
-    featured: false,
     tier: 'tier-3',
     seoTitle: 'Environmental Law Lawyers in Thailand | Find a Environmental Law Attorney',
     seoDescription:
@@ -268,7 +245,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Legal support for media contracts, talent deals, licensing, and reputation protection.',
     icon: 'clapperboard',
-    featured: false,
     tier: 'tier-3',
     seoTitle:
       'Entertainment & Media Law Lawyers in Thailand | Find a Entertainment & Media Law Attorney',
@@ -280,7 +256,6 @@ export const practiceAreas: PracticeAreaSeed[] = [
     shortDescription:
       'Advice on aviation regulation, leasing, financing, passenger claims, and sector compliance.',
     icon: 'plane',
-    featured: false,
     tier: 'tier-3',
     seoTitle: 'Aviation Law Lawyers in Thailand | Find a Aviation Law Attorney',
     seoDescription:
