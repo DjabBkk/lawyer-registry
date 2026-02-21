@@ -1,0 +1,92 @@
+.business-export-panel {
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 0.5rem;
+  background: var(--theme-bg);
+}
+
+.business-export-panel__header h3 {
+  margin: 0 0 0.25rem;
+}
+
+.business-export-panel__header p {
+  margin: 0 0 1rem;
+  color: var(--theme-elevation-650);
+}
+
+.business-export-panel__controls {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.business-export-panel__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.business-export-panel__field input[type='text'] {
+  height: 2rem;
+  border: 1px solid var(--theme-elevation-250);
+  border-radius: 0.35rem;
+  padding: 0 0.55rem;
+  background: var(--theme-elevation-0);
+}
+
+.business-export-panel__scope {
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 0.35rem;
+  padding: 0.65rem;
+  margin: 0;
+}
+
+.business-export-panel__scope legend {
+  padding: 0 0.2rem;
+  font-size: 0.9rem;
+}
+
+.business-export-panel__scope label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-right: 0.9rem;
+  font-size: 0.9rem;
+}
+
+.business-export-panel__actions {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.business-export-panel__actions button {
+  border: 1px solid var(--theme-elevation-250);
+  background: var(--theme-elevation-50);
+  color: var(--theme-text);
+  border-radius: 0.35rem;
+  padding: 0.45rem 0.8rem;
+  cursor: pointer;
+}
+
+.business-export-panel__actions button:hover:not(:disabled) {
+  background: var(--theme-elevation-100);
+}
+
+.business-export-panel__actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.business-export-panel__message {
+  margin-top: 0.75rem;
+  color: var(--theme-success-500);
+}
+
+.business-export-panel__error {
+  margin-top: 0.75rem;
+  color: var(--theme-error-500);
+}

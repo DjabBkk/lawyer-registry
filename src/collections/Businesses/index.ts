@@ -9,6 +9,8 @@ import {
 } from '@payloadcms/plugin-seo/fields'
 import { toKebabCase } from '@/utilities/toKebabCase'
 import { validateClaimEndpoint } from '@/endpoints/businesses/validate-claim'
+import { exportClaimLinksEndpoint } from '@/endpoints/businesses/export-claim-links'
+import { generateMissingTokensEndpoint } from '@/endpoints/businesses/generate-missing-tokens'
 
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
@@ -81,7 +83,7 @@ const adminOnly = ({ req: { user } }: { req: { user: { role?: string } | null } 
 
 export const Businesses: CollectionConfig = {
   slug: 'businesses',
-  endpoints: [validateClaimEndpoint],
+  endpoints: [validateClaimEndpoint, exportClaimLinksEndpoint, generateMissingTokensEndpoint],
   access: {
     create: authenticated,
     delete: authenticated,
@@ -93,7 +95,7 @@ export const Businesses: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'businessType', 'listingTier', 'verified', 'updatedAt'],
     components: {
-      beforeList: ['@/components/admin/BusinessesImportTool'],
+      beforeList: ['@/components/admin/BusinessesExportTool', '@/components/admin/BusinessesImportTool'],
     },
   },
   fields: [
