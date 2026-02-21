@@ -20,7 +20,13 @@ interface BusinessCardProps {
 }
 
 export function BusinessCard({ firm, countrySlug, variant = 'default' }: BusinessCardProps) {
-  const practiceAreas = firm.practiceAreas?.filter((pa): pa is PracticeArea => typeof pa !== 'number') || []
+  const practiceAreas = Array.from(
+    new Map(
+      (firm.practiceAreas?.filter((pa): pa is PracticeArea => typeof pa !== 'number') || []).map(
+        (pa) => [pa.id, pa],
+      ),
+    ).values(),
+  )
   const profileUrl = getBusinessUrl(firm, countrySlug)
 
   const location = typeof firm.primaryLocation === 'object' ? firm.primaryLocation : null
@@ -76,7 +82,7 @@ export function BusinessCard({ firm, countrySlug, variant = 'default' }: Busines
       <div className="flex flex-wrap gap-1.5">
         {shown.map((area) => (
           <Link
-            key={area.id}
+            key={`${area.id}-${area.slug}`}
             href={`/${countrySlug}/lawyers/${area.slug}`}
             className="inline-flex items-center rounded-full border border-warm-300 bg-transparent px-2.5 py-0.5 text-xs font-medium text-royal-800 transition-colors hover:border-royal-400 hover:bg-royal-50 hover:text-royal-900"
           >

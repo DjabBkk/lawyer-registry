@@ -8,6 +8,7 @@ import {
   PreviewField,
 } from '@payloadcms/plugin-seo/fields'
 import { toKebabCase } from '@/utilities/toKebabCase'
+import { validateClaimEndpoint } from '@/endpoints/businesses/validate-claim'
 
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
@@ -80,6 +81,7 @@ const adminOnly = ({ req: { user } }: { req: { user: { role?: string } | null } 
 
 export const Businesses: CollectionConfig = {
   slug: 'businesses',
+  endpoints: [validateClaimEndpoint],
   access: {
     create: authenticated,
     delete: authenticated,
