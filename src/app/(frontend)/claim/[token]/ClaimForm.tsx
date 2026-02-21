@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react'
 
-import { submitClaimAction, initialClaimActionState } from '../actions'
+import { submitClaimAction } from '../actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -10,6 +10,12 @@ import { Label } from '@/components/ui/label'
 type ClaimFormProps = {
   token: string
   firmName: string
+}
+
+type ClaimActionState = Awaited<ReturnType<typeof submitClaimAction>>
+
+const initialClaimActionState: ClaimActionState = {
+  error: null,
 }
 
 export const ClaimForm = ({ token, firmName }: ClaimFormProps) => {

@@ -22,10 +22,6 @@ export type ClaimActionState = {
   error: string | null
 }
 
-export const initialClaimActionState: ClaimActionState = {
-  error: null,
-}
-
 const isDuplicateEmailError = (error: unknown) => {
   if (!error || typeof error !== 'object') {
     return false

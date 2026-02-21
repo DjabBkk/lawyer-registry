@@ -2,13 +2,16 @@
 
 import { useActionState } from 'react'
 
-import {
-  initialDashboardLoginActionState,
-  signInDashboardUserAction,
-} from './actions'
+import { signInDashboardUserAction } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+
+type DashboardLoginActionState = Awaited<ReturnType<typeof signInDashboardUserAction>>
+
+const initialDashboardLoginActionState: DashboardLoginActionState = {
+  error: null,
+}
 
 export const DashboardLoginForm = () => {
   const [state, formAction, isPending] = useActionState(

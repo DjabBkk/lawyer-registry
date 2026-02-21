@@ -12,10 +12,6 @@ export type DashboardLoginActionState = {
   error: string | null
 }
 
-export const initialDashboardLoginActionState: DashboardLoginActionState = {
-  error: null,
-}
-
 export const signInDashboardUserAction = async (
   _: DashboardLoginActionState,
   formData: FormData,
